@@ -6,6 +6,7 @@ module trainapp.trainapp {
     requires itextpdf;
     requires kernel;
     requires layout;
+    requires io;
 
 
     opens trainapp to javafx.fxml;

@@ -1,5 +1,6 @@
 package trainapp.util;
 
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
@@ -11,8 +12,7 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.UnitValue;
+import com.itextpdf.layout.properties.TextAlignment;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class PDFGenerator {
         doc.setMargins(30, 30, 30, 30);
 
         try {
-            PdfFont font = PdfFontFactory.createFont();
+            PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             // Add header with railway branding
             addRailwayHeader(doc, font);
@@ -105,15 +105,12 @@ public class PDFGenerator {
                 .setPadding(15)
                 .setMarginBottom(SECTION_SPACING);
 
-        // Main title
         Paragraph title = new Paragraph("INDIAN RAILWAYS")
                 .setFontColor(ColorConstants.WHITE)
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(TITLE_SIZE)
-                .setBold()
                 .setFont(font);
 
-        // Subtitle
         Paragraph subtitle = new Paragraph("E-TICKET / JOURNEY DETAILS")
                 .setFontColor(ColorConstants.WHITE)
                 .setTextAlignment(TextAlignment.CENTER)
@@ -131,39 +128,32 @@ public class PDFGenerator {
                                           String startDate, String departureTime,
                                           String arrivalTime, String bookingDateTime,
                                           String transactionId) {
-        // Create a bordered container
+
         Div detailsContainer = new Div()
                 .setBorder(new SolidBorder(ACCENT_COLOR, 1))
                 .setPadding(15)
                 .setMarginBottom(SECTION_SPACING);
 
-        // Title
         detailsContainer.add(
                 new Paragraph("JOURNEY DETAILS")
                         .setFontColor(ACCENT_COLOR)
                         .setFontSize(HEADER_SIZE)
-                        .setBold()
                         .setFont(font)
                         .setMarginBottom(10)
         );
 
-        // Two-column layout for details
         float[] columnWidths = {1, 1};
         Table detailsTable = new Table(columnWidths)
                 .setFont(font)
                 .setFontSize(BODY_SIZE);
 
-        // Left column
         detailsTable.addCell(createDetailCell("PNR Number:", pnr));
         detailsTable.addCell(createDetailCell("Train Number/Name:", trainNo + " / " + trainName));
         detailsTable.addCell(createDetailCell("Class/Quota:", travelClass + " / " + quota));
         detailsTable.addCell(createDetailCell("From Station:", bookingFrom));
-
-        // Right column
         detailsTable.addCell(createDetailCell("Booking Date:", bookingDateTime));
         detailsTable.addCell(createDetailCell("Transaction ID:", transactionId));
-        detailsTable.addCell(createDetailCell("Departure/Arrival:",
-                departureTime + " / " + arrivalTime));
+        detailsTable.addCell(createDetailCell("Departure/Arrival:", departureTime + " / " + arrivalTime));
         detailsTable.addCell(createDetailCell("To Station:", bookingTo));
 
         detailsContainer.add(detailsTable);
@@ -173,7 +163,7 @@ public class PDFGenerator {
     private static Cell createDetailCell(String label, String value) {
         return new Cell()
                 .setBorder(null)
-                .add(new Paragraph(label).setBold())
+                .add(new Paragraph(label))
                 .add(new Paragraph(value).setMarginTop(3));
     }
 
@@ -183,7 +173,6 @@ public class PDFGenerator {
             return;
         }
 
-        // Table with proper styling
         float[] columnWidths = {5, 25, 8, 10, 20, 20};
         Table table = new Table(columnWidths)
                 .setMarginTop(SECTION_SPACING)
@@ -191,23 +180,21 @@ public class PDFGenerator {
                 .setFont(font)
                 .setFontSize(BODY_SIZE);
 
-        // Header row with accent color
         String[] headers = {"No.", "Passenger Name", "Age", "Gender", "Booking Status", "Current Status"};
         for (String header : headers) {
             table.addHeaderCell(
                     new Cell()
                             .setBackgroundColor(ACCENT_COLOR)
                             .setFontColor(ColorConstants.WHITE)
-                            .add(new Paragraph(header).setBold())
+                            .add(new Paragraph(header))
             );
         }
 
-        // Alternate row coloring
         boolean alternate = false;
         for (int i = 0; i < passengers.size(); i++) {
             PassengerInfo p = passengers.get(i);
             Cell[] cells = {
-                    new Cell().add(new Paragraph(String.valueOf(i+1))),
+                    new Cell().add(new Paragraph(String.valueOf(i + 1))),
                     new Cell().add(new Paragraph(p.getName())),
                     new Cell().add(new Paragraph(String.valueOf(p.getAge()))),
                     new Cell().add(new Paragraph(p.getGender())),
@@ -234,44 +221,39 @@ public class PDFGenerator {
     private static void addFareDetails(Document doc, PdfFont font,
                                        double fare, double catering,
                                        double convenience, double totalFare) {
-        // Fare summary with clean design
+
         Div fareContainer = new Div()
                 .setBorder(new SolidBorder(ACCENT_COLOR, 1))
                 .setPadding(15)
                 .setMarginBottom(SECTION_SPACING);
 
-        // Title
         fareContainer.add(
                 new Paragraph("FARE SUMMARY")
                         .setFontColor(ACCENT_COLOR)
                         .setFontSize(HEADER_SIZE)
-                        .setBold()
                         .setFont(font)
                         .setMarginBottom(10)
         );
 
-        // Fare breakdown table
         float[] columnWidths = {3, 1};
         Table fareTable = new Table(columnWidths)
                 .setFont(font)
                 .setFontSize(BODY_SIZE);
 
-        // Add fare rows
         addFareRow(fareTable, "Base Fare:", fare);
         addFareRow(fareTable, "Catering Charges:", catering);
         addFareRow(fareTable, "Convenience Fee:", convenience);
 
-        // Total row
         fareTable.addCell(
                 new Cell(1, 1)
                         .setBorderTop(new SolidBorder(DARK_TEXT, 0.5f))
-                        .add(new Paragraph("TOTAL:").setBold())
+                        .add(new Paragraph("TOTAL:"))
         );
         fareTable.addCell(
                 new Cell(1, 1)
                         .setBorderTop(new SolidBorder(DARK_TEXT, 0.5f))
                         .setTextAlignment(TextAlignment.RIGHT)
-                        .add(new Paragraph("₹" + String.format("%.2f", totalFare)).setBold())
+                        .add(new Paragraph("₹" + String.format("%.2f", totalFare)))
         );
 
         fareContainer.add(fareTable);
@@ -295,7 +277,6 @@ public class PDFGenerator {
                 .setFont(font)
                 .setFontSize(FOOTER_SIZE);
 
-        // Add disclaimer items
         String[] disclaimers = {
                 "• This is a computer generated ticket and does not require signature",
                 "• Please carry valid ID proof matching passenger names",
@@ -312,12 +293,10 @@ public class PDFGenerator {
             );
         }
 
-        // Add generated timestamp
         footer.add(
                 new Paragraph("Generated on: " +
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm:ss")))
                         .setTextAlignment(TextAlignment.RIGHT)
-                        .setItalic()
                         .setMarginTop(10)
         );
 
@@ -354,7 +333,6 @@ public class PDFGenerator {
             return age;
         }
 
-        // Getters
         public String getName() { return name; }
         public int getAge() { return age; }
         public String getGender() { return gender; }
