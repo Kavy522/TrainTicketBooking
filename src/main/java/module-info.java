@@ -4,8 +4,8 @@ module trainapp.trainapp {
     requires java.sql;
     requires jbcrypt;
     requires itextpdf;
-//    requires kernel;
-//    requires layout;
+    requires kernel;
+    requires layout;
 
 
     opens trainapp to javafx.fxml;
