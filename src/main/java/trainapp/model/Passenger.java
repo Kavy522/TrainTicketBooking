@@ -1,25 +1,43 @@
 package trainapp.model;
 public class Passenger {
 
+    private int passenger_id;
+    private long booking_id;
     private String name;
     private int age;
     private String gender;
     private String seatNumber;
-    private String berthPreference;
-    private String coach;
+    private String coach_type;
 
     public Passenger() {}
 
-    public Passenger(String name, int age, String gender, String seatNumber, String berthPreference, String coach) {
+    public Passenger(int passenger_id, long booking_id, String name, int age, String gender, String seatNumber, String coach_type) {
+        this.passenger_id = passenger_id;
+        this.booking_id = booking_id;
         this.name = name;
         this.age = age;
         this.gender = gender;
         this.seatNumber = seatNumber;
-        this.berthPreference = berthPreference;
-        this.coach = coach;
+        this.coach_type = coach_type;
     }
 
     // Getters and Setters
+    public int getPassenger_id() {
+        return passenger_id;
+    }
+
+    public void setPassenger_id(int passenger_id) {
+        this.passenger_id=passenger_id;
+    }
+
+    public long getBooking_id() {
+        return booking_id;
+    }
+
+    public void setBooking_id (long booking_Id) {
+        this.booking_id=booking_Id;
+    }
+
     public String getName() {
         return name;
     }
@@ -52,20 +70,12 @@ public class Passenger {
         this.seatNumber = seatNumber;
     }
 
-    public String getBerthPreference() {
-        return berthPreference;
+    public String getCoach_type() {
+        return coach_type;
     }
 
-    public void setBerthPreference(String berthPreference) {
-        this.berthPreference = berthPreference;
-    }
-
-    public String getCoach() {
-        return coach;
-    }
-
-    public void setCoach(String coach) {
-        this.coach = coach;
+    public void setCoach_type(String coach_type) {
+        this.coach_type = coach_type;
     }
 
     @Override
@@ -75,8 +85,7 @@ public class Passenger {
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", seatNumber='" + seatNumber + '\'' +
-                ", berthPreference='" + berthPreference + '\'' +
-                ", coach='" + coach + '\'' +
+                ", coach_type='" + coach_type + '\'' +
                 '}';
     }
 }
