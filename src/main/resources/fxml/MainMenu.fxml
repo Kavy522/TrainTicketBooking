@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17.0.12"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="trainapp.controller.ui.MainMenuController">
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.MainMenuController">
 
     <stylesheets>
         <URL value="@../css/MainMenu.css" />
@@ -17,7 +14,7 @@
     <!-- Enhanced Header with Gradient -->
     <top>
         <VBox styleClass="header-container">
-            <HBox alignment="CENTER_LEFT" styleClass="navigation-bar" spacing="24">
+            <HBox alignment="CENTER_LEFT" spacing="24" styleClass="navigation-bar">
                 <HBox alignment="CENTER_LEFT" spacing="12">
                     <ImageView fitHeight="45" fitWidth="45" styleClass="logo-image">
                         <Image url="@../images/logo.png" />
@@ -39,8 +36,8 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <HBox spacing="12" alignment="CENTER_RIGHT">
-                    <Button styleClass="profile-button" text="👤 My Account" />
+                <HBox alignment="CENTER_RIGHT" spacing="12">
+                    <Button onAction="#displayAccount" styleClass="profile-button" text="👤 My Account" />
                     <Button styleClass="bookings-button" text="📋 My Bookings" />
                 </HBox>
             </HBox>
@@ -49,25 +46,25 @@
 
     <!-- Enhanced Main Content -->
     <center>
-        <ScrollPane fitToWidth="true" styleClass="main-scroll-pane" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
-            <VBox styleClass="content-container" spacing="40">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="main-scroll-pane" vbarPolicy="AS_NEEDED">
+            <VBox spacing="40" styleClass="content-container">
 
                 <!-- Hero Section with Animation -->
-                <VBox alignment="CENTER" styleClass="hero-section" spacing="16">
+                <VBox alignment="CENTER" spacing="16" styleClass="hero-section">
                     <VBox alignment="CENTER" spacing="8">
                         <Label styleClass="hero-title" text="Book Train Tickets in 2 Minutes!" />
                         <Label styleClass="hero-subtitle" text="Fast • Easy • Secure" />
                     </VBox>
                     <HBox alignment="CENTER" spacing="30" styleClass="stats-container">
-                        <VBox alignment="CENTER" styleClass="stat-item" spacing="4">
+                        <VBox alignment="CENTER" spacing="4" styleClass="stat-item">
                             <Label styleClass="stat-number" text="10M+" />
                             <Label styleClass="stat-label" text="Happy Travelers" />
                         </VBox>
-                        <VBox alignment="CENTER" styleClass="stat-item" spacing="4">
+                        <VBox alignment="CENTER" spacing="4" styleClass="stat-item">
                             <Label styleClass="stat-number" text="99.9%" />
                             <Label styleClass="stat-label" text="Success Rate" />
                         </VBox>
-                        <VBox alignment="CENTER" styleClass="stat-item" spacing="4">
+                        <VBox alignment="CENTER" spacing="4" styleClass="stat-item">
                             <Label styleClass="stat-number" text="24/7" />
                             <Label styleClass="stat-label" text="Support" />
                         </VBox>
@@ -75,8 +72,8 @@
                 </VBox>
 
                 <!-- Enhanced Booking Card -->
-                <VBox styleClass="booking-section" alignment="CENTER">
-                    <VBox styleClass="booking-card" spacing="24" alignment="CENTER">
+                <VBox alignment="CENTER" styleClass="booking-section">
+                    <VBox alignment="CENTER" spacing="24" styleClass="booking-card">
                         <HBox alignment="CENTER_LEFT" spacing="12" styleClass="card-header">
                             <ImageView fitHeight="28" fitWidth="28">
                                 <Image url="@../images/ticket-icon.png" />
@@ -87,56 +84,40 @@
                             </VBox>
                         </HBox>
 
-                        <HBox styleClass="booking-form-container" spacing="20" alignment="CENTER">
+                        <HBox alignment="CENTER" spacing="20" styleClass="booking-form-container">
                             <!-- From Station -->
-                            <VBox styleClass="form-group autocomplete-input-group" minWidth="180" maxWidth="180" prefWidth="180">
+                            <VBox maxWidth="180" minWidth="180" prefWidth="180" styleClass="form-group autocomplete-input-group">
                                 <Label styleClass="form-label" text="🚉 From" />
-                                <StackPane styleClass="autocomplete-stack" minWidth="180" maxWidth="180" prefWidth="180">
-                                    <TextField fx:id="trainFromField"
-                                               promptText="Departure station"
-                                               styleClass="modern-input autocomplete-input"
-                                               minWidth="180" maxWidth="180" prefWidth="180"/>
-                                    <VBox fx:id="fromSuggestionsList"
-                                          styleClass="suggestions-list"
-                                          visible="false"
-                                          managed="false"
-                                          minWidth="180" maxWidth="180" prefWidth="180" />
+                                <StackPane maxWidth="180" minWidth="180" prefWidth="180" styleClass="autocomplete-stack">
+                                    <TextField fx:id="trainFromField" maxWidth="180" minWidth="180" prefWidth="180" promptText="Departure station" styleClass="modern-input autocomplete-input" />
+                                    <VBox fx:id="fromSuggestionsList" managed="false" maxWidth="180" minWidth="180" prefWidth="180" styleClass="suggestions-list" visible="false" />
                                 </StackPane>
                             </VBox>
 
                             <!-- Swap Button -->
                             <VBox alignment="CENTER" styleClass="swap-container">
-                                <Label text=" " styleClass="form-label" />
-                                <Button styleClass="swap-button" text="⇄" />
+                                <Label styleClass="form-label" text=" " />
+                                <Button onAction="#SwitchButton" styleClass="swap-button" text="⇄" />
                             </VBox>
 
                             <!-- To Station -->
-                            <VBox styleClass="form-group autocomplete-input-group" minWidth="180" maxWidth="180" prefWidth="180">
+                            <VBox maxWidth="180" minWidth="180" prefWidth="180" styleClass="form-group autocomplete-input-group">
                                 <Label styleClass="form-label" text="🏁 To" />
-                                <StackPane styleClass="autocomplete-stack" minWidth="180" maxWidth="180" prefWidth="180">
-                                    <TextField fx:id="trainToField"
-                                               promptText="Destination station"
-                                               styleClass="modern-input autocomplete-input"
-                                               minWidth="180" maxWidth="180" prefWidth="180" />
-                                    <VBox fx:id="toSuggestionsList"
-                                          styleClass="suggestions-list"
-                                          visible="false"
-                                          managed="false"
-                                          minWidth="180" maxWidth="180" prefWidth="180" />
+                                <StackPane maxWidth="180" minWidth="180" prefWidth="180" styleClass="autocomplete-stack">
+                                    <TextField fx:id="trainToField" maxWidth="180" minWidth="180" prefWidth="180" promptText="Destination station" styleClass="modern-input autocomplete-input" />
+                                    <VBox fx:id="toSuggestionsList" managed="false" maxWidth="180" minWidth="180" prefWidth="180" styleClass="suggestions-list" visible="false" />
                                 </StackPane>
                             </VBox>
 
                             <!-- Date -->
-                            <VBox styleClass="form-group" minWidth="180" maxWidth="180" prefWidth="180" spacing="8">
+                            <VBox maxWidth="180" minWidth="180" prefWidth="180" spacing="8" styleClass="form-group">
                                 <Label styleClass="form-label" text="📅 Date" />
-                                <DatePicker fx:id="trainDatePicker"
-                                            styleClass="modern-datepicker"
-                                            minWidth="180" maxWidth="180" prefWidth="180" />
+                                <DatePicker fx:id="trainDatePicker" maxWidth="180" minWidth="180" prefWidth="180" styleClass="modern-datepicker" />
                             </VBox>
 
                             <!-- Search Button -->
-                            <VBox styleClass="search-container" alignment="BOTTOM_LEFT" minWidth="140" maxWidth="140" prefWidth="140">
-                                <Label text=" " styleClass="form-label" />
+                            <VBox alignment="BOTTOM_LEFT" maxWidth="140" minWidth="140" prefWidth="140" styleClass="search-container">
+                                <Label styleClass="form-label" text=" " />
                                 <Button fx:id="searchTrainsButton" styleClass="search-button" text="🔍 Search Trains" />
                             </VBox>
                         </HBox>
@@ -145,7 +126,7 @@
                 </VBox>
 
                 <!-- Enhanced Quick Services -->
-                <VBox styleClass="services-section" spacing="24">
+                <VBox spacing="24" styleClass="services-section">
                     <VBox alignment="CENTER" spacing="8">
                         <Label styleClass="section-title" text="Quick Services" />
                         <Label styleClass="section-subtitle" text="Access all train services in one place" />
@@ -153,16 +134,16 @@
 
                     <GridPane styleClass="services-grid">
                         <columnConstraints>
-                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
-                            <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
                         </columnConstraints>
                         <rowConstraints>
-                            <RowConstraints vgrow="ALWAYS"/>
-                            <RowConstraints vgrow="ALWAYS"/>
+                            <RowConstraints vgrow="ALWAYS" />
+                            <RowConstraints vgrow="ALWAYS" />
                         </rowConstraints>
 
                         <!-- Enhanced Service Cards -->
-                        <VBox styleClass="service-card" GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="16">
+                        <VBox spacing="16" styleClass="service-card" GridPane.columnIndex="0" GridPane.rowIndex="0">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <ImageView fitHeight="40" fitWidth="40" styleClass="service-icon">
                                     <Image url="@../images/train_icon.png" />
@@ -176,7 +157,7 @@
                             <Button fx:id="checkStatusButton" styleClass="service-button" text="Track Now" />
                         </VBox>
 
-                        <VBox styleClass="service-card" GridPane.columnIndex="1" GridPane.rowIndex="0" spacing="16">
+                        <VBox spacing="16" styleClass="service-card" GridPane.columnIndex="1" GridPane.rowIndex="0">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <ImageView fitHeight="40" fitWidth="40" styleClass="service-icon">
                                     <Image url="@../images/pnr_icon.png" />
@@ -190,7 +171,7 @@
                             <Button fx:id="checkPnrButton" styleClass="service-button" text="Check Status" />
                         </VBox>
 
-                        <VBox styleClass="service-card" GridPane.columnIndex="0" GridPane.rowIndex="1" spacing="16">
+                        <VBox spacing="16" styleClass="service-card" GridPane.columnIndex="0" GridPane.rowIndex="1">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <ImageView fitHeight="40" fitWidth="40" styleClass="service-icon">
                                     <Image url="@../images/time_table_icon.png" />
@@ -204,7 +185,7 @@
                             <Button fx:id="viewScheduleButton" styleClass="service-button" text="View Schedule" />
                         </VBox>
 
-                        <VBox styleClass="service-card" GridPane.columnIndex="1" GridPane.rowIndex="1" spacing="16">
+                        <VBox spacing="16" styleClass="service-card" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <ImageView fitHeight="40" fitWidth="40" styleClass="service-icon">
                                     <Image url="@../images/trains_between_stations_icon.png" />
@@ -232,14 +213,14 @@
         <VBox styleClass="footer-container">
             <HBox alignment="CENTER" spacing="40" styleClass="footer-content">
                 <VBox alignment="CENTER" spacing="4">
-                    <Label text="© 2025 Tailyatri" styleClass="footer-brand" />
-                    <Label text="Your trusted travel partner" styleClass="footer-tagline" />
+                    <Label styleClass="footer-brand" text="© 2025 Tailyatri" />
+                    <Label styleClass="footer-tagline" text="Your trusted travel partner" />
                 </VBox>
                 <HBox spacing="20">
-                    <Hyperlink text="Help AND Support" styleClass="footer-link" />
-                    <Hyperlink text="Privacy Policy" styleClass="footer-link" />
-                    <Hyperlink text="Terms of Service" styleClass="footer-link" />
-                    <Hyperlink text="Contact Us" styleClass="footer-link" />
+                    <Hyperlink styleClass="footer-link" text="Help AND Support" />
+                    <Hyperlink styleClass="footer-link" text="Privacy Policy" />
+                    <Hyperlink styleClass="footer-link" text="Terms of Service" />
+                    <Hyperlink styleClass="footer-link" text="Contact Us" />
                 </HBox>
             </HBox>
         </VBox>

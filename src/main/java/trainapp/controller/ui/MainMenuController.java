@@ -4,14 +4,18 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.util.List;
+
 import trainapp.model.Station;
 import trainapp.dao.StationDAO;
+import trainapp.util.SceneManager;
 
 public class MainMenuController {
 
@@ -115,8 +119,47 @@ public class MainMenuController {
                 .toList();
     }
 
+
+
+    public void SwitchButton(ActionEvent actionEvent) {
+        String fromFieldText = trainFromField.getText();
+        String toFieldText = trainToField.getText();
+
+        if (fromFieldText == null || fromFieldText.trim().isEmpty() ||
+                toFieldText == null || toFieldText.trim().isEmpty()) {
+
+            showStationEmptyAlert();
+        } else {
+
+            trainFromField.setText(toFieldText);
+            trainToField.setText(fromFieldText);
+        }
+    }
+
+    private void showStationEmptyAlert() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Tailyatri - Station Switch");
+        alert.setHeaderText("Cannot Switch Stations");
+        alert.setContentText("Both 'From' and 'To' station fields must be filled before switching.\n\n" +
+                "Please select your departure and destination stations first.");
+
+        // Style the alert
+        alert.getDialogPane().getStylesheets().add(getClass().getResource("/css/MainMenu.css").toExternalForm());
+        alert.getDialogPane().getStyleClass().add("custom-alert");
+
+        // Customize button text
+        alert.getButtonTypes().setAll(ButtonType.OK);
+        alert.getDialogPane().lookupButton(ButtonType.OK).getStyleClass().add("alert-button");
+
+        alert.showAndWait();
+    }
+
     @FXML
     public void handleSupportClicked(ActionEvent actionEvent) {
         // TODO: Implement support functionality
+    }
+
+    public void displayAccount(ActionEvent actionEvent) {
+        SceneManager.switchScene("/fxml/Login.fxml");
     }
 }
