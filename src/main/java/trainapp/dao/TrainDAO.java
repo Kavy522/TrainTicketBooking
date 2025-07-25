@@ -21,8 +21,9 @@ public class TrainDAO {
             int rows = ps.executeUpdate();
             return rows > 0;
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+        }
+        catch (SQLException e) {
+            System.out.println(e);
         }
             return false;
     }
