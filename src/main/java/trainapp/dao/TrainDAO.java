@@ -10,7 +10,6 @@ public class TrainDAO {
     public boolean createTrain(Train train) {
         String sql = "INSERT INTO trains (train_number, name, source_station_id, destination_station_id, total_coaches, status) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-
         try {
             Connection con = getConnection();
             PreparedStatement ps = con.prepareStatement(sql);
