@@ -21,4 +21,5 @@ module trainapp.trainapp {
     exports trainapp.util;
 
     opens trainapp to javafx.fxml;
+    opens trainapp.util to javafx.fxml;
 }

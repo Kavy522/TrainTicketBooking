@@ -627,3 +627,42 @@
 .button, .text-field, .date-picker, .nav-button, .service-card, .booking-card {
     -fx-transition: all 0.3s ease;
 }
+
+/* Custom Alert Dialog Styling */
+.custom-alert {
+    -fx-background-color: #ffffff;
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 10);
+}
+
+.custom-alert .header-panel {
+    -fx-background-color: #2563eb;
+    -fx-background-radius: 15px 15px 0 0;
+    -fx-text-fill: white;
+}
+
+.custom-alert .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.custom-alert .content {
+    -fx-padding: 20px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #334155;
+}
+
+.alert-button {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.alert-button:hover {
+    -fx-background-color: #1d4ed8;
+}
