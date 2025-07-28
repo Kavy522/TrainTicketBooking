@@ -1,31 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 
-<AnchorPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.LoginController">
+<AnchorPane prefHeight="600.0" prefWidth="800.0"
+            xmlns="http://javafx.com/javafx/22.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="trainapp.controller.ui.LoginController">
 
     <stylesheets>
         <URL value="@../css/Login.css" />
     </stylesheets>
 
     <!-- Background Container -->
-    <VBox styleClass="login-background" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+    <VBox styleClass="login-background"
+          AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
 
         <!-- Main Split Container with Column Constraints -->
-        <GridPane styleClass="main-container" VBox.vgrow="ALWAYS">
+        <GridPane VBox.vgrow="ALWAYS" styleClass="main-container">
             <columnConstraints>
-                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints vgrow="ALWAYS" />
+                <RowConstraints vgrow="ALWAYS"/>
             </rowConstraints>
 
             <!-- LEFT: Branding Section -->
-            <VBox alignment="CENTER" spacing="30" styleClass="branding-section" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <VBox styleClass="branding-section"
+                  GridPane.columnIndex="0" GridPane.rowIndex="0"
+                  alignment="CENTER" spacing="30">
 
                 <ImageView fitHeight="80" fitWidth="80" styleClass="logo-large">
                     <Image url="@../images/logo.png" />
@@ -33,7 +42,7 @@
                 <Label styleClass="brand-title" text="Tailyatri" />
                 <Label styleClass="brand-subtitle" text="Your Journey Partner" />
 
-                <VBox alignment="CENTER_LEFT" spacing="20" styleClass="features-list">
+                <VBox styleClass="features-list" spacing="20" alignment="CENTER_LEFT">
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Label styleClass="feature-icon" text="🚂" />
                         <Label styleClass="feature-text" text="Book Train Tickets Instantly" />
@@ -44,7 +53,7 @@
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Label styleClass="feature-icon" text="📱" />
-                        <Label styleClass="feature-text" text="Easy Booking" />
+                        <Label styleClass="feature-text" text="Easy Mobile Booking" />
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Label styleClass="feature-icon" text="🔒" />
@@ -54,59 +63,89 @@
             </VBox>
 
             <!-- RIGHT: Login Form Section -->
-            <VBox alignment="CENTER" styleClass="login-form-container" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <VBox styleClass="login-form-container"
+                  GridPane.columnIndex="1" GridPane.rowIndex="0"
+                  alignment="CENTER">
 
                 <!-- Login Card -->
-                <VBox alignment="CENTER" spacing="25" styleClass="login-card">
+                <VBox styleClass="login-card" spacing="25" alignment="CENTER">
 
                     <!-- Header -->
-                    <VBox alignment="CENTER" spacing="8" styleClass="login-header">
+                    <VBox styleClass="login-header" alignment="CENTER" spacing="8">
                         <Label styleClass="login-title" text="Welcome Back" />
                         <Label styleClass="login-subtitle" text="Sign in to your account" />
                     </VBox>
 
-                    <!-- Form Fields -->
-                    <VBox spacing="25" styleClass="form-fields">
+                    <!-- Form Fields with Inline Errors -->
+                    <VBox styleClass="form-fields" spacing="20">
 
-                        <!-- Username Field -->
-                        <VBox spacing="10" styleClass="field-group">
+                        <!-- Username Field with Inline Error -->
+                        <VBox styleClass="field-group" spacing="8">
                             <Label styleClass="field-label" text="Username" />
-                            <TextField fx:id="usernameField" promptText="Enter your username" styleClass="login-input" />
+                            <TextField fx:id="usernameField"
+                                       styleClass="login-input"
+                                       promptText="Enter your username" />
+                            <Label fx:id="usernameError"
+                                   styleClass="inline-error"
+                                   visible="false"
+                                   managed="false" />
                         </VBox>
 
-                        <!-- Password Field -->
-                        <VBox spacing="10" styleClass="field-group">
+                        <!-- Password Field with Inline Error -->
+                        <VBox styleClass="field-group" spacing="8">
                             <Label styleClass="field-label" text="Password" />
-                            <PasswordField fx:id="passwordField" promptText="Enter your password" styleClass="login-input" />
+                            <PasswordField fx:id="passwordField"
+                                           styleClass="login-input"
+                                           promptText="Enter your password" />
+                            <Label fx:id="passwordError"
+                                   styleClass="inline-error"
+                                   visible="false"
+                                   managed="false" />
                         </VBox>
 
                         <!-- Forgot Password -->
                         <HBox alignment="CENTER_RIGHT">
-                            <Hyperlink fx:id="forgotPasswordLink" styleClass="forgot-link" text="Forgot password?" />
+                            <Hyperlink fx:id="forgotPasswordLink"
+                                       styleClass="forgot-link"
+                                       text="Forgot password?" />
                         </HBox>
 
                         <!-- Login Button -->
-                        <Button fx:id="loginButton" styleClass="login-button" text="Sign In" />
+                        <HBox alignment="CENTER">
+                            <Button fx:id="loginButton"
+                                    styleClass="login-button"
+                                    text="Sign In"
+                                    onAction="#handleLogin" />
+                        </HBox>
 
-                        <!-- Error Message -->
-                        <Label fx:id="errorMessage" managed="false" styleClass="error-message" visible="false" />
+                        <!-- General Error Message (for login failures) -->
+                        <HBox alignment="CENTER">
+                            <Label fx:id="errorMessage"
+                                   styleClass="general-error"
+                                   visible="false"
+                                   managed="false"
+                                   textAlignment="CENTER" />
+                        </HBox>
                     </VBox>
 
                     <!-- Footer -->
-                    <VBox alignment="CENTER" spacing="10" styleClass="login-footer">
+                    <VBox styleClass="login-footer" alignment="CENTER" spacing="10">
                         <Label styleClass="signup-text" text="Don't have an account?" />
-                        <Hyperlink fx:id="signupLink" styleClass="signup-link" text="Create Account" />
+                        <Hyperlink fx:id="signupLink"
+                                   styleClass="signup-link"
+                                   text="Create Account"/>
+                                   <!--onAction="#handleSignup" -->
                     </VBox>
                 </VBox>
             </VBox>
         </GridPane>
 
         <!-- Footer -->
-        <HBox alignment="CENTER" spacing="20" styleClass="login-page-footer">
-            <Label styleClass="footer-text" text="© 2025 Tailyatri" />
-            <Hyperlink styleClass="footer-link" text="Privacy Policy" />
-            <Hyperlink styleClass="footer-link" text="Terms of Service" />
-            <Hyperlink styleClass="footer-link" text="Support" />
+        <HBox styleClass="login-page-footer" alignment="CENTER" spacing="20">
+            <Label text="© 2025 Tailyatri" styleClass="footer-text" />
+            <Hyperlink text="Privacy Policy" styleClass="footer-link" />
+            <Hyperlink text="Terms of Service" styleClass="footer-link" />
+            <Hyperlink text="Support" styleClass="footer-link" />
         </HBox>
     </VBox>
 </AnchorPane>

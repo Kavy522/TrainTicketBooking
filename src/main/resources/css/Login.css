@@ -288,3 +288,52 @@
 .scroll-bar .track {
     -fx-background-color: transparent;
 }
+
+/* ===== INLINE ERROR STYLING ===== */
+.inline-error {
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-padding: 4px 8px 0 8px;
+    -fx-wrap-text: true;
+    -fx-text-alignment: left;
+    -fx-background-color: transparent;
+}
+
+/* Field with error state */
+.login-input.error {
+    -fx-border-color: #ef4444;
+    -fx-background-color: #fef2f2;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.2), 8, 0, 0, 2);
+}
+
+/* General error message (for login failures) */
+.general-error {
+    -fx-background-color: #fef2f2;
+    -fx-text-fill: #ef4444;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px 16px;
+    -fx-border-color: #fecaca;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-max-width: 300px;
+    -fx-wrap-text: true;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.1), 5, 0, 0, 2);
+}
+
+/* Success state for fields */
+.login-input.success {
+    -fx-border-color: #10b981;
+    -fx-background-color: #f0fdf4;
+    -fx-effect: dropshadow(gaussian, rgba(16,185,129,0.2), 8, 0, 0, 2);
+}
+
+/* Field group spacing adjustment for inline errors */
+.field-group {
+    -fx-spacing: 6px;
+    -fx-min-height: 85px; /* Reserve space for error message */
+}
