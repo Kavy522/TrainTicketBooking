@@ -1,50 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
-        <Label layoutX="252.0" layoutY="23.0" prefHeight="35.0" prefWidth="96.0" text="Register">
-            <font>
-                <Font name="System Bold" size="24.0" />
-            </font>
-        </Label>
-        <Label layoutX="217.0" layoutY="83.0" text="Name">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-        <TextField fx:id="nameField" layoutX="219.0" layoutY="103.0" promptText="Enter your name" />
-        <Label layoutX="219.0" layoutY="143.0" text="Email">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-        <TextField fx:id="emailField" layoutX="219.0" layoutY="163.0" promptText="example@gmail.com" />
-        <Label layoutX="219.0" layoutY="200.0" text="Phone">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-        <TextField fx:id="phoneField" layoutX="219.0" layoutY="220.0" promptText="Enter your phone number" />
-        <Label layoutX="217.0" layoutY="257.0" text="Password">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Label>
-        <TextField fx:id="passwordField" layoutX="219.0" layoutY="277.0" promptText="Enter password" />
-        <Button layoutX="265.0" layoutY="373.0" mnemonicParsing="false" text="Register">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </Button>
-      <Label layoutX="219.0" layoutY="315.0" text="Conform Password">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <TextField fx:id="passwordField1" layoutX="219.0" layoutY="333.0" promptText="Enter password" />
-    </children>
+<AnchorPane prefHeight="700.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.RegisterController">
+
+    <stylesheets>
+        <URL value="@../css/Register.css" />
+    </stylesheets>
+
+    <!-- Background Container -->
+    <VBox styleClass="register-background" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+
+        <!-- Main Split Container -->
+        <GridPane styleClass="main-container" VBox.vgrow="ALWAYS">
+            <columnConstraints>
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS" />
+            </rowConstraints>
+
+            <!-- LEFT: Branding Section -->
+            <VBox alignment="CENTER" spacing="30" styleClass="branding-section" GridPane.columnIndex="0" GridPane.rowIndex="0">
+
+                <ImageView fitHeight="80" fitWidth="80" styleClass="logo-large">
+                    <Image url="@../images/logo.png" />
+                </ImageView>
+                <Label styleClass="brand-title" text="Tailyatri" />
+                <Label styleClass="brand-subtitle" text="Join Our Journey" />
+
+                <VBox alignment="CENTER_LEFT" spacing="20" styleClass="features-list">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label styleClass="feature-icon" text="✨" />
+                        <Label styleClass="feature-text" text="Free Account Registration" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label styleClass="feature-icon" text="🎯" />
+                        <Label styleClass="feature-text" text="Personalized Experience" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label styleClass="feature-icon" text="💳" />
+                        <Label styleClass="feature-text" text="Secure Payment Options" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label styleClass="feature-icon" text="📞" />
+                        <Label styleClass="feature-text" text="24/7 Customer Support" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- RIGHT: Registration Form Section -->
+            <VBox alignment="CENTER" styleClass="register-form-container" GridPane.columnIndex="1" GridPane.rowIndex="0">
+
+                <!-- Registration Card -->
+                <VBox alignment="CENTER" spacing="20" styleClass="register-card">
+
+                    <!-- Header -->
+                    <VBox alignment="CENTER" spacing="8" styleClass="register-header">
+                        <Label styleClass="register-title" text="Create Account" />
+                        <Label styleClass="register-subtitle" text="Start your journey with us" />
+                    </VBox>
+
+                    <!-- Form Fields with Inline Errors -->
+                    <VBox prefHeight="568.0" prefWidth="308.0" spacing="18" styleClass="form-fields">
+
+                        <!-- Name Field -->
+                        <VBox spacing="6" styleClass="field-group">
+                            <Label styleClass="field-label" text="Full Name" />
+                            <TextField fx:id="nameField" promptText="Enter your full name" styleClass="register-input" />
+                            <Label fx:id="nameError" managed="false" styleClass="inline-error" visible="false" />
+                        </VBox>
+
+                        <!-- Email Field -->
+                        <VBox spacing="6" styleClass="field-group">
+                            <Label styleClass="field-label" text="Email Address" />
+                            <TextField fx:id="emailField" promptText="example@gmail.com" styleClass="register-input" />
+                            <Label fx:id="emailError" managed="false" styleClass="inline-error" visible="false" />
+                        </VBox>
+
+                        <!-- Phone Field -->
+                        <VBox spacing="6" styleClass="field-group">
+                            <Label styleClass="field-label" text="Phone Number" />
+                            <TextField fx:id="phoneField" promptText="Enter your phone number" styleClass="register-input" />
+                            <Label fx:id="phoneError" managed="false" styleClass="inline-error" visible="false" />
+                        </VBox>
+
+                        <!-- Password Field -->
+                        <VBox spacing="6" styleClass="field-group">
+                            <Label styleClass="field-label" text="Password" />
+                            <PasswordField fx:id="passwordField" promptText="Create a strong password" styleClass="register-input" />
+                            <Label fx:id="passwordError" managed="false" styleClass="inline-error" visible="false" />
+                        </VBox>
+
+                        <!-- Confirm Password Field -->
+                        <VBox spacing="6" styleClass="field-group">
+                            <Label styleClass="field-label" text="Confirm Password" />
+                            <PasswordField fx:id="confirmPasswordField" promptText="Re-enter your password" styleClass="register-input" />
+                            <Label fx:id="confirmPasswordError" managed="false" styleClass="inline-error" visible="false" />
+                        </VBox>
+
+                        <!-- Register Button -->
+
+                        <Region minHeight="3"/>
+
+                        <HBox alignment="CENTER">
+                            <Button fx:id="registerButton" styleClass="register-button" text="Create Account" />
+                                    <!--onAction="#handleRegister"-->
+                        </HBox>
+
+                        <!-- General Error Message -->
+                        <HBox alignment="CENTER">
+                            <Label fx:id="errorMessage" managed="false" styleClass="general-error" textAlignment="CENTER" visible="false" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Footer -->
+                    <VBox alignment="CENTER" spacing="10" styleClass="register-footer">
+                        <Label styleClass="login-text" text="Already have an account?" />
+                        <Hyperlink fx:id="loginLink" onAction="#handleLogin" styleClass="login-link" text="Sign In" />
+                    </VBox>
+                </VBox>
+            </VBox>
+        </GridPane>
+
+        <!-- Footer -->
+        <HBox alignment="CENTER" spacing="20" styleClass="register-page-footer">
+            <Label styleClass="footer-text" text="© 2025 Tailyatri" />
+            <Hyperlink styleClass="footer-link" text="Privacy Policy" />
+            <Hyperlink styleClass="footer-link" text="Terms of Service" />
+            <Hyperlink styleClass="footer-link" text="Support" />
+        </HBox>
+    </VBox>
 </AnchorPane>

@@ -133,8 +133,8 @@
                         <Label styleClass="signup-text" text="Don't have an account?" />
                         <Hyperlink fx:id="signupLink"
                                    styleClass="signup-link"
-                                   text="Create Account"/>
-                                   <!--onAction="#handleSignup" -->
+                                   text="Create Account"
+                                   onAction="#handleSignup"/>
                     </VBox>
                 </VBox>
             </VBox>
