@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.TrainBookingController">
+
+    <stylesheets>
+        <URL value="@../css/TrainBooking.css" />
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="header-bar" spacing="20" alignment="CENTER_LEFT">
+            <Button fx:id="backButton" onAction="#handleBack" styleClass="back-btn" text="← Back to Search" />
+            <Label styleClass="page-title" text="Book Your Train Ticket" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="userLabel" styleClass="user-info" text="Welcome, User!" />
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="main-scroll">
+            <VBox spacing="25" styleClass="main-container">
+
+                <!-- Train Details Section -->
+                <VBox styleClass="train-details-section" spacing="15">
+                    <Label styleClass="section-title" text="Train Details" />
+                    <HBox styleClass="train-info-card" spacing="20" alignment="CENTER_LEFT">
+                        <VBox spacing="5" styleClass="train-basic-info">
+                            <Label fx:id="trainNumberLabel" styleClass="train-number" text="12345" />
+                            <Label fx:id="trainNameLabel" styleClass="train-name" text="Express Train" />
+                        </VBox>
+
+                        <Separator orientation="VERTICAL" />
+
+                        <VBox spacing="5" styleClass="journey-info">
+                            <HBox spacing="30" alignment="CENTER">
+                                <VBox alignment="CENTER" spacing="3">
+                                    <Label styleClass="station-code" fx:id="fromStationLabel" text="DEL" />
+                                    <Label fx:id="departureTimeLabel" styleClass="time-label" text="06:00" />
+                                    <Label styleClass="date-label" fx:id="departureDateLabel" text="14 Aug" />
+                                </VBox>
+
+                                <VBox alignment="CENTER" spacing="5">
+                                    <Label fx:id="durationLabel" styleClass="duration-label" text="12h 30m" />
+                                    <Label styleClass="route-line" text="────────────" />
+                                    <Label fx:id="distanceLabel" styleClass="distance-label" text="1200 km" />
+                                </VBox>
+
+                                <VBox alignment="CENTER" spacing="3">
+                                    <Label styleClass="station-code" fx:id="toStationLabel" text="MUM" />
+                                    <Label fx:id="arrivalTimeLabel" styleClass="time-label" text="18:30" />
+                                    <Label styleClass="date-label" fx:id="arrivalDateLabel" text="14 Aug" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <VBox alignment="CENTER_RIGHT" spacing="5">
+                            <Button fx:id="viewDetailsBtn" onAction="#handleViewDetails" styleClass="view-details-btn" text="View Details" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Class Selection Section -->
+                <VBox styleClass="class-selection-section" spacing="15">
+                    <Label styleClass="section-title" text="Select Class &amp; Check Fare" />
+                    <HBox spacing="20" styleClass="class-cards-container">
+                        <!-- SL Class -->
+                        <VBox styleClass="class-card" fx:id="slClassCard">
+                            <RadioButton fx:id="slRadio" text="Sleeper (SL)" styleClass="class-radio" />
+                            <Label styleClass="class-price" fx:id="slPriceLabel" text="₹450" />
+                            <Label styleClass="class-seats" fx:id="slSeatsLabel" text="Available: 42" />
+                        </VBox>
+
+                        <!-- 3A Class -->
+                        <VBox styleClass="class-card" fx:id="acClassCard">
+                            <RadioButton fx:id="acRadio" text="AC 3 Tier (3A)" styleClass="class-radio" />
+                            <Label styleClass="class-price" fx:id="acPriceLabel" text="₹1,200" />
+                            <Label styleClass="class-seats" fx:id="acSeatsLabel" text="Available: 18" />
+                        </VBox>
+
+                        <!-- 2A Class -->
+                        <VBox styleClass="class-card" fx:id="ac2ClassCard">
+                            <RadioButton fx:id="ac2Radio" text="AC 2 Tier (2A)" styleClass="class-radio" />
+                            <Label styleClass="class-price" fx:id="ac2PriceLabel" text="₹1,800" />
+                            <Label styleClass="class-seats" fx:id="ac2SeatsLabel" text="Available: 8" />
+                        </VBox>
+
+                        <!-- 1A Class -->
+                        <VBox styleClass="class-card" fx:id="ac1ClassCard">
+                            <RadioButton fx:id="ac1Radio" text="AC First (1A)" styleClass="class-radio" />
+                            <Label styleClass="class-price" fx:id="ac1PriceLabel" text="₹3,500" />
+                            <Label styleClass="class-seats" fx:id="ac1SeatsLabel" text="Available: 4" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <HBox spacing="25" styleClass="booking-content">
+                    <!-- Left Side - Add Passengers -->
+                    <VBox styleClass="passenger-form-section" spacing="20">
+                        <Label styleClass="section-title" text="Add Passengers" />
+
+                        <VBox styleClass="passenger-form" spacing="15">
+                            <Label styleClass="form-subtitle" text="Passenger Details" />
+
+                            <GridPane styleClass="form-grid" hgap="15" vgap="15">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="ALWAYS" />
+                                    <ColumnConstraints hgrow="ALWAYS" />
+                                </columnConstraints>
+
+                                <Label styleClass="form-label" text="Full Name" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <TextField fx:id="passengerNameField" promptText="Enter full name" styleClass="form-input" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                <Label styleClass="form-label" text="Age" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <TextField fx:id="passengerAgeField" promptText="Enter age" styleClass="form-input" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                <Label styleClass="form-label" text="Gender" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                <HBox spacing="15" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="gender-radio-group">
+                                    <RadioButton fx:id="maleRadio" text="Male" styleClass="gender-radio" />
+                                    <RadioButton fx:id="femaleRadio" text="Female" styleClass="gender-radio" />
+                                    <RadioButton fx:id="otherRadio" text="Other" styleClass="gender-radio" />
+                                </HBox>
+                            </GridPane>
+
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <Button fx:id="addPassengerBtn" onAction="#handleAddPassenger" styleClass="add-passenger-btn" text="+ Add Passenger" />
+                                <Button fx:id="clearFormBtn" onAction="#handleClearForm" styleClass="clear-btn" text="Clear Form" />
+                            </HBox>
+                        </VBox>
+
+                        <!-- Passenger List -->
+                        <VBox styleClass="passenger-list-section" spacing="15">
+                            <Label styleClass="section-title" text="Passenger List" />
+                            <ScrollPane fitToWidth="true" prefHeight="300" styleClass="passenger-scroll">
+                                <VBox fx:id="passengerListContainer" styleClass="passenger-list" spacing="8" />
+                            </ScrollPane>
+
+                            <HBox spacing="10" alignment="CENTER">
+                                <Label styleClass="total-label" text="Total Passengers:" />
+                                <Label fx:id="passengerCountLabel" styleClass="count-label" text="0" />
+                                <Separator orientation="VERTICAL" />
+                                <Label styleClass="total-label" text="Total Amount:" />
+                                <Label fx:id="totalAmountLabel" styleClass="amount-label" text="₹0" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Right Side - Booking Summary -->
+                    <VBox styleClass="booking-summary-section" spacing="20">
+                        <Label styleClass="section-title" text="Booking Summary" />
+
+                        <VBox styleClass="summary-card" spacing="15">
+                            <VBox spacing="10">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Journey:" />
+                                    <Label fx:id="journeySummaryLabel" styleClass="summary-value" text="DEL → MUM" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Date:" />
+                                    <Label fx:id="dateSummaryLabel" styleClass="summary-value" text="14 Aug 2025" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Class:" />
+                                    <Label fx:id="selectedClassLabel" styleClass="summary-value" text="Select class first" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Distance:" />
+                                    <Label fx:id="summaryDistanceLabel" styleClass="summary-value" text="0 km" />
+                                </HBox>
+
+                                <Separator />
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Passengers:" />
+                                    <Label fx:id="summaryPassengerCountLabel" styleClass="summary-value" text="0" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Per Ticket:" />
+                                    <Label fx:id="perTicketPriceLabel" styleClass="summary-value" text="₹0" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Ticket Fare:" />
+                                    <Label fx:id="summaryFareLabel" styleClass="summary-value" text="₹0" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="summary-label" text="Convenience Fee:" />
+                                    <Label styleClass="summary-value" text="₹20" />
+                                </HBox>
+
+                                <Separator />
+
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="total-fare-label" text="Total Amount:" />
+                                    <Label fx:id="summaryTotalLabel" styleClass="total-fare-value" text="₹20" />
+                                </HBox>
+                            </VBox>
+
+                            <Button fx:id="proceedToPaymentBtn" onAction="#handleProceedToPayment" styleClass="payment-btn" text="Proceed to Payment" />
+                        </VBox>
+
+                        <!-- Important Notes -->
+                        <VBox styleClass="notes-section" spacing="10">
+                            <Label styleClass="notes-title" text="Important Notes:" />
+                            <Label styleClass="notes-text" text="• Carry a valid ID proof during journey" />
+                            <Label styleClass="notes-text" text="• Tickets are non-refundable" />
+                            <Label styleClass="notes-text" text="• Report 30 minutes before departure" />
+                            <Label styleClass="notes-text" text="• Fare calculated based on distance" />
+                        </VBox>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Messages -->
+    <bottom>
+        <Label fx:id="messageLabel" styleClass="message-label" visible="false" />
+    </bottom>
+</BorderPane>

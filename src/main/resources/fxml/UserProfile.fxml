@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.UserProfileController">
+
+    <stylesheets>
+        <URL value="@../css/UserProfile.css" />
+    </stylesheets>
+
+    <!-- Background Container -->
+    <VBox styleClass="profile-background" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+
+        <!-- Header Section -->
+        <HBox styleClass="profile-header" alignment="CENTER_LEFT" spacing="20">
+            <Button fx:id="backButton" styleClass="back-button" text="← Back to Menu" onAction="#handleBackToMenu"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="logoutButton" styleClass="logout-button" text="Logout" onAction="#handleLogout"/>
+        </HBox>
+
+        <!-- Main Content -->
+        <ScrollPane styleClass="content-scroll" VBox.vgrow="ALWAYS" fitToWidth="true">
+            <VBox styleClass="main-content" spacing="30" alignment="TOP_CENTER">
+                <padding>
+                    <Insets top="30" right="50" bottom="30" left="50"/>
+                </padding>
+
+                <!-- Profile Card -->
+                <VBox styleClass="profile-card" spacing="25" maxWidth="800">
+
+                    <!-- Profile Header -->
+                    <HBox styleClass="profile-card-header" alignment="CENTER_LEFT" spacing="25">
+                        <ImageView fitHeight="80" fitWidth="80" styleClass="profile-avatar">
+                            <Image url="@../images/user-avatar.png" />
+                        </ImageView>
+                        <VBox spacing="5">
+                            <Label fx:id="welcomeLabel" styleClass="welcome-text" text="Welcome Back!"/>
+                            <Label fx:id="userNameLabel" styleClass="user-name" text="John Doe"/>
+                            <Label styleClass="user-type" text="Traveler"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="editProfileButton" styleClass="edit-profile-button" text="Edit Profile" onAction="#handleEditProfile"/>
+                    </HBox>
+
+                    <!-- Profile Information Grid -->
+                    <GridPane styleClass="info-grid" hgap="40" vgap="20">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50"/>
+                            <ColumnConstraints percentWidth="50"/>
+                        </columnConstraints>
+
+                        <!-- Left Column -->
+                        <VBox spacing="20" GridPane.columnIndex="0" GridPane.rowIndex="0">
+
+                            <!-- Personal Information -->
+                            <VBox styleClass="info-section" spacing="15">
+                                <Label styleClass="section-title" text="📋 Personal Information"/>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Full Name"/>
+                                    <Label fx:id="nameDisplay" styleClass="info-value" text="John Doe"/>
+                                </VBox>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Email Address"/>
+                                    <Label fx:id="emailDisplay" styleClass="info-value" text="john.doe@example.com"/>
+                                </VBox>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Phone Number"/>
+                                    <Label fx:id="phoneDisplay" styleClass="info-value" text="+91 9876543210"/>
+                                </VBox>
+                            </VBox>
+
+                            <!-- Account Information -->
+                            <VBox styleClass="info-section" spacing="15">
+                                <Label styleClass="section-title" text="🔐 Account Information"/>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Member Since"/>
+                                    <Label fx:id="memberSinceDisplay" styleClass="info-value" text="January 2025"/>
+                                </VBox>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Last Login"/>
+                                    <Label fx:id="lastLoginDisplay" styleClass="info-value" text="Today at 2:30 PM"/>
+                                </VBox>
+
+                                <VBox styleClass="info-item" spacing="5">
+                                    <Label styleClass="info-label" text="Account Status"/>
+                                    <Label styleClass="info-value status-active" text="✓ Active"/>
+                                </VBox>
+                            </VBox>
+
+                        </VBox>
+
+                        <!-- Right Column -->
+                        <VBox spacing="20" GridPane.columnIndex="1" GridPane.rowIndex="0">
+
+                            <!-- Travel Statistics -->
+                            <VBox styleClass="info-section" spacing="15">
+                                <Label styleClass="section-title" text="📊 Travel Statistics"/>
+
+                                <HBox styleClass="stat-row" alignment="CENTER_LEFT" spacing="15">
+                                    <VBox styleClass="stat-item" alignment="CENTER">
+                                        <Label fx:id="totalBookingsLabel" styleClass="stat-number" text="12"/>
+                                        <Label styleClass="stat-label" text="Total Bookings"/>
+                                    </VBox>
+                                    <VBox styleClass="stat-item" alignment="CENTER">
+                                        <Label fx:id="completedTripsLabel" styleClass="stat-number" text="8"/>
+                                        <Label styleClass="stat-label" text="Completed Trips"/>
+                                    </VBox>
+                                    <VBox styleClass="stat-item" alignment="CENTER">
+                                        <Label fx:id="cancelledBookingsLabel" styleClass="stat-number" text="2"/>
+                                        <Label styleClass="stat-label" text="Cancelled"/>
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Quick Actions -->
+                            <VBox styleClass="info-section" spacing="15">
+                                <Label styleClass="section-title" text="⚡ Quick Actions"/>
+
+                                <VBox spacing="10">
+                                    <Button fx:id="bookTicketButton" styleClass="action-button primary"
+                                            text="🎫 Book New Ticket" onAction="#handleBookTicket"/>
+                                    <Button fx:id="viewBookingsButton" styleClass="action-button secondary"
+                                            text="📋 View My Bookings" onAction="#handleViewBookings"/>
+                                    <Button fx:id="changePasswordButton" styleClass="action-button secondary"
+                                            text="🔑 Change Password" onAction="#handleChangePassword"/>
+                                </VBox>
+                            </VBox>
+
+                            <!-- Recent Activity -->
+                            <VBox styleClass="info-section" spacing="15">
+                                <Label styleClass="section-title" text="🕒 Recent Activity"/>
+
+                                <VBox fx:id="recentActivityContainer" styleClass="activity-list" spacing="8">
+                                    <!-- Dynamic content will be loaded here -->
+                                </VBox>
+                            </VBox>
+
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Action Buttons Row -->
+                    <HBox styleClass="action-buttons-row" alignment="CENTER" spacing="20">
+                        <Button styleClass="action-button outline" text="Download Profile Data" onAction="#handleDownloadData"/>
+                        <Button styleClass="action-button outline" text="Account Settings" onAction="#handleAccountSettings"/>
+                        <Button styleClass="action-button danger" text="Delete Account" onAction="#handleDeleteAccount"/>
+                    </HBox>
+
+                </VBox>
+
+                <!-- Success/Error Message -->
+                <HBox alignment="CENTER">
+                    <Label fx:id="messageLabel" styleClass="message-label" visible="false" managed="false"/>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+
+    </VBox>
+</AnchorPane>

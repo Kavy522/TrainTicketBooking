@@ -1,14 +1,236 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import java.net.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="fxml.Payment"
-            prefHeight="400.0" prefWidth="600.0">
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.PaymentController">
 
-</AnchorPane>
+    <stylesheets>
+        <URL value="@../css/Payment.css" />
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="payment-header" spacing="20" alignment="CENTER_LEFT">
+            <Button fx:id="backButton" onAction="#handleBack" styleClass="back-btn" text="← Back" />
+            <Label styleClass="page-title" text="Complete Payment" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="securityLabel" styleClass="security-info" text="🔒 Secure Payment" />
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="main-scroll">
+            <VBox spacing="30" styleClass="payment-container">
+
+                <!-- Booking Summary Section -->
+                <VBox styleClass="summary-section" spacing="15">
+                    <Label styleClass="section-title" text="Booking Summary" />
+                    <HBox styleClass="booking-summary-card" spacing="20" alignment="CENTER_LEFT">
+                        <VBox spacing="8" styleClass="train-info">
+                            <Label fx:id="trainDetailsLabel" styleClass="train-details" text="12345 - Shatabdi Express" />
+                            <Label fx:id="routeLabel" styleClass="route-details" text="New Delhi → Mumbai Central" />
+                            <Label fx:id="dateLabel" styleClass="date-details" text="15 Aug 2025 | 3A Class" />
+                        </VBox>
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <VBox alignment="CENTER_RIGHT" spacing="5">
+                            <Label fx:id="pnrLabel" styleClass="pnr-label" text="PNR: PNR7834562" />
+                            <Label fx:id="passengerCountLabel" styleClass="passenger-count" text="2 Passengers" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- Amount Breakdown -->
+                    <VBox styleClass="amount-breakdown" spacing="12">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="amount-label" text="Ticket Fare:" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="ticketFareLabel" styleClass="amount-value" text="₹2,400" />
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="amount-label" text="Convenience Fee:" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="convenienceFeeLabel" styleClass="amount-value" text="₹20" />
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="amount-label" text="GST (5%):" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="gstLabel" styleClass="amount-value" text="₹121" />
+                        </HBox>
+
+                        <Separator />
+
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="total-label" text="Total Amount:" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="totalAmountLabel" styleClass="total-value" text="₹2,541" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <!-- Payment Method Selection -->
+                <VBox styleClass="payment-method-section" spacing="20">
+                    <Label styleClass="section-title" text="Select Payment Method" />
+
+                    <!-- Payment Options -->
+                    <HBox spacing="20" styleClass="payment-options">
+                        <!-- UPI -->
+                        <VBox styleClass="payment-option" fx:id="upiOption">
+                            <RadioButton fx:id="upiRadio" text="" styleClass="payment-radio" />
+                            <Label styleClass="payment-icon" text="📱" />
+                            <Label styleClass="payment-name" text="UPI" />
+                            <Label styleClass="payment-desc" text="Pay using UPI ID" />
+                        </VBox>
+
+                        <!-- Credit/Debit Card -->
+                        <VBox styleClass="payment-option selected" fx:id="cardOption">
+                            <RadioButton fx:id="cardRadio" text="" styleClass="payment-radio" selected="true" />
+                            <Label styleClass="payment-icon" text="💳" />
+                            <Label styleClass="payment-name" text="Card" />
+                            <Label styleClass="payment-desc" text="Credit/Debit Card" />
+                        </VBox>
+
+                        <!-- Net Banking -->
+                        <VBox styleClass="payment-option" fx:id="netBankingOption">
+                            <RadioButton fx:id="netBankingRadio" text="" styleClass="payment-radio" />
+                            <Label styleClass="payment-icon" text="🏦" />
+                            <Label styleClass="payment-name" text="Net Banking" />
+                            <Label styleClass="payment-desc" text="Online Banking" />
+                        </VBox>
+
+                        <!-- Wallet -->
+                        <VBox styleClass="payment-option" fx:id="walletOption">
+                            <RadioButton fx:id="walletRadio" text="" styleClass="payment-radio" />
+                            <Label styleClass="payment-icon" text="💰" />
+                            <Label styleClass="payment-name" text="Wallet" />
+                            <Label styleClass="payment-desc" text="Digital Wallet" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- Dynamic Payment Forms -->
+                    <StackPane fx:id="paymentFormsContainer" styleClass="payment-forms">
+
+                        <!-- Card Payment Form -->
+                        <VBox fx:id="cardForm" styleClass="payment-form" spacing="20">
+                            <Label styleClass="form-title" text="Card Details" />
+
+                            <VBox spacing="15">
+                                <VBox spacing="8">
+                                    <Label styleClass="form-label" text="Card Number" />
+                                    <TextField fx:id="cardNumberField" promptText="1234 5678 9012 3456" styleClass="payment-input" />
+                                </VBox>
+
+                                <HBox spacing="15">
+                                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                        <Label styleClass="form-label" text="Expiry Date" />
+                                        <TextField fx:id="expiryField" promptText="MM/YY" styleClass="payment-input" />
+                                    </VBox>
+
+                                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                        <Label styleClass="form-label" text="CVV" />
+                                        <TextField fx:id="cvvField" promptText="123" styleClass="payment-input" />
+                                    </VBox>
+                                </HBox>
+
+                                <VBox spacing="8">
+                                    <Label styleClass="form-label" text="Cardholder Name" />
+                                    <TextField fx:id="cardHolderField" promptText="As on card" styleClass="payment-input" />
+                                </VBox>
+                            </VBox>
+                        </VBox>
+
+                        <!-- UPI Payment Form -->
+                        <VBox fx:id="upiForm" styleClass="payment-form" spacing="20" visible="false">
+                            <Label styleClass="form-title" text="UPI Payment" />
+
+                            <VBox spacing="15">
+                                <VBox spacing="8">
+                                    <Label styleClass="form-label" text="UPI ID" />
+                                    <TextField fx:id="upiIdField" promptText="yourname@paytm" styleClass="payment-input" />
+                                </VBox>
+
+                                <Label styleClass="upi-note" text="💡 Enter your registered UPI ID to proceed with payment" />
+                            </VBox>
+                        </VBox>
+
+                        <!-- Net Banking Form -->
+                        <VBox fx:id="netBankingForm" styleClass="payment-form" spacing="20" visible="false">
+                            <Label styleClass="form-title" text="Select Your Bank" />
+
+                            <ComboBox fx:id="bankComboBox" promptText="Choose your bank" styleClass="bank-combo">
+                            </ComboBox>
+
+                            <Label styleClass="banking-note" text="🏦 You will be redirected to your bank's secure login page" />
+                        </VBox>
+
+                        <!-- Wallet Form -->
+                        <VBox fx:id="walletForm" styleClass="payment-form" spacing="20" visible="false">
+                            <Label styleClass="form-title" text="Digital Wallet" />
+
+                            <VBox spacing="15">
+                                <Label styleClass="wallet-title" text="Select Wallet" />
+                                <HBox spacing="15" styleClass="wallet-options">
+                                    <Button styleClass="wallet-btn" text="Paytm" onAction="#selectWallet" />
+                                    <Button styleClass="wallet-btn" text="PhonePe" onAction="#selectWallet" />
+                                    <Button styleClass="wallet-btn" text="Google Pay" onAction="#selectWallet" />
+                                    <Button styleClass="wallet-btn" text="Amazon Pay" onAction="#selectWallet" />
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </StackPane>
+                </VBox>
+
+                <!-- Security Features -->
+                <VBox styleClass="security-section" spacing="15">
+                    <Label styleClass="section-title" text="Security &amp; Trust" />
+                    <HBox spacing="30" alignment="CENTER">
+                        <VBox alignment="CENTER" spacing="5">
+                            <Label styleClass="security-icon" text="🔒" />
+                            <Label styleClass="security-text" text="SSL Encrypted" />
+                        </VBox>
+
+                        <VBox alignment="CENTER" spacing="5">
+                            <Label styleClass="security-icon" text="🛡️" />
+                            <Label styleClass="security-text" text="PCI Compliant" />
+                        </VBox>
+
+                        <VBox alignment="CENTER" spacing="5">
+                            <Label styleClass="security-icon" text="✅" />
+                            <Label styleClass="security-text" text="Verified by Razorpay" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Payment Button -->
+                <VBox styleClass="payment-action-section" spacing="15">
+                    <Button fx:id="payNowButton" onAction="#handlePayNow" styleClass="pay-now-btn" text="Pay ₹2,541" />
+
+                    <HBox alignment="CENTER" spacing="5">
+                        <CheckBox fx:id="termsCheckBox" styleClass="terms-checkbox" />
+                        <Label styleClass="terms-text" text="I agree to the" />
+                        <Hyperlink styleClass="terms-link" text="Terms &amp; Conditions" onAction="#showTerms" />
+                        <Label styleClass="terms-text" text="and" />
+                        <Hyperlink styleClass="terms-link" text="Privacy Policy" onAction="#showPrivacy" />
+                    </HBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Loading Overlay -->
+    <StackPane fx:id="loadingOverlay" styleClass="loading-overlay" visible="false">
+        <VBox alignment="CENTER" spacing="20" styleClass="loading-content">
+            <ProgressIndicator styleClass="loading-spinner" />
+            <Label fx:id="loadingText" styleClass="loading-text" text="Processing Payment..." />
+            <Label styleClass="loading-subtext" text="Please do not close this window" />
+        </VBox>
+    </StackPane>
+
+</BorderPane>

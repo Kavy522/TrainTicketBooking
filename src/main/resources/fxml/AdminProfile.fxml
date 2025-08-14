@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+
+<BorderPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.AdminProfileController">
+
+    <stylesheets>
+        <URL value="@../css/AdminProfile.css" />
+    </stylesheets>
+
+    <!-- TOP: Modern Header Bar -->
+    <top>
+        <HBox styleClass="modern-header" alignment="CENTER_LEFT" spacing="0">
+            <Button fx:id="backButton" styleClass="nav-button" onAction="#handleBackToMenu">
+                <graphic>
+                    <Label text="←" styleClass="nav-icon"/>
+                </graphic>
+            </Button>
+
+            <VBox styleClass="header-title-section" spacing="2">
+                <Label styleClass="app-title" text="Tailyatri"/>
+                <Label styleClass="page-subtitle" text="Administrative Dashboard"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <HBox styleClass="header-actions" spacing="15" alignment="CENTER_RIGHT">
+                <VBox styleClass="user-info" spacing="2" alignment="CENTER_RIGHT">
+                    <Label fx:id="adminWelcomeLabel" styleClass="user-name" text="Administrator"/>
+                    <Label styleClass="user-role" text="System Admin"/>
+                </VBox>
+                <Button fx:id="logoutButton" styleClass="logout-btn" text="Sign Out" onAction="#handleLogout"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <!-- CENTER: Main Dashboard Content -->
+    <center>
+        <ScrollPane styleClass="main-scroll" fitToWidth="true" fitToHeight="true">
+            <VBox styleClass="dashboard-container" spacing="30">
+                <padding>
+                    <Insets top="30" right="30" bottom="30" left="30"/>
+                </padding>
+
+                <!-- KPI Cards Row -->
+                <HBox styleClass="kpi-section" spacing="25" alignment="CENTER">
+
+                    <VBox styleClass="kpi-card primary-card" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="kpi-icon primary-icon" text="👥"/>
+                            <VBox spacing="3">
+                                <Label styleClass="kpi-label" text="Total Users"/>
+                                <Label fx:id="totalUsersLabel" styleClass="kpi-value" text="2,847"/>
+                            </VBox>
+                        </HBox>
+                        <Button styleClass="kpi-action primary-action" text="Manage Users" onAction="#handleManageUsers"/>
+                    </VBox>
+
+                    <VBox styleClass="kpi-card success-card" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="kpi-icon success-icon" text="🚂"/>
+                            <VBox spacing="3">
+                                <Label styleClass="kpi-label" text="Active Routes"/>
+                                <Label fx:id="activeTrainsLabel" styleClass="kpi-value" text="127"/>
+                            </VBox>
+                        </HBox>
+                        <Button styleClass="kpi-action success-action" text="Route Management" onAction="#handleManageTrains"/>
+                    </VBox>
+
+                    <VBox styleClass="kpi-card warning-card" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="kpi-icon warning-icon" text="🎫"/>
+                            <VBox spacing="3">
+                                <Label styleClass="kpi-label" text="Today's Bookings"/>
+                                <Label fx:id="totalBookingsLabel" styleClass="kpi-value" text="1,234"/>
+                            </VBox>
+                        </HBox>
+                        <Button styleClass="kpi-action warning-action" text="View Bookings" onAction="#handleViewBookings"/>
+                    </VBox>
+
+                    <VBox styleClass="kpi-card info-card" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="kpi-icon info-icon" text="💰"/>
+                            <VBox spacing="3">
+                                <Label styleClass="kpi-label" text="Revenue (Today)"/>
+                                <Label fx:id="revenueLabel" styleClass="kpi-value" text="₹2.4M"/>
+                            </VBox>
+                        </HBox>
+                        <Button styleClass="kpi-action info-action" text="Financial Reports" onAction="#handleViewReports"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- Main Content Grid -->
+                <GridPane styleClass="content-grid" hgap="30" vgap="30">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="50"/>
+                        <ColumnConstraints percentWidth="50"/>
+                    </columnConstraints>
+
+                    <!-- System Activity Monitor (LinkedList Demo) -->
+                    <VBox styleClass="dashboard-card" spacing="20" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="card-icon activity-icon" text="📊"/>
+                            <VBox spacing="2">
+                                <Label styleClass="card-title" text="System Activity Monitor"/>
+                                <Label styleClass="card-subtitle" text="Real-time system events"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="card-refresh-btn" text="↻" onAction="#handleRefreshActivity"/>
+                        </HBox>
+
+                        <ListView fx:id="recentActivitiesListView" styleClass="activity-monitor" prefHeight="200" minHeight="200" maxHeight="200"/>
+
+                        <HBox styleClass="activity-input-section" spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="activityTextField" styleClass="activity-input" promptText="Add system event..." HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="add-activity-btn" text="+" onAction="#handleAddActivity"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Route Cache Management (HashMap Demo) -->
+                    <VBox styleClass="dashboard-card" spacing="20" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="card-icon cache-icon" text="🗺️"/>
+                            <VBox spacing="2">
+                                <Label styleClass="card-title" text="Route Cache Manager"/>
+                                <Label styleClass="card-subtitle" text="Optimized route information"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label styleClass="cache-status" text="● Active"/>
+                        </HBox>
+
+                        <ListView fx:id="routeCacheListView" styleClass="cache-monitor" prefHeight="200" minHeight="200" maxHeight="200"/>
+
+                        <HBox styleClass="cache-input-section" spacing="8">
+                            <TextField fx:id="routeKeyField" styleClass="cache-input" promptText="Route ID"/>
+                            <TextField fx:id="routeValueField" styleClass="cache-input" promptText="Route Information" HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="cache-btn" text="Cache" onAction="#handleCacheRoute"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Active Sessions Monitor (HashTable Demo) -->
+                    <VBox styleClass="dashboard-card" spacing="20" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="card-icon session-icon" text="🔐"/>
+                            <VBox spacing="2">
+                                <Label styleClass="card-title" text="Active Sessions"/>
+                                <Label styleClass="card-subtitle" text="User session management"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="sessionCountLabel" styleClass="session-count" text="12 Active"/>
+                        </HBox>
+
+                        <ListView fx:id="userSessionsListView" styleClass="session-monitor" prefHeight="200" minHeight="200" maxHeight="200"/>
+
+                        <HBox styleClass="session-controls" spacing="10">
+                            <TextField fx:id="sessionUserField" styleClass="session-input" promptText="Username..." HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="session-login-btn" text="Connect" onAction="#handleUserLogin"/>
+                            <Button styleClass="session-logout-btn" text="Disconnect" onAction="#handleUserLogout"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Pricing Engine (TreeMap Demo) -->
+                    <VBox styleClass="dashboard-card" spacing="20" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="card-icon pricing-icon" text="💸"/>
+                            <VBox spacing="2">
+                                <Label styleClass="card-title" text="Dynamic Pricing Engine"/>
+                                <Label styleClass="card-subtitle" text="Distance-based fare optimization"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="pricing-optimize-btn" text="Optimize" onAction="#handleOptimizePricing"/>
+                        </HBox>
+
+                        <ListView fx:id="fareStructureListView" styleClass="pricing-monitor" prefHeight="200" minHeight="200" maxHeight="200"/>
+
+                        <HBox styleClass="pricing-controls" spacing="8">
+                            <TextField fx:id="distanceField" styleClass="pricing-input" promptText="Distance (km)"/>
+                            <TextField fx:id="fareField" styleClass="pricing-input" promptText="Fare (₹)"/>
+                            <Button styleClass="pricing-update-btn" text="Update" onAction="#handleSetFare"/>
+                        </HBox>
+                    </VBox>
+
+                </GridPane>
+
+                <!-- Analytics Dashboard -->
+                <HBox styleClass="analytics-section" spacing="30">
+
+                    <!-- Booking Trends -->
+                    <VBox styleClass="chart-card" spacing="15" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="chart-icon" text="📈"/>
+                            <Label styleClass="chart-title" text="Booking Trends"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <ComboBox fx:id="chartFilterComboBox" styleClass="chart-filter"/>
+                        </HBox>
+                        <LineChart fx:id="bookingTrendsChart" styleClass="trend-chart" prefHeight="280">
+                            <xAxis>
+                                <CategoryAxis fx:id="bookingTrendsXAxis"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis fx:id="bookingTrendsYAxis"/>
+                            </yAxis>
+                        </LineChart>
+                    </VBox>
+
+                    <!-- Revenue Distribution -->
+                    <VBox styleClass="chart-card" spacing="15" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label styleClass="chart-icon" text="🥧"/>
+                            <Label styleClass="chart-title" text="Revenue by Class"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button styleClass="chart-export-btn" text="Export"/>
+                        </HBox>
+                        <PieChart fx:id="revenueDistributionChart" styleClass="revenue-chart" prefHeight="280"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- Quick Actions Panel -->
+                <HBox styleClass="quick-actions" spacing="20" alignment="CENTER">
+                    <Button styleClass="action-tile train-management" onAction="#handleTrainManagement">
+                        <graphic>
+                            <VBox alignment="CENTER" spacing="8">
+                                <Label styleClass="action-icon" text="🚄"/>
+                                <Label styleClass="action-title" text="Fleet Management"/>
+                                <Label styleClass="action-desc" text="Manage trains, stations &amp; schedules"/>
+                            </VBox>
+                        </graphic>
+                    </Button>
+
+                    <Button styleClass="action-tile user-management" onAction="#handleUserManagement">
+                        <graphic>
+                            <VBox alignment="CENTER" spacing="8">
+                                <Label styleClass="action-icon" text="👤"/>
+                                <Label styleClass="action-title" text="User Control"/>
+                                <Label styleClass="action-desc" text="Manage customer accounts"/>
+                            </VBox>
+                        </graphic>
+                    </Button>
+
+                    <Button styleClass="action-tile booking-management" onAction="#handleBookingManagement">
+                        <graphic>
+                            <VBox alignment="CENTER" spacing="8">
+                                <Label styleClass="action-icon" text="🎫"/>
+                                <Label styleClass="action-title" text="Reservations"/>
+                                <Label styleClass="action-desc" text="Handle bookings &amp; cancellations"/>
+                            </VBox>
+                        </graphic>
+                    </Button>
+
+                    <Button styleClass="action-tile station-management" onAction="#handleStationManagement">
+                        <graphic>
+                            <VBox alignment="CENTER" spacing="8">
+                                <Label styleClass="action-icon" text="🚉"/>
+                                <Label styleClass="action-title" text="Station Network"/>
+                                <Label styleClass="action-desc" text="Configure stations &amp; routes"/>
+                            </VBox>
+                        </graphic>
+                    </Button>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- BOTTOM: Status Bar -->
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="20">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label styleClass="status-indicator online"/>
+                <Label styleClass="status-text" text="System Online"/>
+            </HBox>
+            <Separator orientation="VERTICAL"/>
+            <Label styleClass="status-text" text="Database: Connected"/>
+            <Separator orientation="VERTICAL"/>
+            <Label styleClass="status-text" text="API Status: Operational"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label styleClass="status-text" text="Last Updated:"/>
+            <Label fx:id="lastUpdateLabel" styleClass="status-time" text="2 min ago"/>
+        </HBox>
+    </bottom>
+
+    <!-- Floating Message -->
+    <Label fx:id="messageLabel" styleClass="floating-message" visible="false" managed="false"
+           BorderPane.alignment="TOP_CENTER"/>
+
+</BorderPane>

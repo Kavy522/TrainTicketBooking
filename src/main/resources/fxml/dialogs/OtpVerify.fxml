@@ -1,14 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="fxml.dialogs.OtpVerify"
-            prefHeight="400.0" prefWidth="600.0">
+<DialogPane xmlns="http://javafx.com/javafx/22.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="trainapp.controller.dialog.OtpVerifyController"
+            prefWidth="400.0" prefHeight="300.0">
 
-</AnchorPane>
+    <stylesheets>
+        <URL value="@../../css/OtpVerify.css"/>
+    </stylesheets>
+
+    <header>
+        <VBox alignment="CENTER" spacing="8" styleClass="dialog-header">
+            <Label text="Verify OTP" styleClass="dialog-title"/>
+            <Label fx:id="otpSubtitle" text="Enter the 6-digit code sent to your email" styleClass="dialog-subtitle"/>
+        </VBox>
+    </header>
+
+    <content>
+        <VBox spacing="20" styleClass="dialog-content" alignment="CENTER">
+            <padding>
+                <Insets top="20" right="30" bottom="10" left="30"/>
+            </padding>
+
+            <!-- OTP Input Fields -->
+            <VBox spacing="15" alignment="CENTER">
+                <Label text="Verification Code" styleClass="field-label"/>
+
+                <HBox spacing="10" alignment="CENTER" styleClass="otp-container">
+                    <TextField fx:id="otp1" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                    <TextField fx:id="otp2" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                    <TextField fx:id="otp3" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                    <TextField fx:id="otp4" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                    <TextField fx:id="otp5" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                    <TextField fx:id="otp6" styleClass="otp-input" maxWidth="50" prefWidth="50"/>
+                </HBox>
+
+                <Label fx:id="otpError" styleClass="error-message" visible="false" managed="false"/>
+            </VBox>
+
+            <!-- Timer and Resend -->
+            <VBox spacing="10" alignment="CENTER">
+                <Label fx:id="timerLabel" text="Code expires in 05:00" styleClass="timer-label"/>
+                <Button fx:id="resendButton" text="Resend Code" styleClass="link-button"
+                        onAction="#handleResendOtp" disable="true"/>
+            </VBox>
+
+            <!-- Action Buttons -->
+            <HBox alignment="CENTER" spacing="15">
+                <Button fx:id="verifyButton" text="Verify Code" styleClass="primary-button"
+                        onAction="#handleVerifyOtp"/>
+            </HBox>
+
+            <!-- Message -->
+            <HBox alignment="CENTER">
+                <Label fx:id="messageLabel" styleClass="message-label" visible="false" managed="false"/>
+            </HBox>
+
+            <!-- Loading -->
+            <HBox fx:id="loadingBox" alignment="CENTER" spacing="10" visible="false" managed="false">
+                <ProgressIndicator prefHeight="25" prefWidth="25"/>
+                <Label text="Verifying..." styleClass="loading-text"/>
+            </HBox>
+        </VBox>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

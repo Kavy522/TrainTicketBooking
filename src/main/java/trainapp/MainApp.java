@@ -9,7 +9,6 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) {
         SceneManager.init(primaryStage);
         primaryStage.setMaximized(true);
-        // Load login scene first - CSS automatically loaded from FXML
         SceneManager.switchScene("/fxml/MainMenu.fxml");
         primaryStage.show();
     }

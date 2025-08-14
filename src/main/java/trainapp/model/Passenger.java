@@ -1,92 +1,57 @@
 package trainapp.model;
-public class Passenger {
 
-    private int passenger_id;
-    private long booking_id;
+public class Passenger {
+    private long passengerId;
+    private long bookingId;
     private String name;
     private int age;
     private String gender;
     private String seatNumber;
-    private String coach_type;
+    private String coachType;
 
+    // Constructors
     public Passenger() {}
 
-    public Passenger(int passenger_id, long booking_id, String name, int age, String gender, String seatNumber, String coach_type) {
-        this.passenger_id = passenger_id;
-        this.booking_id = booking_id;
+    public Passenger(long bookingId, String name, int age, String gender, String seatNumber, String coachType) {
+        this.bookingId = bookingId;
         this.name = name;
         this.age = age;
         this.gender = gender;
         this.seatNumber = seatNumber;
-        this.coach_type = coach_type;
+        this.coachType = coachType;
     }
 
     // Getters and Setters
-    public int getPassenger_id() {
-        return passenger_id;
-    }
+    public long getPassengerId() { return passengerId; }
+    public void setPassengerId(long passengerId) { this.passengerId = passengerId; }
 
-    public void setPassenger_id(int passenger_id) {
-        this.passenger_id=passenger_id;
-    }
+    public long getBookingId() { return bookingId; }
+    public void setBookingId(long bookingId) { this.bookingId = bookingId; }
 
-    public long getBooking_id() {
-        return booking_id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setBooking_id (long booking_Id) {
-        this.booking_id=booking_Id;
-    }
+    public int getAge() { return age; }
+    public void setAge(int age) { this.age = age; }
 
-    public String getName() {
-        return name;
-    }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getSeatNumber() { return seatNumber; }
+    public void setSeatNumber(String seatNumber) { this.seatNumber = seatNumber; }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getSeatNumber() {
-        return seatNumber;
-    }
-
-    public void setSeatNumber(String seatNumber) {
-        this.seatNumber = seatNumber;
-    }
-
-    public String getCoach_type() {
-        return coach_type;
-    }
-
-    public void setCoach_type(String coach_type) {
-        this.coach_type = coach_type;
-    }
+    public String getCoachType() { return coachType; }
+    public void setCoachType(String coachType) { this.coachType = coachType; }
 
     @Override
     public String toString() {
         return "Passenger{" +
-                "name='" + name + '\'' +
+                "passengerId=" + passengerId +
+                ", name='" + name + '\'' +
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", seatNumber='" + seatNumber + '\'' +
-                ", coach_type='" + coach_type + '\'' +
+                ", coachType='" + coachType + '\'' +
                 '}';
     }
 }
-

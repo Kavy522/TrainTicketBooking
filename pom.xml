@@ -55,15 +55,27 @@
       <artifactId>itextpdf</artifactId>
       <version>5.5.13.3</version>
     </dependency>
-
-
+      <dependency>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>javax.mail</artifactId>
+          <version>1.6.2</version>
+      </dependency>
     <dependency>
       <groupId>com.itextpdf</groupId>
       <artifactId>itext-core</artifactId>
       <version>9.2.0</version>
       <type>pom</type>
     </dependency>
-
+      <dependency>
+          <groupId>com.razorpay</groupId>
+          <artifactId>razorpay-java</artifactId>
+          <version>1.4.3</version>
+      </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+          <version>2.15.2</version>
+      </dependency>
   </dependencies>
 
   <build>

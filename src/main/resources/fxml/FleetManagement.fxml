@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.FleetManagementController">
+
+    <stylesheets>
+        <URL value="@../css/FleetManagement.css" />
+    </stylesheets>
+
+    <!-- TOP: Header -->
+    <top>
+        <HBox styleClass="fleet-header" spacing="20" alignment="CENTER_LEFT">
+            <Button fx:id="backButton" styleClass="nav-button" text="← Back to Admin Panel" onAction="#handleBack"/>
+
+            <VBox spacing="2">
+                <Label styleClass="header-title" text="Fleet Management"/>
+                <Label styleClass="header-subtitle" text="Train &amp; Route Management System"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button styleClass="refresh-btn" text="🔄 Refresh" onAction="#handleRefresh"/>
+        </HBox>
+    </top>
+
+    <!-- CENTER: Main Content -->
+    <center>
+        <TabPane styleClass="main-tabs" tabClosingPolicy="UNAVAILABLE">
+
+            <!-- TRAIN MANAGEMENT TAB -->
+            <Tab text="🚂 Train Management" styleClass="train-tab">
+                <VBox spacing="20" styleClass="tab-content">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+
+                    <!-- Train CRUD Controls -->
+                    <HBox styleClass="crud-header" spacing="15" alignment="CENTER_LEFT">
+                        <Label styleClass="section-title" text="Train Fleet Management"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="addTrainBtn" styleClass="add-btn" text="+ Add New Train" onAction="#handleAddTrain"/>
+                        <Button styleClass="export-btn" text="📤 Export" onAction="#handleExportTrains"/>
+                    </HBox>
+
+                    <!-- Train Form -->
+                    <VBox styleClass="form-section" spacing="15">
+                        <Label styleClass="form-title" text="Train Information"/>
+
+                        <GridPane styleClass="train-form" hgap="15" vgap="15">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="120" prefWidth="120"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                                <ColumnConstraints minWidth="120" prefWidth="120"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+
+                            <Label text="Train Number:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                            <TextField fx:id="trainNumberField" styleClass="form-input" promptText="Enter train number (e.g., 12002)" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                            <Label text="Train Name:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                            <TextField fx:id="trainNameField" styleClass="form-input" promptText="Enter train name" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                            <Label text="Source Station:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                            <ComboBox fx:id="sourceStationCombo" styleClass="form-combo" promptText="Type to search source station..." GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                            <Label text="Destination Station:" styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                            <ComboBox fx:id="destStationCombo" styleClass="form-combo" promptText="Type to search destination..." GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                            <Label text="Total Coaches:" styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                            <Spinner fx:id="coachesSpinner" styleClass="form-spinner" min="10" max="30" initialValue="20" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        </GridPane>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Button fx:id="saveTrainBtn" styleClass="save-btn" text="💾 Save Train" onAction="#handleSaveTrain"/>
+                            <Button fx:id="updateTrainBtn" styleClass="update-btn" text="✏️ Update Train" onAction="#handleUpdateTrain"/>
+                            <Button fx:id="deleteTrainBtn" styleClass="delete-btn" text="🗑️ Delete Train" onAction="#handleDeleteTrain"/>
+                            <Button fx:id="clearTrainBtn" styleClass="clear-btn" text="🗙 Clear Form" onAction="#handleClearTrainForm"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Train List -->
+                    <VBox styleClass="list-section" spacing="15" VBox.vgrow="ALWAYS">
+                        <Label styleClass="section-title" text="Train Fleet (Click to Edit)"/>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
+                            <TableView fx:id="trainTableView" styleClass="data-table"
+                                       prefHeight="300" minHeight="200">
+                                <columns>
+                                    <TableColumn fx:id="trainNumberCol" text="Train Number"
+                                                 prefWidth="100" minWidth="80" maxWidth="120"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="trainNameCol" text="Train Name"
+                                                 prefWidth="250" minWidth="200" maxWidth="300"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="sourceStationCol" text="Source"
+                                                 prefWidth="180" minWidth="150" maxWidth="220"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="destStationCol" text="Destination"
+                                                 prefWidth="180" minWidth="150" maxWidth="220"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="totalCoachesCol" text="Coaches"
+                                                 prefWidth="80" minWidth="60" maxWidth="100"
+                                                 resizable="true"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="No trains available. Click 'Add New Train' to get started."
+                                           style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
+                                </placeholder>
+                            </TableView>
+                        </ScrollPane>
+                    </VBox>
+                </VBox>
+            </Tab>
+
+            <!-- ROUTE MANAGEMENT TAB - COMPACT VERSION WITH SCROLLING FIX -->
+            <Tab text="🛤️ Route Management" styleClass="route-tab">
+                <VBox spacing="15" styleClass="tab-content">
+                    <padding>
+                        <Insets top="15" right="20" bottom="15" left="20"/>
+                    </padding>
+
+                    <!-- Route CRUD Controls -->
+                    <HBox styleClass="crud-header" spacing="15" alignment="CENTER_LEFT">
+                        <Label styleClass="section-title" text="Train Route Management"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="addRouteBtn" styleClass="add-btn" text="+ Add New Route" onAction="#handleAddRoute"/>
+                        <Button styleClass="export-btn" text="📤 Export" onAction="#handleExportRoutes"/>
+                    </HBox>
+
+                    <!-- COMPACT Route Form - Horizontal Layout -->
+                    <VBox styleClass="form-section-compact" spacing="12">
+                        <Label styleClass="form-title" text="Route Information"/>
+
+                        <!-- First Row: Train Selection (Full Width) -->
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Select Train:" styleClass="form-label-compact" minWidth="100"/>
+                            <ComboBox fx:id="routeTrainCombo" styleClass="form-combo"
+                                      promptText="Choose train for route management..."
+                                      prefWidth="400" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+
+                        <!-- Second Row: Station and Sequence -->
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Station:" styleClass="form-label-compact" minWidth="100"/>
+                            <ComboBox fx:id="routeStationCombo" styleClass="form-combo"
+                                      promptText="Type to search station..."
+                                      prefWidth="250"/>
+
+                            <Label text="Sequence:" styleClass="form-label-compact" minWidth="80"/>
+                            <Spinner fx:id="sequenceSpinner" styleClass="form-spinner"
+                                     min="1" max="50" initialValue="1" prefWidth="80"/>
+                        </HBox>
+
+                        <!-- Third Row: Times and Day -->
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Arrival:" styleClass="form-label-compact" minWidth="100"/>
+                            <TextField fx:id="arrivalTimeField" styleClass="form-input-compact"
+                                       promptText="HH:MM" prefWidth="80"/>
+
+                            <Label text="Departure:" styleClass="form-label-compact" minWidth="80"/>
+                            <TextField fx:id="departureTimeField" styleClass="form-input-compact"
+                                       promptText="HH:MM" prefWidth="80"/>
+
+                            <Label text="Day:" styleClass="form-label-compact" minWidth="50"/>
+                            <Spinner fx:id="daySpinner" styleClass="form-spinner"
+                                     min="1" max="7" initialValue="1" prefWidth="60"/>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+                        </HBox>
+
+                        <!-- Action Buttons Row -->
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Button fx:id="saveRouteBtn" styleClass="save-btn" text="💾 Save" onAction="#handleSaveRoute"/>
+                            <Button fx:id="updateRouteBtn" styleClass="update-btn" text="✏️ Update" onAction="#handleUpdateRoute"/>
+                            <Button fx:id="deleteRouteBtn" styleClass="delete-btn" text="🗑️ Delete" onAction="#handleDeleteRoute"/>
+                            <Button fx:id="clearRouteBtn" styleClass="clear-btn" text="🗙 Clear" onAction="#handleClearRouteForm"/>
+                        </HBox>
+                    </VBox>
+
+                    <!-- FIXED: Route List with Proper Scrolling and More Space -->
+                    <VBox styleClass="list-section" spacing="10" VBox.vgrow="ALWAYS">
+                        <Label styleClass="section-title" text="Train Routes (Click to Edit)"/>
+                        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
+                            <TableView fx:id="routeTableView" styleClass="data-table"
+                                       prefHeight="400" minHeight="300">
+                                <columns>
+                                    <TableColumn fx:id="routeTrainCol" text="Train"
+                                                 prefWidth="100" minWidth="80" maxWidth="120"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="routeStationCol" text="Station"
+                                                 prefWidth="200" minWidth="150" maxWidth="250"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="arrivalCol" text="Arrival"
+                                                 prefWidth="80" minWidth="70" maxWidth="100"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="departureCol" text="Departure"
+                                                 prefWidth="80" minWidth="70" maxWidth="100"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="dayCol" text="Day"
+                                                 prefWidth="60" minWidth="50" maxWidth="80"
+                                                 resizable="true"/>
+                                    <TableColumn fx:id="sequenceCol" text="Sequence"
+                                                 prefWidth="80" minWidth="70" maxWidth="100"
+                                                 resizable="true"/>
+                                </columns>
+                                <placeholder>
+                                    <Label text="No routes available. Select a train and add route entries."
+                                           style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
+                                </placeholder>
+                            </TableView>
+                        </ScrollPane>
+                    </VBox>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <!-- BOTTOM: Status Bar -->
+    <bottom>
+        <HBox styleClass="status-bar" spacing="15" alignment="CENTER_LEFT">
+            <Label styleClass="status-text" text="Fleet Management System"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="trainCountLabel" styleClass="status-count" text="0 trains"/>
+            <Separator orientation="VERTICAL"/>
+            <Label fx:id="routeCountLabel" styleClass="status-count" text="0 routes"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label styleClass="status-text" text="Last Updated:"/>
+            <Label fx:id="lastUpdateLabel" styleClass="status-time" text="Now"/>
+        </HBox>
+    </bottom>
+
+    <!-- Message Label -->
+    <Label fx:id="messageLabel" styleClass="message-popup" visible="false" managed="false"
+           BorderPane.alignment="TOP_CENTER"/>
+
+</BorderPane>

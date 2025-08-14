@@ -1,14 +1,173 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="fxml.TrainDetails"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx/22.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="trainapp.controller.ui.TrainDetailsController"
+      styleClass="root" prefWidth="1000" prefHeight="700">
 
-</AnchorPane>
+    <stylesheets>
+        <URL value="@../css/traindetails.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <HBox styleClass="header" alignment="CENTER_LEFT" spacing="16">
+        <Button text="← Back" onAction="#handleBack" styleClass="back-btn"/>
+        <Label text="Train Details" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Book Now" onAction="#handleBookNow" styleClass="book-btn"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" styleClass="main-scroll">
+        <VBox spacing="20" styleClass="content-container">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Train Info Card -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Train Information" styleClass="card-title"/>
+                <GridPane styleClass="info-grid" hgap="20" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                    </columnConstraints>
+
+                    <VBox styleClass="info-item" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="Train Number" styleClass="info-label"/>
+                        <Label fx:id="trainNumberLabel" text="12002" styleClass="info-value"/>
+                    </VBox>
+
+                    <VBox styleClass="info-item" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="Train Name" styleClass="info-label"/>
+                        <Label fx:id="trainNameLabel" text="Shatabdi Express" styleClass="info-value"/>
+                    </VBox>
+
+                    <VBox styleClass="info-item" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label text="Type" styleClass="info-label"/>
+                        <Label fx:id="trainTypeLabel" text="Superfast" styleClass="info-value"/>
+                    </VBox>
+
+                    <VBox styleClass="info-item" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                        <Label text="Total Coaches" styleClass="info-label"/>
+                        <Label fx:id="totalCoachesLabel" text="20" styleClass="info-value"/>
+                    </VBox>
+                </GridPane>
+            </VBox>
+
+            <!-- Route Information -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Route Information" styleClass="card-title"/>
+                <HBox spacing="30" alignment="CENTER_LEFT" styleClass="route-info">
+                    <VBox styleClass="route-station" alignment="CENTER">
+                        <Label text="Departure" styleClass="route-label"/>
+                        <Label fx:id="departureTimeLabel" text="06:00" styleClass="route-time"/>
+                        <Label fx:id="departureStationLabel" text="New Delhi" styleClass="route-station-name"/>
+                        <Label fx:id="departureDateLabel" text="Today" styleClass="route-date"/>
+                    </VBox>
+
+                    <VBox styleClass="route-duration" alignment="CENTER">
+                        <Label text="Duration" styleClass="route-label"/>
+                        <Label fx:id="durationLabel" text="16h 30m" styleClass="route-time"/>
+                        <Label fx:id="distanceLabel" text="1384 km" styleClass="route-distance"/>
+                        <Label fx:id="haltsLabel" text="6 halts" styleClass="route-halts"/>
+                    </VBox>
+
+                    <VBox styleClass="route-station" alignment="CENTER">
+                        <Label text="Arrival" styleClass="route-label"/>
+                        <Label fx:id="arrivalTimeLabel" text="22:30" styleClass="route-time"/>
+                        <Label fx:id="arrivalStationLabel" text="Mumbai Central" styleClass="route-station-name"/>
+                        <Label fx:id="arrivalDateLabel" text="Today" styleClass="route-date"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Seat Availability -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Seat Availability" styleClass="card-title"/>
+                <GridPane styleClass="seats-grid" hgap="15" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                        <ColumnConstraints percentWidth="25"/>
+                    </columnConstraints>
+
+                    <VBox fx:id="slSeatCard" styleClass="seat-card" alignment="CENTER" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label text="Sleeper (SL)" styleClass="seat-class-name"/>
+                        <Label fx:id="slAvailableLabel" text="45" styleClass="seat-count available"/>
+                        <Label text="Available" styleClass="seat-status"/>
+                        <Label fx:id="slPriceLabel" text="₹450" styleClass="seat-price"/>
+                        <Button text="Select" styleClass="seat-select-btn" onAction="#handleSeatSelect"/>
+                    </VBox>
+
+                    <VBox fx:id="threeASeatCard" styleClass="seat-card" alignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label text="AC 3-Tier (3A)" styleClass="seat-class-name"/>
+                        <Label fx:id="threeAAvailableLabel" text="28" styleClass="seat-count available"/>
+                        <Label text="Available" styleClass="seat-status"/>
+                        <Label fx:id="threeAPriceLabel" text="₹1,250" styleClass="seat-price"/>
+                        <Button text="Select" styleClass="seat-select-btn" onAction="#handleSeatSelect"/>
+                    </VBox>
+
+                    <VBox fx:id="twoASeatCard" styleClass="seat-card" alignment="CENTER" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label text="AC 2-Tier (2A)" styleClass="seat-class-name"/>
+                        <Label fx:id="twoAAvailableLabel" text="15" styleClass="seat-count available"/>
+                        <Label text="Available" styleClass="seat-status"/>
+                        <Label fx:id="twoAPriceLabel" text="₹1,850" styleClass="seat-price"/>
+                        <Button text="Select" styleClass="seat-select-btn" onAction="#handleSeatSelect"/>
+                    </VBox>
+
+                    <VBox fx:id="firstASeatCard" styleClass="seat-card" alignment="CENTER" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                        <Label text="First AC (1A)" styleClass="seat-class-name"/>
+                        <Label fx:id="firstAAvailableLabel" text="8" styleClass="seat-count available"/>
+                        <Label text="Available" styleClass="seat-status"/>
+                        <Label fx:id="firstAPriceLabel" text="₹2,650" styleClass="seat-price"/>
+                        <Button text="Select" styleClass="seat-select-btn" onAction="#handleSeatSelect"/>
+                    </VBox>
+                </GridPane>
+            </VBox>
+
+            <!-- Complete Schedule -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Complete Schedule" styleClass="card-title"/>
+                <TableView fx:id="scheduleTable" styleClass="schedule-table">
+                    <columns>
+                        <TableColumn fx:id="stationNameCol" text="Station" prefWidth="200"/>
+                        <TableColumn fx:id="arrivalTimeCol" text="Arrival" prefWidth="100"/>
+                        <TableColumn fx:id="departureTimeCol" text="Departure" prefWidth="100"/>
+                        <TableColumn fx:id="haltTimeCol" text="Halt" prefWidth="80"/>
+                        <TableColumn fx:id="distanceCol" text="Distance (km)" prefWidth="120"/>
+                        <TableColumn fx:id="dayCol" text="Day" prefWidth="60"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Amenities -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Train Amenities" styleClass="card-title"/>
+                <FlowPane fx:id="amenitiesPane" hgap="10" vgap="10" styleClass="amenities-pane">
+                    <!-- Amenities will be added dynamically -->
+                </FlowPane>
+            </VBox>
+
+            <!-- Additional Information -->
+            <VBox styleClass="info-card" spacing="16">
+                <Label text="Important Information" styleClass="card-title"/>
+                <VBox spacing="8" styleClass="info-list">
+                    <Label text="• Please carry a valid ID proof for verification" styleClass="info-text"/>
+                    <Label text="• Arrive at the station at least 30 minutes before departure" styleClass="info-text"/>
+                    <Label text="• Cancellation charges apply as per railway rules" styleClass="info-text"/>
+                    <Label text="• Tatkal booking opens 1 day before journey date" styleClass="info-text"/>
+                    <Label text="• Senior citizen and child concessions available" styleClass="info-text"/>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </ScrollPane>
+
+</VBox>

@@ -337,3 +337,25 @@
     -fx-spacing: 6px;
     -fx-min-height: 85px; /* Reserve space for error message */
 }
+
+.success-message {
+    -fx-text-fill: #059669;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.general-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+}
+
+.register-input.success {
+    -fx-border-color: #059669;
+    -fx-border-width: 2;
+}
+
+.register-input.error {
+    -fx-border-color: #dc2626;
+    -fx-border-width: 2;
+}

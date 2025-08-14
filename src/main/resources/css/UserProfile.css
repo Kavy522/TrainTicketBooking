@@ -1,0 +1,405 @@
+/* ===================== JAVAFX COMPATIBLE STYLING - TAILYATRI THEME ===================== */
+
+/* Background and Layout */
+.profile-background {
+    -fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);
+    -fx-min-height: 700;
+    -fx-pref-height: 700;
+}
+
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-fit-to-width: true;
+}
+
+.main-content {
+    -fx-background-color: transparent;
+    -fx-spacing: 30;
+    -fx-alignment: top-center;
+    -fx-padding: 30 50 30 50;
+}
+
+/* Header Styles */
+.profile-header {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-padding: 20 30;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-spacing: 20;
+    -fx-alignment: center-left;
+}
+
+.back-button {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 24;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.back-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 3);
+}
+
+.logout-button {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 24;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.logout-button:hover {
+    -fx-background-color: #dc2626;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.4), 8, 0, 0, 3);
+}
+
+/* Profile Card - Tailyatri Theme */
+.profile-card {
+    -fx-background-color: rgba(255, 255, 255, 0.95);
+    -fx-background-radius: 20;
+    -fx-padding: 50;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5);
+    -fx-spacing: 25;
+    -fx-max-width: 900;
+}
+
+.profile-card-header {
+    -fx-padding: 0 0 30 0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 2 0;
+    -fx-spacing: 25;
+    -fx-alignment: center-left;
+}
+
+.profile-avatar {
+    -fx-fit-height: 100;
+    -fx-fit-width: 100;
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 4;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 8, 0, 0, 2);
+}
+
+.welcome-text {
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #64748b;
+}
+
+.user-name {
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.user-type {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3b82f6;
+    -fx-background-color: #eff6ff;
+    -fx-padding: 8 20;
+    -fx-background-radius: 20;
+}
+
+.edit-profile-button {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6, #2563eb);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 16 32;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 8, 0, 0, 3);
+}
+
+.edit-profile-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.5), 12, 0, 0, 5);
+}
+
+/* Information Grid */
+.info-grid {
+    -fx-hgap: 40;
+    -fx-vgap: 20;
+    -fx-padding: 20 0 0 0;
+}
+
+.info-section {
+    -fx-background-color: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+    -fx-background-radius: 16;
+    -fx-padding: 30;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-spacing: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+.info-section:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+    -fx-padding: 0 0 0 30;
+}
+
+.info-item {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-padding: 20;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-spacing: 5;
+}
+
+.info-item:hover {
+    -fx-border-color: #cbd5e1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+.info-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #64748b;
+}
+
+.info-value {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.status-active {
+    -fx-text-fill: #10b981;
+}
+
+/* Statistics */
+.stat-row {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-padding: 25;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-spacing: 15;
+    -fx-alignment: center;
+}
+
+.stat-item {
+    -fx-alignment: center;
+    -fx-spacing: 5;
+}
+
+.stat-number {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3b82f6;
+}
+
+.stat-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #64748b;
+    -fx-text-alignment: center;
+}
+
+/* Action Buttons - Tailyatri Style */
+.action-button {
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-padding: 14 24;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+    -fx-min-width: 220;
+    -fx-alignment: center;
+}
+
+.action-button.primary {
+    -fx-background-color: linear-gradient(to bottom, #3b82f6, #2563eb);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 8, 0, 0, 3);
+}
+
+.action-button.primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #2563eb, #1d4ed8);
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.5), 12, 0, 0, 5);
+}
+
+.action-button.secondary {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.action-button.secondary:hover {
+    -fx-background-color: #e2e8f0;
+    -fx-border-color: #94a3b8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.action-button.outline {
+    -fx-background-color: transparent;
+    -fx-text-fill: #3b82f6;
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+}
+
+.action-button.outline:hover {
+    -fx-background-color: #eff6ff;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.2), 5, 0, 0, 2);
+}
+
+.action-button.danger {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ef4444;
+    -fx-border-color: #ef4444;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+}
+
+.action-button.danger:hover {
+    -fx-background-color: #fef2f2;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.2), 5, 0, 0, 2);
+}
+
+.action-buttons-row {
+    -fx-padding: 30 0 0 0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1 0 0 0;
+    -fx-spacing: 20;
+    -fx-alignment: center;
+}
+
+/* Recent Activity */
+.activity-list {
+    -fx-max-height: 250;
+    -fx-spacing: 8;
+}
+
+.activity-item {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 15 20;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-spacing: 5;
+}
+
+.activity-item:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+.activity-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 500;
+}
+
+.activity-time {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9ca3af;
+    -fx-font-style: italic;
+}
+
+/* Messages */
+.message-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 16 24;
+    -fx-background-radius: 12;
+    -fx-alignment: center;
+}
+
+.success-message {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #065f46;
+    -fx-border-color: #10b981;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.error-message {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+    -fx-border-color: #ef4444;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+/* Compact versions for smaller screens */
+.profile-card-compact {
+    -fx-padding: 20;
+}
+
+.main-content-mobile {
+    -fx-padding: 20;
+}
+
+/* Additional styling for better visual appeal */
+.gradient-header {
+    -fx-background-color: linear-gradient(to right, #667eea, #764ba2);
+    -fx-text-fill: white;
+    -fx-padding: 15;
+    -fx-background-radius: 10 10 0 0;
+}
+
+.card-shadow {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.hover-effect {
+    -fx-cursor: hand;
+}
+
+.hover-effect:hover {
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.2), 8, 0, 0, 3);
+}
+
+/* Button focus styles for accessibility */
+.action-button:focused {
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 2;
+}
+
+/* Enhanced visual feedback */
+.profile-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 20, 0, 0, 8);
+}
+
+/* Scrollbar styling */
+.activity-list .scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.activity-list .scroll-bar .track {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 3;
+}
+
+.activity-list .scroll-bar .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 3;
+}
+
+.activity-list .scroll-bar .thumb:hover {
+    -fx-background-color: #94a3b8;
+}

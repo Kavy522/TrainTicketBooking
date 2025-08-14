@@ -1,0 +1,257 @@
+.root {
+    -fx-background-color: #f8fafc;
+    -fx-font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+}
+
+/* Header */
+.header {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #0f172a 0%, #1e293b 100%);
+    -fx-padding: 16 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 16, 0, 0, 4);
+}
+
+.back-btn {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-text-fill: white;
+    -fx-border-color: rgba(255,255,255,0.3);
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 16;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+
+.back-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.2);
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+}
+
+.book-btn {
+    -fx-background-color: #22c55e;
+    -fx-text-fill: white;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 20;
+    -fx-font-weight: 700;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.book-btn:hover {
+    -fx-background-color: #16a34a;
+}
+
+/* Main Content */
+.main-scroll {
+    -fx-background-color: transparent;
+}
+
+.content-container {
+    -fx-background-color: transparent;
+}
+
+/* Cards */
+.info-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 12, 0, 0, 4);
+    -fx-border-color: #e5e7eb;
+}
+
+.card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #111827;
+}
+
+/* Info Grid */
+.info-grid {
+    -fx-padding: 10 0 0 0;
+}
+
+.info-item {
+    -fx-spacing: 4;
+}
+
+.info-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.info-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+/* Route Information */
+.route-info {
+    -fx-padding: 10 0 0 0;
+}
+
+.route-station, .route-duration {
+    -fx-spacing: 6;
+    -fx-padding: 16;
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+}
+
+.route-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #6b7280;
+}
+
+.route-time {
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #2563eb;
+}
+
+.route-station-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.route-date {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.route-distance, .route-halts {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+/* Seat Cards */
+.seats-grid {
+    -fx-padding: 10 0 0 0;
+}
+
+.seat-card {
+    -fx-spacing: 8;
+    -fx-padding: 16;
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-cursor: hand;
+}
+
+.seat-card:hover {
+    -fx-background-color: #f1f5f9;
+    -fx-border-color: #2563eb;
+}
+
+.seat-class-name {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #374151;
+}
+
+.seat-count {
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
+}
+
+.seat-count.available {
+    -fx-text-fill: #059669;
+}
+
+.seat-count.waitlist {
+    -fx-text-fill: #dc2626;
+}
+
+.seat-status {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.seat-price {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #2563eb;
+}
+
+.seat-select-btn {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-padding: 6 16;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.seat-select-btn:hover {
+    -fx-background-color: #1d4ed8;
+}
+
+/* Schedule Table */
+.schedule-table {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0 0 0;
+}
+
+.schedule-table .column-header {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+}
+
+.schedule-table .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: #f1f5f9;
+    -fx-border-width: 0 0 1 0;
+}
+
+.schedule-table .table-row-cell:selected {
+    -fx-background-color: #eff6ff;
+}
+
+.schedule-table .table-cell {
+    -fx-text-fill: #374151;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12;
+}
+
+/* Amenities */
+.amenities-pane {
+    -fx-padding: 10 0 0 0;
+}
+
+.amenity-chip {
+    -fx-background-color: #ecfdf5;
+    -fx-text-fill: #059669;
+    -fx-padding: 8 16;
+    -fx-background-radius: 20;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+/* Info List */
+.info-list {
+    -fx-padding: 10 0 0 0;
+}
+
+.info-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+    -fx-font-weight: 500;
+}

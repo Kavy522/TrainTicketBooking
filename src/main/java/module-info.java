@@ -6,6 +6,13 @@ module trainapp.trainapp {
     requires itextpdf;
     requires kernel;
     requires layout;
+    requires mysql.connector.j;
+    requires java.mail;
+    requires razorpay.java;
+    requires json;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
+    requires activation;
 
     opens trainapp.controller.ui to javafx.fxml;
     opens trainapp.controller.dialog to javafx.fxml;

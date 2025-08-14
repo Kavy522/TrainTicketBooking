@@ -1,0 +1,513 @@
+/* Root styles */
+.root {
+    -fx-font-family: "Segoe UI", "Inter", "San Francisco", system-ui, sans-serif;
+    -fx-background-color: #f8fafc;
+}
+
+/* Admin Panel Background */
+.admin-background {
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, #1e3a8a, #3730a3);
+    -fx-min-height: 800;
+    -fx-pref-height: 800;
+}
+
+.content-scroll {
+    -fx-background-color: transparent;
+    -fx-fit-to-width: true;
+}
+
+/* Modern Header */
+.modern-header {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #1e40af, #3730a3);
+    -fx-padding: 15 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 2);
+    -fx-spacing: 20;
+    -fx-alignment: center-left;
+    -fx-min-height: 80;
+}
+
+.nav-button {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 12;
+    -fx-padding: 12;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.nav-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.header-title-section {
+    -fx-padding: 0 20 0 20;
+}
+
+.app-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.page-subtitle {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
+.header-actions {
+    -fx-spacing: 15;
+}
+
+.user-info {
+    -fx-padding: 0 15 0 15;
+}
+
+.user-name {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.user-role {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 12px;
+}
+
+.logout-btn {
+    -fx-background-color: rgba(239, 68, 68, 0.9);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 20;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.logout-btn:hover {
+    -fx-background-color: #dc2626;
+    -fx-effect: dropshadow(gaussian, rgba(239,68,68,0.4), 8, 0, 0, 2);
+}
+
+/* Main Content */
+.main-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.dashboard-container {
+    -fx-background-color: #f8fafc;
+    -fx-padding: 0;
+}
+
+/* KPI Cards */
+.kpi-section {
+    -fx-padding: 0;
+}
+
+.kpi-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-padding: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 4);
+    -fx-min-width: 280;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+}
+
+.kpi-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 8);
+    -fx-translate-y: -2;
+}
+
+.primary-card { -fx-border-color: #3b82f6; }
+.success-card { -fx-border-color: #10b981; }
+.warning-card { -fx-border-color: #f59e0b; }
+.info-card { -fx-border-color: #8b5cf6; }
+
+.kpi-icon {
+    -fx-font-size: 32px;
+    -fx-min-width: 60;
+    -fx-min-height: 60;
+    -fx-background-radius: 50;
+    -fx-alignment: center;
+}
+
+.primary-icon { -fx-background-color: rgba(59, 130, 246, 0.1); }
+.success-icon { -fx-background-color: rgba(16, 185, 129, 0.1); }
+.warning-icon { -fx-background-color: rgba(245, 158, 11, 0.1); }
+.info-icon { -fx-background-color: rgba(139, 92, 246, 0.1); }
+
+.kpi-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
+.kpi-value {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
+.kpi-action {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 20;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+}
+
+.primary-action { -fx-background-color: #3b82f6; }
+.success-action { -fx-background-color: #10b981; }
+.warning-action { -fx-background-color: #f59e0b; }
+.info-action { -fx-background-color: #8b5cf6; }
+
+.kpi-action:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* Dashboard Cards */
+.content-grid {
+    -fx-padding: 0;
+}
+
+.dashboard-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 15, 0, 0, 5);
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.dashboard-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 20, 0, 0, 8);
+}
+
+.card-icon {
+    -fx-font-size: 24px;
+    -fx-min-width: 45;
+    -fx-min-height: 45;
+    -fx-background-radius: 50;
+    -fx-alignment: center;
+}
+
+.activity-icon { -fx-background-color: rgba(59, 130, 246, 0.1); }
+.cache-icon { -fx-background-color: rgba(16, 185, 129, 0.1); }
+.session-icon { -fx-background-color: rgba(245, 158, 11, 0.1); }
+.pricing-icon { -fx-background-color: rgba(139, 92, 246, 0.1); }
+
+.card-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.card-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+}
+
+.card-refresh-btn {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.card-refresh-btn:hover {
+    -fx-background-color: #e2e8f0;
+    -fx-rotate: 180;
+}
+
+/* List Views - FIXED SIZING ISSUES */
+.activity-monitor, .cache-monitor, .session-monitor, .pricing-monitor {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    /* REMOVED: Fixed height constraints that cause VirtualFlow issues */
+}
+
+/* FIXED: List Cell Styling - Remove height constraints */
+.activity-monitor .list-cell,
+.cache-monitor .list-cell,
+.session-monitor .list-cell,
+.pricing-monitor .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 8 15;
+    -fx-border-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    /* REMOVED: -fx-min-height, -fx-pref-height, -fx-max-height */
+    -fx-alignment: center-left;
+}
+
+.activity-monitor .list-cell:hover,
+.cache-monitor .list-cell:hover,
+.session-monitor .list-cell:hover,
+.pricing-monitor .list-cell:hover {
+    -fx-background-color: rgba(59, 130, 246, 0.08);
+    -fx-text-fill: #1e293b;
+}
+
+/* Let JavaFX handle empty cells automatically */
+.activity-monitor .list-cell:empty,
+.cache-monitor .list-cell:empty,
+.session-monitor .list-cell:empty,
+.pricing-monitor .list-cell:empty {
+    -fx-background-color: transparent;
+}
+
+
+/* Input Controls */
+.activity-input, .cache-input, .session-input, .pricing-input {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 15;
+    -fx-font-size: 14px;
+}
+
+.activity-input:focused, .cache-input:focused, .session-input:focused, .pricing-input:focused {
+    -fx-border-color: #3b82f6;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.2), 5, 0, 0, 0);
+}
+
+/* Action Buttons */
+.add-activity-btn, .cache-btn, .session-login-btn, .session-logout-btn, .pricing-update-btn {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.session-logout-btn {
+    -fx-background-color: #ef4444;
+}
+
+.add-activity-btn:hover, .cache-btn:hover, .session-login-btn:hover, .pricing-update-btn:hover {
+    -fx-background-color: #2563eb;
+}
+
+.session-logout-btn:hover {
+    -fx-background-color: #dc2626;
+}
+
+/* Status Indicators */
+.cache-status {
+    -fx-text-fill: #10b981;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.session-count {
+    -fx-text-fill: #3b82f6;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(59, 130, 246, 0.1);
+    -fx-padding: 4 12;
+    -fx-background-radius: 12;
+}
+
+.pricing-optimize-btn {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 15;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.pricing-optimize-btn:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+/* Analytics Section */
+.analytics-section {
+    -fx-spacing: 30;
+}
+
+.chart-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-padding: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 15, 0, 0, 5);
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.chart-icon {
+    -fx-font-size: 20px;
+    -fx-text-fill: #3b82f6;
+}
+
+.chart-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.chart-filter {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.chart-export-btn {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6 15;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.chart-export-btn:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+.trend-chart, .revenue-chart {
+    -fx-background-color: transparent;
+}
+
+/* Quick Actions */
+.quick-actions {
+    -fx-spacing: 20;
+}
+
+.action-tile {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-padding: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 12, 0, 0, 4);
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-cursor: hand;
+    -fx-min-width: 200;
+    -fx-min-height: 150;
+}
+
+.action-tile:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 20, 0, 0, 8);
+    -fx-translate-y: -3;
+}
+
+.action-tile.train-management:hover { -fx-border-color: #10b981; }
+.action-tile.user-management:hover { -fx-border-color: #3b82f6; }
+.action-tile.booking-management:hover { -fx-border-color: #f59e0b; }
+.action-tile.station-management:hover { -fx-border-color: #8b5cf6; }
+
+.action-icon {
+    -fx-font-size: 28px;
+}
+
+.action-title {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.action-desc {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+/* Status Bar */
+.status-bar {
+    -fx-background-color: white;
+    -fx-padding: 12 30;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1 0 0 0;
+}
+
+.status-indicator {
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-background-radius: 50;
+}
+
+.status-indicator.online {
+    -fx-background-color: #10b981;
+    -fx-effect: dropshadow(gaussian, #10b981, 5, 0, 0, 0);
+}
+
+.status-text {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+}
+
+.status-time {
+    -fx-text-fill: #3b82f6;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Floating Message */
+.floating-message {
+    -fx-background-color: rgba(59, 130, 246, 0.95);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 15 25;
+    -fx-background-radius: 25;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 5);
+    -fx-translate-y: 20;
+}
+
+.floating-message.success {
+    -fx-background-color: rgba(16, 185, 129, 0.95);
+}
+
+.floating-message.error {
+    -fx-background-color: rgba(239, 68, 68, 0.95);
+}
+
+/* Scrollbar Styling */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #94a3b8;
+}

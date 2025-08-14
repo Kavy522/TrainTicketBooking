@@ -107,7 +107,8 @@
                         <HBox alignment="CENTER_RIGHT">
                             <Hyperlink fx:id="forgotPasswordLink"
                                        styleClass="forgot-link"
-                                       text="Forgot password?" />
+                                       text="Forgot password?"
+                                       onAction="#handleForgotPassword"/>
                         </HBox>
 
                         <!-- Login Button -->

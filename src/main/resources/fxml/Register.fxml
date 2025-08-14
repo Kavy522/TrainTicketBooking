@@ -104,12 +104,10 @@
                         </VBox>
 
                         <!-- Register Button -->
-
                         <Region minHeight="3"/>
 
                         <HBox alignment="CENTER">
-                            <Button fx:id="registerButton" styleClass="register-button" text="Create Account" />
-                                    <!--onAction="#handleRegister"-->
+                            <Button fx:id="registerButton" onAction="#handleRegister" styleClass="register-button" text="Create Account" />
                         </HBox>
 
                         <!-- General Error Message -->

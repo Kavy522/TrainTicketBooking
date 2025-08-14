@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/22.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="trainapp.controller.ui.SearchTrainController"
+      styleClass="root" prefWidth="1200" prefHeight="740">
+
+    <stylesheets>
+        <URL value="@../css/trainsearch.css"/>
+    </stylesheets>
+
+    <!-- App Bar with Enhanced Branding -->
+    <HBox styleClass="appbar" alignment="CENTER_LEFT" spacing="16">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="🚆" styleClass="brand-icon"/>
+            <Label text="Tailyatri" styleClass="brand"/>
+            <Label text="Train Search" styleClass="appbar-title"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Button text="⚙️ Preferences" styleClass="ghost-btn-icon"/>
+            <Button text="✏️ Modify Search" onAction="#handleModifySearch" styleClass="ghost-btn"/>
+            <Button text="← Back" onAction="#handleBack" styleClass="ghost-btn-primary"/>
+        </HBox>
+    </HBox>
+
+    <!-- Enhanced Summary Card with Better Layout -->
+    <VBox styleClass="summary-card" spacing="12">
+        <!-- Route Information -->
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <VBox styleClass="route-summary" spacing="6">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label fx:id="fromStationLabel" text="Mumbai Central" styleClass="summary-station"/>
+                    <Label text="→" styleClass="summary-arrow"/>
+                    <Label fx:id="toStationLabel" text="New Delhi" styleClass="summary-station"/>
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="📅" styleClass="icon-small"/>
+                    <Label fx:id="dateLabel" text="Sat, 09 Aug 2025" styleClass="summary-date"/>
+                    <Separator orientation="VERTICAL"/>
+                    <Label text="👥" styleClass="icon-small"/>
+                    <Label text="1 Passenger" styleClass="summary-meta"/>
+                    <Separator orientation="VERTICAL"/>
+                    <Label text="💺" styleClass="icon-small"/>
+                    <Label text="All Classes" styleClass="summary-meta"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <!-- Controls Row -->
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <Label fx:id="resultsCountLabel" text="Found 16 trains" styleClass="results-count"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox spacing="12" alignment="CENTER_RIGHT">
+                <Label text="Sort:" styleClass="control-label"/>
+                <ComboBox fx:id="sortCombo" prefWidth="160" styleClass="sort-combo"/>
+                <Separator orientation="VERTICAL"/>
+                <Label text="View:" styleClass="control-label"/>
+                <HBox spacing="4" styleClass="view-toggle-group">
+                    <ToggleButton fx:id="listViewToggle" text="📋" selected="true" styleClass="view-toggle"/>
+                    <ToggleButton fx:id="cardViewToggle" text="🗂️" styleClass="view-toggle"/>
+                </HBox>
+            </HBox>
+        </HBox>
+    </VBox>
+
+    <!-- Advanced Filter Panel -->
+    <VBox styleClass="filters-panel">
+        <!-- Quick Filters -->
+        <HBox styleClass="quick-filters" spacing="8" alignment="CENTER_LEFT">
+            <Label text="Quick:" styleClass="filter-section-title"/>
+            <ToggleButton text="⚡ Fastest" styleClass="filter-chip-primary"/>
+            <ToggleButton text="🏆 Top Choice" styleClass="filter-chip-primary"/>
+            <ToggleButton text="💰 Cheapest" styleClass="filter-chip-primary"/>
+            <Separator orientation="VERTICAL"/>
+            <Label text="Time:" styleClass="filter-section-title"/>
+            <ToggleButton text="🌅 Morning (6-12)" styleClass="filter-chip-time"/>
+            <ToggleButton text="☀️ Afternoon (12-18)" styleClass="filter-chip-time"/>
+            <ToggleButton text="🌆 Evening (18-24)" styleClass="filter-chip-time"/>
+            <ToggleButton text="🌙 Night (0-6)" styleClass="filter-chip-time"/>
+        </HBox>
+
+        <!-- Class Filters -->
+        <HBox styleClass="class-filters" spacing="8" alignment="CENTER_LEFT">
+            <Label text="Classes:" styleClass="filter-section-title"/>
+            <ToggleButton text="SL Sleeper" styleClass="filter-chip-class"/>
+            <ToggleButton text="3A AC 3-Tier" styleClass="filter-chip-class"/>
+            <ToggleButton text="2A AC 2-Tier" styleClass="filter-chip-class"/>
+            <ToggleButton text="1A First AC" styleClass="filter-chip-class"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🔄 Reset All Filters" styleClass="reset-btn"/>
+            <Button text="💾 Save Preferences" styleClass="save-btn"/>
+        </HBox>
+    </VBox>
+
+    <!-- Results with Loading State -->
+    <StackPane VBox.vgrow="ALWAYS">
+        <!-- Loading Indicator -->
+        <VBox fx:id="loadingState" visible="false" managed="false" alignment="CENTER" spacing="12" styleClass="loading-state">
+            <ProgressIndicator prefWidth="48" prefHeight="48" styleClass="loading-spinner"/>
+            <Label text="Searching trains..." styleClass="loading-text"/>
+        </VBox>
+
+        <!-- Results ScrollPane -->
+        <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" styleClass="body-scroll">
+            <VBox spacing="12" styleClass="results-container">
+                <padding>
+                    <Insets top="12" bottom="24" left="18" right="18"/>
+                </padding>
+
+                <!-- Results Header -->
+                <HBox fx:id="resultsHeader" spacing="12" alignment="CENTER_LEFT" styleClass="results-header">
+                    <Label text="💡 Pro Tip: Book AC coaches for better comfort on long journeys" styleClass="pro-tip"/>
+                </HBox>
+
+                <!-- Train Cards Container -->
+                <VBox fx:id="trainsContainer" spacing="12" styleClass="trains-list"/>
+
+                <!-- Load More Button -->
+                <HBox fx:id="loadMoreSection" visible="false" managed="false" alignment="CENTER" styleClass="load-more-section">
+                    <Button text="Load More Trains" styleClass="load-more-btn"/>
+                </HBox>
+            </VBox>
+        </ScrollPane>
+
+        <!-- Enhanced Empty State -->
+        <VBox fx:id="emptyState" visible="false" managed="false" alignment="CENTER" spacing="16" styleClass="empty-state">
+            <Label text="🚂" styleClass="empty-icon"/>
+            <Label text="No trains found" styleClass="empty-title"/>
+            <Label text="Try adjusting your filters or selecting a different date" styleClass="empty-subtitle"/>
+            <HBox spacing="12" alignment="CENTER">
+                <Button text="🔄 Reset Filters" styleClass="empty-action-primary"/>
+                <Button text="📅 Change Date" styleClass="empty-action-secondary"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <!-- Status Bar -->
+    <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
+        <Label text="Last updated: 8:57 AM" styleClass="status-text"/>
+        <Separator orientation="VERTICAL"/>
+        <Label text="Live tracking available" styleClass="status-live"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="💳 Secure booking guaranteed" styleClass="status-security"/>
+    </HBox>
+
+</VBox>

@@ -1,6 +1,12 @@
 package trainapp.model;
 
+import trainapp.dao.StationDAO;
+
+import java.util.concurrent.TransferQueue;
+
 public class Train {
+
+    StationDAO stationDAO = new StationDAO();
 
     private int trainId;
     private String trainNumber;
@@ -73,5 +79,14 @@ public class Train {
     @Override
     public String toString() {
         return trainNumber + " - " + name;
+    }
+
+
+    public String getSourceStationName(Train train) {
+        return stationDAO.getStationByCode(String.valueOf(train.getSourceStationId())).getName();
+    }
+
+    public String getDestinationStationName(Train train) {
+        return stationDAO.getStationByCode(String.valueOf(train.getDestinationStationId())).getName();
     }
 }

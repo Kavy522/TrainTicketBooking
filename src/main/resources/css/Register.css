@@ -284,3 +284,41 @@
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
 }
+
+/* Error and Success Message Styles */
+.inline-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+}
+
+.general-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-wrap-text: true;
+}
+
+.success-message {
+    -fx-text-fill: #059669;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-wrap-text: true;
+}
+
+/* Button disabled state */
+.register-button:disabled {
+    -fx-opacity: 0.6;
+    -fx-cursor: default;
+}
+
+/* Field validation states */
+.register-input:focused {
+    -fx-border-color: #2563eb;
+    -fx-border-width: 2;
+}
+
+.register-input.error {
+    -fx-border-color: #dc2626;
+    -fx-border-width: 1;
+}
