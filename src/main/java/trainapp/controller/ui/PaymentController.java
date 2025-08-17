@@ -20,56 +20,90 @@ import trainapp.service.SessionManager;
 public class PaymentController {
 
     // Header elements
-    @FXML private Button backButton;
-    @FXML private Label securityLabel;
+    @FXML
+    private Button backButton;
+    @FXML
+    private Label securityLabel;
 
     // Booking summary
-    @FXML private Label trainDetailsLabel;
-    @FXML private Label routeLabel;
-    @FXML private Label dateLabel;
-    @FXML private Label pnrLabel;
-    @FXML private Label passengerCountLabel;
-    @FXML private Label ticketFareLabel;
-    @FXML private Label convenienceFeeLabel;
-    @FXML private Label gstLabel;
-    @FXML private Label totalAmountLabel;
+    @FXML
+    private Label trainDetailsLabel;
+    @FXML
+    private Label routeLabel;
+    @FXML
+    private Label dateLabel;
+    @FXML
+    private Label pnrLabel;
+    @FXML
+    private Label passengerCountLabel;
+    @FXML
+    private Label ticketFareLabel;
+    @FXML
+    private Label convenienceFeeLabel;
+    @FXML
+    private Label gstLabel;
+    @FXML
+    private Label totalAmountLabel;
 
     // Payment method selection
-    @FXML private VBox upiOption;
-    @FXML private VBox cardOption;
-    @FXML private VBox netBankingOption;
-    @FXML private VBox walletOption;
-    @FXML private RadioButton upiRadio;
-    @FXML private RadioButton cardRadio;
-    @FXML private RadioButton netBankingRadio;
-    @FXML private RadioButton walletRadio;
+    @FXML
+    private VBox upiOption;
+    @FXML
+    private VBox cardOption;
+    @FXML
+    private VBox netBankingOption;
+    @FXML
+    private VBox walletOption;
+    @FXML
+    private RadioButton upiRadio;
+    @FXML
+    private RadioButton cardRadio;
+    @FXML
+    private RadioButton netBankingRadio;
+    @FXML
+    private RadioButton walletRadio;
 
     // Payment forms
-    @FXML private StackPane paymentFormsContainer;
-    @FXML private VBox cardForm;
-    @FXML private VBox upiForm;
-    @FXML private VBox netBankingForm;
-    @FXML private VBox walletForm;
+    @FXML
+    private StackPane paymentFormsContainer;
+    @FXML
+    private VBox cardForm;
+    @FXML
+    private VBox upiForm;
+    @FXML
+    private VBox netBankingForm;
+    @FXML
+    private VBox walletForm;
 
     // Card form fields
-    @FXML private TextField cardNumberField;
-    @FXML private TextField expiryField;
-    @FXML private TextField cvvField;
-    @FXML private TextField cardHolderField;
+    @FXML
+    private TextField cardNumberField;
+    @FXML
+    private TextField expiryField;
+    @FXML
+    private TextField cvvField;
+    @FXML
+    private TextField cardHolderField;
 
     // UPI form fields
-    @FXML private TextField upiIdField;
+    @FXML
+    private TextField upiIdField;
 
     // Net banking form
-    @FXML private ComboBox<String> bankComboBox;
+    @FXML
+    private ComboBox<String> bankComboBox;
 
     // Payment action
-    @FXML private Button payNowButton;
-    @FXML private CheckBox termsCheckBox;
+    @FXML
+    private Button payNowButton;
+    @FXML
+    private CheckBox termsCheckBox;
 
     // Loading overlay
-    @FXML private StackPane loadingOverlay;
-    @FXML private Label loadingText;
+    @FXML
+    private StackPane loadingOverlay;
+    @FXML
+    private Label loadingText;
 
     // Services
     private final BookingService bookingService = new BookingService();
@@ -512,17 +546,17 @@ public class PaymentController {
         alert.setTitle("🎉 Payment Successful!");
         alert.setHeaderText("Your booking has been confirmed!");
         alert.setContentText(String.format("""
-                Payment Details:
-                Amount Paid: ₹%.0f
-                PNR: %s
-                
-                ✅ E-ticket sent to your email
-                ✅ SMS confirmation sent to your phone
-                ✅ Booking confirmed successfully
-                
-                Thank you for choosing Tailyatri!
-                Have a safe journey! 🚂
-                """,
+                        Payment Details:
+                        Amount Paid: ₹%.0f
+                        PNR: %s
+                        
+                        ✅ E-ticket sent to your email
+                        ✅ SMS confirmation sent to your phone
+                        ✅ Booking confirmed successfully
+                        
+                        Thank you for choosing Tailyatri!
+                        Have a safe journey! 🚂
+                        """,
                 totalAmount,
                 currentBooking.getPnr()
         ));
@@ -531,7 +565,7 @@ public class PaymentController {
         alert.showAndWait();
 
         // Navigate back to main menu
-        navigateToMainMenu();
+        SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
     private void showLoadingOverlay(boolean show, String message) {
@@ -598,15 +632,7 @@ public class PaymentController {
             // Cancel the booking
             bookingService.handleFailedPayment(currentBooking.getBookingId(), "User cancelled payment");
             // Navigate back
-            navigateToMainMenu();
-        }
-    }
-
-    private void navigateToMainMenu() {
-        try {
-            SceneManager.switchScene("/fxml/TrainSearch.fxml");
-        } catch (Exception e) {
-            e.printStackTrace();
+            SceneManager.switchScene("/fxml/MainMenu.fxml");
         }
     }
 
@@ -624,9 +650,20 @@ public class PaymentController {
             this.errorMessage = errorMessage;
         }
 
-        public boolean isSuccess() { return success; }
-        public String getPaymentId() { return paymentId; }
-        public String getSignature() { return signature; }
-        public String getErrorMessage() { return errorMessage; }
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getPaymentId() {
+            return paymentId;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
     }
 }

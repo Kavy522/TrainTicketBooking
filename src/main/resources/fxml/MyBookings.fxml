@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.MyBookingsController">
+
+    <stylesheets>
+        <URL value="@../css/MyBookings.css" />
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <VBox styleClass="header-container">
+            <!-- Navigation Bar -->
+            <HBox styleClass="nav-bar" spacing="20" alignment="CENTER_LEFT">
+                <Button fx:id="backButton" onAction="#handleBack" styleClass="back-btn" text="← Back to Menu" />
+                <Label fx:id="userWelcomeLabel" styleClass="welcome-label" text="Welcome back, User!" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="logoutButton" onAction="#handleLogout" styleClass="logout-btn" text="Logout" />
+            </HBox>
+
+            <!-- Page Title and Stats -->
+            <VBox styleClass="title-stats-section" spacing="20">
+                <Label styleClass="page-title" text="My Bookings" />
+
+                <!-- Statistics Cards -->
+                <HBox styleClass="stats-container" spacing="20">
+                    <VBox styleClass="stat-card">
+                        <Label styleClass="stat-number" fx:id="totalBookingsLabel" text="0" />
+                        <Label styleClass="stat-label" text="Total Bookings" />
+                    </VBox>
+                    <VBox styleClass="stat-card confirmed">
+                        <Label styleClass="stat-number" fx:id="confirmedBookingsLabel" text="0" />
+                        <Label styleClass="stat-label" text="Confirmed" />
+                    </VBox>
+                    <VBox styleClass="stat-card pending">
+                        <Label styleClass="stat-number" fx:id="pendingBookingsLabel" text="0" />
+                        <Label styleClass="stat-label" text="Pending" />
+                    </VBox>
+                    <VBox styleClass="stat-card cancelled">
+                        <Label styleClass="stat-number" fx:id="cancelledBookingsLabel" text="0" />
+                        <Label styleClass="stat-label" text="Cancelled" />
+                    </VBox>
+                    <VBox styleClass="stat-card total-spent">
+                        <Label styleClass="stat-number" fx:id="totalSpentLabel" text="₹0" />
+                        <Label styleClass="stat-label" text="Total Spent" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Filters and Search -->
+            <HBox styleClass="filter-section" spacing="20" alignment="CENTER_LEFT">
+                <Label styleClass="filter-label" text="Filter:" />
+                <ComboBox fx:id="statusFilterCombo" styleClass="status-filter" />
+
+                <Region prefWidth="20" />
+
+                <Label styleClass="filter-label" text="Search:" />
+                <TextField fx:id="searchField" styleClass="search-field" promptText="Search by PNR, train, or route..." maxWidth="300" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button fx:id="refreshButton" onAction="#handleRefresh" styleClass="refresh-btn" text="🔄 Refresh" />
+            </HBox>
+
+            <!-- Status Message -->
+            <Label fx:id="statusMessage" styleClass="status-message" visible="false" managed="false" />
+        </VBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <!-- Loading Section -->
+        <VBox fx:id="loadingSection" styleClass="loading-section" spacing="20" alignment="CENTER" visible="false" managed="false">
+            <Label styleClass="loading-text" text="🔍 Loading your bookings..." />
+            <ProgressIndicator styleClass="loading-indicator" />
+        </VBox>
+
+        <!-- Empty State Section -->
+        <VBox fx:id="emptyStateSection" styleClass="empty-state-section" spacing="25" alignment="CENTER" visible="false" managed="false">
+            <Label styleClass="empty-icon" text="📋" />
+            <Label styleClass="empty-title" text="No Bookings Found" />
+            <Label styleClass="empty-message" text="You haven't made any train bookings yet." />
+            <Button onAction="#handleBookNewTicket" styleClass="book-new-btn" text="🚆 Book Your First Journey" />
+        </VBox>
+
+        <!-- Bookings Section -->
+        <VBox fx:id="bookingsSection" visible="false" managed="false">
+            <ScrollPane fx:id="bookingsScrollPane" styleClass="bookings-scroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+                <VBox fx:id="bookingsContainer" styleClass="bookings-container" spacing="20">
+                    <!-- Booking cards will be added dynamically -->
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

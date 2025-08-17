@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.PNRController">
+
+    <stylesheets>
+        <URL value="@../css/PNRStatus.css" />
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="header-bar" spacing="20" alignment="CENTER_LEFT">
+            <Button fx:id="backButton" onAction="#handleBack" styleClass="back-btn" text="← Back to Menu" />
+            <Label fx:id="titleLabel" styleClass="page-title" text="PNR Status" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label styleClass="help-text" text="Enter your 10-digit PNR number" />
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="main-scroll">
+            <VBox spacing="25" styleClass="main-container">
+
+                <!-- Search Section -->
+                <VBox styleClass="search-section" spacing="15">
+                    <Label styleClass="section-title" text="Check PNR Status" />
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <TextField fx:id="pnrSearchField" promptText="Enter 10-digit PNR number" styleClass="pnr-input" maxWidth="200" />
+                        <Button fx:id="searchButton" onAction="#handleSearch" styleClass="search-btn" text="Search" />
+                        <Button onAction="#handleRefresh" styleClass="refresh-btn" text="🔄 Refresh" />
+                    </HBox>
+                    <Label fx:id="statusMessage" styleClass="status-message" visible="false" managed="false" />
+                </VBox>
+
+                <!-- Loading Section -->
+                <VBox fx:id="loadingSection" styleClass="loading-section" spacing="15" alignment="CENTER" visible="false" managed="false">
+                    <Label styleClass="loading-text" text="🔍 Checking PNR Status..." />
+                    <ProgressIndicator styleClass="loading-indicator" />
+                </VBox>
+
+                <!-- Not Found Section -->
+                <VBox fx:id="notFoundSection" styleClass="not-found-section" spacing="20" alignment="CENTER" visible="false" managed="false">
+                    <Label styleClass="not-found-icon" text="❌" />
+                    <Label styleClass="not-found-title" text="PNR Not Found" />
+                    <Label styleClass="not-found-message" text="Please check your PNR number and try again." />
+                    <Label styleClass="help-message" text="Make sure you enter the complete 10-digit PNR number exactly as shown on your ticket." />
+                </VBox>
+
+                <!-- PNR Details Section -->
+                <VBox fx:id="pnrDetailsSection" spacing="25" visible="false" managed="false">
+
+                    <!-- Status Card -->
+                    <VBox styleClass="status-card" spacing="15">
+                        <HBox spacing="20" alignment="CENTER_LEFT">
+                            <VBox spacing="5">
+                                <Label styleClass="card-title" text="Booking Status" />
+                                <Label fx:id="bookingStatusLabel" styleClass="booking-status" text="CONFIRMED" />
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <VBox spacing="5" alignment="CENTER_RIGHT">
+                                <Label styleClass="pnr-label" text="PNR Number" />
+                                <Label fx:id="pnrNumberLabel" styleClass="pnr-number" text="1234567890" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Journey Details Card -->
+                    <VBox styleClass="details-card" spacing="20">
+                        <Label styleClass="card-title" text="Journey Details" />
+
+                        <HBox spacing="30">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Train" />
+                                <Label fx:id="trainDetailsLabel" styleClass="detail-value" text="12345 - Express Train" />
+                            </VBox>
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Route" />
+                                <Label fx:id="routeDetailsLabel" styleClass="detail-value" text="Delhi → Mumbai" />
+                            </VBox>
+                        </HBox>
+
+                        <HBox spacing="30">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Journey Date" />
+                                <Label fx:id="journeyDateLabel" styleClass="detail-value" text="15 Aug 2025, Thursday" />
+                            </VBox>
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Booked On" />
+                                <Label fx:id="bookingTimeLabel" styleClass="detail-value" text="14 Aug 2025, 15:30" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Payment Details Card -->
+                    <VBox styleClass="details-card" spacing="20">
+                        <Label styleClass="card-title" text="Payment Details" />
+
+                        <HBox spacing="30">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Total Fare" />
+                                <Label fx:id="totalFareLabel" styleClass="fare-amount" text="₹1,250.00" />
+                            </VBox>
+                            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                                <Label styleClass="detail-label" text="Payment Status" />
+                                <Label fx:id="paymentStatusLabel" styleClass="payment-status" text="PAID" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Passenger Details Card -->
+                    <VBox styleClass="details-card" spacing="20">
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label styleClass="card-title" text="Passenger Details" />
+                            <Label fx:id="passengerCountLabel" styleClass="passenger-count" text="2 Passengers" />
+                        </HBox>
+
+                        <VBox fx:id="passengerListContainer" spacing="12">
+                            <!-- Passenger cards will be added dynamically -->
+                        </VBox>
+                    </VBox>
+
+                    <!-- Action Buttons -->
+                    <HBox spacing="15" alignment="CENTER" styleClass="action-buttons">
+                        <Button onAction="#handleDownloadTicket" styleClass="download-btn" text="📄 Download Ticket" />
+                        <Button onAction="#handleCancelBooking" styleClass="cancel-btn" text="❌ Cancel Booking" />
+                        <Button onAction="#handleRefresh" styleClass="refresh-action-btn" text="🔄 Refresh Status" />
+                    </HBox>
+
+                    <!-- Important Notes -->
+                    <VBox styleClass="notes-section" spacing="12">
+                        <Label styleClass="notes-title" text="📋 Important Notes" />
+                        <Label styleClass="notes-text" text="• Carry a valid government-issued photo ID during your journey" />
+                        <Label styleClass="notes-text" text="• Report at the station at least 30 minutes before departure" />
+                        <Label styleClass="notes-text" text="• Keep this PNR number for future reference and inquiries" />
+                        <Label styleClass="notes-text" text="• For cancellations, visit IRCTC website or nearest reservation counter" />
+                    </VBox>
+
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

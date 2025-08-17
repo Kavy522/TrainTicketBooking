@@ -3,20 +3,15 @@ package trainapp.controller.ui;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import trainapp.dao.StationDAO;
 import trainapp.dao.TrainDAO;
 import trainapp.model.Station;
 import trainapp.model.Train;
 import trainapp.model.Booking;
-import trainapp.model.Passenger;
 import trainapp.service.BookingService;
 import trainapp.service.SessionManager;
 import trainapp.service.TrainService;
@@ -573,24 +568,9 @@ public class TrainBookingController {
      * Redirect to payment page with booking details
      */
     private void redirectToPaymentPage(Booking booking, String razorpayOrderId, double totalAmount) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Payment.fxml"));
-            Parent root = loader.load();
-
-            PaymentController paymentController = loader.getController();
-            paymentController.setBookingData(booking, razorpayOrderId, totalAmount);
-
-            Stage stage = (Stage) proceedToPaymentBtn.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Payment - Tailyatri");
-            stage.centerOnScreen();
-
-            System.out.println("TrainBookingController: Redirected to payment page");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showMessage("Failed to load payment page: " + e.getMessage(), "error");
-            resetPaymentButton();
-        }
+        PaymentController paymentController = SceneManager.switchScene("/fxml/Payment.fxml");
+        paymentController.setBookingData(booking, razorpayOrderId, totalAmount);
+        System.out.println("TrainBookingController: Redirected to payment page");
     }
 
     /**
@@ -625,11 +605,7 @@ public class TrainBookingController {
 
     @FXML
     public void handleBack(ActionEvent event) {
-        try {
             SceneManager.switchScene("/fxml/TrainSearch.fxml");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @FXML

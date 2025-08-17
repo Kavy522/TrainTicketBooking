@@ -220,4 +220,43 @@ public class BookingDAO {
 
         return false;
     }
+
+    /**
+     * Get booking by PNR number
+     */
+    public Booking getBookingByPNR(String pnr) {
+        String sql = """
+        SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
+               booking_time, total_fare, status, pnr
+        FROM bookings WHERE pnr = ?
+        """;
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, pnr);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Booking booking = new Booking();
+                    booking.setBookingId(rs.getLong("booking_id"));
+                    booking.setUserId(rs.getInt("user_id"));
+                    booking.setJourneyId(rs.getLong("journey_id"));
+                    booking.setTrainId(rs.getInt("train_id"));
+                    booking.setSourceStationId(rs.getInt("source_station_id"));
+                    booking.setDestStationId(rs.getInt("dest_station_id"));
+                    booking.setBookingTime(rs.getTimestamp("booking_time").toLocalDateTime());
+                    booking.setTotalFare(rs.getDouble("total_fare"));
+                    booking.setStatus(rs.getString("status"));
+                    booking.setPnr(rs.getString("pnr"));
+                    return booking;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting booking by PNR: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

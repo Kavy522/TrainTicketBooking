@@ -12,23 +12,36 @@ import trainapp.util.SceneManager;
 public class RegisterController {
 
     // Form Fields
-    @FXML private TextField nameField;
-    @FXML private TextField emailField;
-    @FXML private TextField phoneField;
-    @FXML private PasswordField passwordField;
-    @FXML private PasswordField confirmPasswordField;
+    @FXML
+    private TextField nameField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private TextField phoneField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private PasswordField confirmPasswordField;
 
     // Error Labels
-    @FXML private Label nameError;
-    @FXML private Label emailError;
-    @FXML private Label phoneError;
-    @FXML private Label passwordError;
-    @FXML private Label confirmPasswordError;
-    @FXML private Label errorMessage;
+    @FXML
+    private Label nameError;
+    @FXML
+    private Label emailError;
+    @FXML
+    private Label phoneError;
+    @FXML
+    private Label passwordError;
+    @FXML
+    private Label confirmPasswordError;
+    @FXML
+    private Label errorMessage;
 
     // Buttons and Links
-    @FXML private Button registerButton;
-    @FXML private Hyperlink loginLink;
+    @FXML
+    private Button registerButton;
+    @FXML
+    private Hyperlink loginLink;
 
     // Services
     private final AuthService authService = new AuthService();
@@ -139,30 +152,11 @@ public class RegisterController {
 
     @FXML
     public void handleLogin(ActionEvent event) {
-        try {
-            SceneManager.switchScene("/fxml/Login.fxml");
-        } catch (Exception e) {
-            showGeneralError("Failed to load login page. Please try again.");
-        }
+        SceneManager.switchScene("/fxml/Login.fxml");
+        showGeneralError("Failed to load login page. Please try again.");
+
     }
 
-    private void navigateBasedOnUserRole() {
-        try {
-            SessionManager sessionManager = SessionManager.getInstance();
-
-            if (sessionManager.isLoggedIn()) {
-                if (sessionManager.isAdmin()) {
-                    SceneManager.switchScene("/fxml/AdminPanel.fxml");
-                } else {
-                    SceneManager.switchScene("/fxml/MainMenu.fxml");
-                }
-            } else {
-                SceneManager.switchScene("/fxml/Login.fxml");
-            }
-        } catch (Exception e) {
-            showGeneralError("Registration successful! Please login manually.");
-        }
-    }
 
     private void resetButtonState() {
         registerButton.setText("Create Account");

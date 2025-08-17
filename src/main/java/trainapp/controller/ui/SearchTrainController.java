@@ -29,17 +29,28 @@ import java.util.*;
 
 public class SearchTrainController {
 
-    @FXML private Label fromStationLabel;
-    @FXML private Label toStationLabel;
-    @FXML private Label dateLabel;
-    @FXML private Label resultsCountLabel;
-    @FXML private ComboBox<String> sortCombo;
-    @FXML private ToggleButton listViewToggle;
-    @FXML private ToggleButton cardViewToggle;
-    @FXML private VBox trainsContainer;
-    @FXML private VBox emptyState;
-    @FXML private VBox loadingState;
-    @FXML private HBox loadMoreSection;
+    @FXML
+    private Label fromStationLabel;
+    @FXML
+    private Label toStationLabel;
+    @FXML
+    private Label dateLabel;
+    @FXML
+    private Label resultsCountLabel;
+    @FXML
+    private ComboBox<String> sortCombo;
+    @FXML
+    private ToggleButton listViewToggle;
+    @FXML
+    private ToggleButton cardViewToggle;
+    @FXML
+    private VBox trainsContainer;
+    @FXML
+    private VBox emptyState;
+    @FXML
+    private VBox loadingState;
+    @FXML
+    private HBox loadMoreSection;
 
     private final TrainService trainService = new TrainService();
     private final StationDAO stationDAO = new StationDAO();
@@ -327,35 +338,10 @@ public class SearchTrainController {
      * Handle View Details - Open your TrainDetails.fxml window
      */
     private void handleViewDetails(Train train) {
-        try {
-            System.out.println("SearchTrainController: Opening train details for " + train.getTrainNumber());
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TrainDetails.fxml"));
-            Parent root = loader.load();
-
-            TrainDetailsController detailsController = loader.getController();
-            detailsController.setTrainDetails(train, journeyDate, fromStation, toStation);
-
-            // Create new stage for train details
-            Stage detailsStage = new Stage();
-            detailsStage.setTitle("Train Details - " + train.getTrainNumber() + " " + train.getName());
-            detailsStage.setScene(new Scene(root));
-            detailsStage.initModality(Modality.APPLICATION_MODAL);
-            detailsStage.setResizable(true);
-            detailsStage.centerOnScreen();
-
-            // Set minimum size
-            detailsStage.setMinWidth(1000);
-            detailsStage.setMinHeight(700);
-
-            detailsStage.show();
-
-            System.out.println("SearchTrainController: Train details window opened successfully");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Failed to open train details: " + e.getMessage());
-        }
+        System.out.println("SearchTrainController: Opening train details for " + train.getTrainNumber());
+        TrainDetailsController detailsController = SceneManager.switchScene("/fxml/TrainDetails.fxml");
+        detailsController.setTrainDetails(train, journeyDate, fromStation, toStation);
+        System.out.println("SearchTrainController: Train details window opened successfully");
     }
 
     /**
@@ -366,27 +352,11 @@ public class SearchTrainController {
 
         if (!sessionManager.isLoggedIn()) {
             // User not logged in - redirect to login with message
-            try {
-                // Store booking data for after login
-                sessionManager.setPendingBooking(train.getTrainId(), fromStation, toStation, journeyDate);
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
-                Parent root = loader.load();
-
-                trainapp.controller.ui.LoginController loginController = loader.getController();
-                loginController.setLoginMessage("You need to login to book");
-                loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
-
-                Stage stage = (Stage) trainsContainer.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.centerOnScreen();
-
-                System.out.println("SearchTrainController: Redirected to login");
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                showError("Failed to load login page: " + e.getMessage());
-            }
+            sessionManager.setPendingBooking(train.getTrainId(), fromStation, toStation, journeyDate);
+            LoginController loginController = SceneManager.switchScene("/fxml/Login.fxml");
+            loginController.setLoginMessage("You need to login to book");
+            loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
+            System.out.println("SearchTrainController: Redirected to login");
         } else {
             // User is logged in - go directly to booking page
             redirectToBookingPage(train);
@@ -397,35 +367,17 @@ public class SearchTrainController {
      * Redirect to booking page with train data
      */
     private void redirectToBookingPage(Train train) {
-        try {
-            System.out.println("SearchTrainController: Redirecting to booking page");
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TrainBooking.fxml"));
-            Parent root = loader.load();
-
-            trainapp.controller.ui.TrainBookingController bookingController = loader.getController();
-            bookingController.setBookingData(
-                    train.getTrainId(),
-                    train.getTrainNumber(),
-                    train.getName(),
-                    fromStation,
-                    toStation,
-                    journeyDate
-            );
-
-            Stage stage = (Stage) trainsContainer.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.centerOnScreen();
-
-            System.out.println("SearchTrainController: Successfully loaded booking page");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showError("Failed to load booking page: " + e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("An error occurred while booking: " + e.getMessage());
-        }
+        System.out.println("SearchTrainController: Redirecting to booking page");
+        TrainBookingController bookingController = SceneManager.switchScene("/fxml/TrainBooking.fxml");
+        bookingController.setBookingData(
+                train.getTrainId(),
+                train.getTrainNumber(),
+                train.getName(),
+                fromStation,
+                toStation,
+                journeyDate
+        );
+        System.out.println("SearchTrainController: Successfully loaded booking page");
     }
 
     private HBox createSeatsSection(Train train) {
@@ -594,23 +546,14 @@ public class SearchTrainController {
 
     @FXML
     public void handleBack(ActionEvent event) {
-        try {
-            System.out.println("SearchTrainController: Going back to main menu");
-            SceneManager.switchScene("/fxml/MainMenu.fxml");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Failed to go back to main menu: " + e.getMessage());
-        }
+        System.out.println("SearchTrainController: Going back to main menu");
+        SceneManager.switchScene("/fxml/MainMenu.fxml");
+
     }
 
     @FXML
     public void handleModifySearch(ActionEvent event) {
-        try {
-            System.out.println("SearchTrainController: Modifying search");
-            SceneManager.switchScene("/fxml/MainMenu.fxml");
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Failed to modify search: " + e.getMessage());
-        }
+        System.out.println("SearchTrainController: Modifying search");
+        SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 }

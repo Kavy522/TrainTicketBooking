@@ -20,22 +20,34 @@ import java.util.List;
 public class MainMenuController {
 
     // Main booking form ComboBoxes
-    @FXML private ComboBox<Station> trainFromCombo;
-    @FXML private ComboBox<Station> trainToCombo;
-    @FXML private DatePicker trainDatePicker;
-    @FXML private Button searchTrainsButton;
-    @FXML private Label errorMessageLabel;
-    @FXML private Label bookingStatus;
+    @FXML
+    private ComboBox<Station> trainFromCombo;
+    @FXML
+    private ComboBox<Station> trainToCombo;
+    @FXML
+    private DatePicker trainDatePicker;
+    @FXML
+    private Button searchTrainsButton;
+    @FXML
+    private Label errorMessageLabel;
+    @FXML
+    private Label bookingStatus;
 
     // Quick services ComboBoxes
-    @FXML private ComboBox<Station> fromStationCombo;
-    @FXML private ComboBox<Station> toStationCombo;
-    @FXML private DatePicker trainsDatePicker;
+    @FXML
+    private ComboBox<Station> fromStationCombo;
+    @FXML
+    private ComboBox<Station> toStationCombo;
+    @FXML
+    private DatePicker trainsDatePicker;
 
     // Service input fields
-    @FXML private TextField trainStatusField;
-    @FXML private TextField pnrStatusField;
-    @FXML private TextField timeTableField;
+    @FXML
+    private TextField trainStatusField;
+    @FXML
+    private TextField pnrStatusField;
+    @FXML
+    private TextField timeTableField;
 
     // Services and DAOs
     private final StationDAO stationDAO = new StationDAO();
@@ -306,20 +318,8 @@ public class MainMenuController {
             return;
         }
 
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/TrainSearch.fxml"));
-            javafx.scene.Parent root = loader.load();
-
-            trainapp.controller.ui.SearchTrainController searchController = loader.getController();
-            searchController.setSearchData(fromStation.getName(), toStation.getName(), journeyDate);
-
-            javafx.stage.Stage stage = (javafx.stage.Stage) trainFromCombo.getScene().getWindow();
-            stage.setScene(new javafx.scene.Scene(root));
-            stage.centerOnScreen();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Internal error occurred while loading search results.", "Error");
-        }
+        SearchTrainController searchController = SceneManager.switchScene("/fxml/TrainSearch.fxml");
+        searchController.setSearchData(fromStation.getName(), toStation.getName(), journeyDate);
     }
 
     /**
@@ -336,24 +336,17 @@ public class MainMenuController {
             }
 
             if (!sessionManager.isLoggedIn()) {
-                try {
-                    SceneManager.switchScene("/fxml/Login.fxml");
-                } catch (Exception e) {
-                    showErrorMessage("Failed to load login page.");
-                }
+                SceneManager.switchScene("/fxml/Login.fxml");
                 return;
             }
 
-            try {
-                if (sessionManager.isAdmin()) {
-                    SceneManager.switchScene("/fxml/AdminProfile.fxml");
-                } else if (sessionManager.isUser()) {
-                    SceneManager.switchScene("/fxml/UserProfile.fxml");
-                } else {
-                    showErrorMessage("Unable to determine user type. Please contact support.");
-                }
-            } catch (Exception e) {
-                showErrorMessage("Failed to load profile page: " + e.getMessage());
+
+            if (sessionManager.isAdmin()) {
+                SceneManager.switchScene("/fxml/AdminProfile.fxml");
+            } else if (sessionManager.isUser()) {
+                SceneManager.switchScene("/fxml/UserProfile.fxml");
+            } else {
+                showErrorMessage("Unable to determine user type. Please contact support.");
             }
 
         } catch (Exception e) {
@@ -379,13 +372,21 @@ public class MainMenuController {
             showAlert("Please enter your PNR number.", "Input Required");
             return;
         }
+
         if (pnr.length() != 10) {
             showAlert("PNR must be exactly 10 digits.", "Invalid PNR");
             return;
         }
-        showAlert("PNR status feature will be available soon!", "Coming Soon");
-    }
 
+        // Open PNR Status window
+        try {
+            PNRController pnrController = SceneManager.switchScene("/fxml/PNRStatus.fxml");
+            pnrController.setPNRNumber(pnr.trim());
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Failed to open PNR status window: " + e.getMessage(), "Error");
+        }
+    }
     @FXML
     public void handleTrainSchedule(ActionEvent event) {
         String trainInfo = timeTableField.getText();
@@ -427,14 +428,11 @@ public class MainMenuController {
      */
     @FXML
     public void handleLogout(ActionEvent event) {
-        try {
-            if (sessionManager != null) {
-                sessionManager.logout();
-            }
-            SceneManager.switchScene("/fxml/Login.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to logout properly.");
+        if (sessionManager != null) {
+            sessionManager.logout();
         }
+        SceneManager.switchScene("/fxml/Login.fxml");
+
     }
 
     /**
@@ -442,15 +440,13 @@ public class MainMenuController {
      */
     @FXML
     public void handleViewBookings(ActionEvent event) {
-        try {
-            if (!sessionManager.isLoggedIn()) {
-                loginController.setRedirectAfterLogin("/fxml/MyBookings.fxml");
-                SceneManager.switchScene("/fxml/Login.fxml");
-            } else {
-                SceneManager.switchScene("/fxml/MyBookings.fxml");
-            }
-        } catch (Exception e) {
-            showErrorMessage("Failed to load bookings page.");
+        if (!sessionManager.isLoggedIn()) {
+            LoginController loginController = SceneManager.switchScene("/fxml/Login.fxml");
+            loginController.setLoginMessage("You need to login to view your bookings");
+            loginController.setRedirectAfterLogin("/fxml/MyBookings.fxml");
+        } else {
+            MyBookingsController bookingsController = SceneManager.switchScene("/fxml/MyBookings.fxml");
+            // The controller will automatically load bookings for the current user
         }
     }
 

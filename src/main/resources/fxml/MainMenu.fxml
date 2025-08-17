@@ -38,7 +38,7 @@
 
                 <HBox alignment="CENTER_RIGHT" spacing="12">
                     <Button onAction="#handleMyAccount" styleClass="profile-button" text="👤 My Account" />
-                    <Button styleClass="bookings-button" text="📋 My Bookings" />
+                    <Button onAction="#handleViewBookings" styleClass="bookings-button" text="📋 My Bookings" />
                 </HBox>
             </HBox>
         </VBox>

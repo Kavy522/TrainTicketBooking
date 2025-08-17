@@ -19,6 +19,7 @@ import trainapp.model.Train;
 import trainapp.model.TrainSchedule;
 import trainapp.service.SessionManager;
 import trainapp.service.TrainService;
+import trainapp.util.SceneManager;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -345,55 +346,21 @@ public class TrainDetailsController {
     }
 
     private void redirectToLogin() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
-            Parent root = loader.load();
-
-            trainapp.controller.ui.LoginController loginController = loader.getController();
-            loginController.setLoginMessage("You need to login to book");
-            loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
-
-            Stage currentStage = (Stage) trainNumberLabel.getScene().getWindow();
-            Stage loginStage = new Stage();
-            loginStage.setScene(new Scene(root));
-            loginStage.setTitle("Login Required");
-            loginStage.show();
-
-            currentStage.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Failed to open login page");
-        }
+        LoginController loginController = SceneManager.switchScene("/fxml/Login.fxml");
+        loginController.setLoginMessage("You need to login to book");
+        loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
     }
 
     private void openBookingPage(String selectedClass) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TrainBooking.fxml"));
-            Parent root = loader.load();
-
-            trainapp.controller.ui.TrainBookingController bookingController = loader.getController();
-            bookingController.setBookingData(
-                    currentTrain.getTrainId(),
-                    currentTrain.getTrainNumber(),
-                    currentTrain.getName(),
-                    fromStation,
-                    toStation,
-                    journeyDate
-            );
-
-            Stage currentStage = (Stage) trainNumberLabel.getScene().getWindow();
-            Stage bookingStage = new Stage();
-            bookingStage.setScene(new Scene(root));
-            bookingStage.setTitle("Book Train Ticket");
-            bookingStage.show();
-
-            currentStage.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            showError("Failed to open booking page");
-        }
+        TrainBookingController bookingController = SceneManager.switchScene("/fxml/TrainBooking.fxml");
+        bookingController.setBookingData(
+                currentTrain.getTrainId(),
+                currentTrain.getTrainNumber(),
+                currentTrain.getName(),
+                fromStation,
+                toStation,
+                journeyDate
+        );
     }
 
     // Helper methods

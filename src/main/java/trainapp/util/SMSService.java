@@ -10,8 +10,8 @@ import java.net.URLEncoder;
 public class SMSService {
 
     // Replace with your actual SMS API credentials
-    private static final String SMS_API_URL = "https://api.textlocal.in/send/";
-    private static final String SMS_API_KEY = "your_textlocal_api_key";
+    private static final String SMS_API_URL = "https://api.arihantglobal.in/send/";
+    private static final String SMS_API_KEY = "your_arihant_api_key";
     private static final String SMS_SENDER = "TAILYATRI";
 
     public boolean sendSMS(String phoneNumber, String message) {

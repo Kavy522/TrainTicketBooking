@@ -29,4 +29,5 @@ module trainapp.trainapp {
 
     opens trainapp to javafx.fxml;
     opens trainapp.util to javafx.fxml;
+    opens trainapp.service to javafx.fxml;
 }

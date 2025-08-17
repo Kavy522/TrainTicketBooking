@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -75,91 +76,6 @@ public class SceneManager {
     }
 
     /**
-     * Switch scene without returning controller (simpler version)
-     */
-    public static void switchSceneSimple(String fxmlPath) {
-        switchScene(fxmlPath);
-    }
-
-    /**
-     * Switch scene with custom stage settings
-     */
-    public static <T> T switchScene(String fxmlPath, boolean maximized, boolean centerOnScreen) {
-        T controller = switchScene(fxmlPath);
-
-        if (maximized) {
-            primaryStage.setMaximized(true);
-        } else {
-            primaryStage.setMaximized(false);
-        }
-
-        if (centerOnScreen) {
-            primaryStage.centerOnScreen();
-        }
-
-        return controller;
-    }
-
-    /**
-     * Get the primary stage reference
-     */
-    public static Stage getPrimaryStage() {
-        return primaryStage;
-    }
-
-    /**
-     * Check if SceneManager is properly initialized
-     */
-    public static boolean isInitialized() {
-        return primaryStage != null;
-    }
-
-    /**
-     * Enable/disable debug mode
-     */
-    public static void setDebugMode(boolean debug) {
-        debugMode = debug;
-    }
-
-    /**
-     * Verify FXML resource exists without loading
-     */
-    public static boolean resourceExists(String fxmlPath) {
-        return SceneManager.class.getResource(fxmlPath) != null;
-    }
-
-    /**
-     * Debug method to check all required FXML files
-     */
-    public static void debugResourcePaths() {
-        System.out.println("🔍 Checking FXML resources...");
-
-        String[] requiredFiles = {
-                "/fxml/Login.fxml",
-                "/fxml/MainMenu.fxml",
-                "/fxml/UserProfile.fxml",
-                "/fxml/AdminProfile.fxml"
-        };
-
-        for (String path : requiredFiles) {
-            if (resourceExists(path)) {
-                System.out.println("✅ " + path + " - Found");
-            } else {
-                System.out.println("❌ " + path + " - NOT FOUND");
-            }
-        }
-
-        System.out.println("Primary Stage: " + (primaryStage != null ? "Initialized" : "NULL"));
-    }
-
-    /**
-     * Get current scene title (if set)
-     */
-    public static String getCurrentSceneTitle() {
-        return primaryStage != null ? primaryStage.getTitle() : null;
-    }
-
-    /**
      * Set stage title
      */
     public static void setStageTitle(String title) {
@@ -168,17 +84,5 @@ public class SceneManager {
         }
     }
 
-    /**
-     * Emergency fallback - load login scene
-     */
-    public static void loadLoginScene() {
-        try {
-            System.out.println("🚨 Loading emergency login scene...");
-            switchScene("/fxml/Login.fxml");
-        } catch (Exception e) {
-            System.err.println("❌ Failed to load login scene: " + e.getMessage());
-            // At this point, something is seriously wrong
-            throw new RuntimeException("Critical error: Cannot load any scenes", e);
-        }
-    }
+
 }

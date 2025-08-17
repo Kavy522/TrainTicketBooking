@@ -1,0 +1,516 @@
+.root {
+    -fx-background-color: #f8fafc;
+    -fx-font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* Header Container */
+.header-container {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: #e2e8f0;
+    -fx-effect: dropshadow(gaussian, #00000015, 10, 0, 0, 3);
+}
+
+/* Navigation Bar */
+.nav-bar {
+    -fx-padding: 15px 30px;
+}
+
+.back-btn {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #374151;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 18px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: #d1d5db;
+}
+
+.back-btn:hover {
+    -fx-background-color: #e5e7eb;
+    -fx-border-color: #9ca3af;
+}
+
+.welcome-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1f2937;
+}
+
+.logout-btn {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 18px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+
+.logout-btn:hover {
+    -fx-background-color: #dc2626;
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* Title and Stats Section */
+.title-stats-section {
+    -fx-padding: 25px 30px;
+    -fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.page-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* Statistics Cards */
+.stats-container {
+    -fx-alignment: center-left;
+}
+
+.stat-card {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+    -fx-min-width: 140px;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+}
+
+.stat-card:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.stat-card.confirmed {
+    -fx-border-color: #10b981;
+    -fx-border-width: 2px;
+}
+
+.stat-card.pending {
+    -fx-border-color: #f59e0b;
+    -fx-border-width: 2px;
+}
+
+.stat-card.cancelled {
+    -fx-border-color: #ef4444;
+    -fx-border-width: 2px;
+}
+
+.stat-card.total-spent {
+    -fx-border-color: #8b5cf6;
+    -fx-border-width: 2px;
+}
+
+.stat-number {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.stat-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-font-weight: 500;
+}
+
+/* Filter Section */
+.filter-section {
+    -fx-padding: 20px 30px;
+    -fx-background-color: #f8fafc;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #e2e8f0;
+}
+
+.filter-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+.status-filter {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+    -fx-pref-width: 150px;
+}
+
+.search-field {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+}
+
+.search-field:focused {
+    -fx-border-color: #3b82f6;
+    -fx-effect: dropshadow(gaussian, #3b82f620, 6, 0, 0, 2);
+}
+
+.refresh-btn {
+    -fx-background-color: #10b981;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.refresh-btn:hover {
+    -fx-background-color: #059669;
+}
+
+.refresh-btn:disabled {
+    -fx-background-color: #9ca3af;
+    -fx-cursor: default;
+}
+
+/* Status Message */
+.status-message {
+    -fx-padding: 10px 30px;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+}
+
+.status-message.success {
+    -fx-background-color: #ecfdf5;
+    -fx-text-fill: #059669;
+}
+
+.status-message.error {
+    -fx-background-color: #fef2f2;
+    -fx-text-fill: #dc2626;
+}
+
+.status-message.info {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #2563eb;
+}
+
+.status-message.warning {
+    -fx-background-color: #fffbeb;
+    -fx-text-fill: #d97706;
+}
+
+/* Loading Section */
+.loading-section {
+    -fx-padding: 60px;
+    -fx-alignment: center;
+}
+
+.loading-text {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.loading-indicator {
+    -fx-pref-width: 50px;
+    -fx-pref-height: 50px;
+}
+
+/* Empty State */
+.empty-state-section {
+    -fx-padding: 80px 40px;
+    -fx-alignment: center;
+}
+
+.empty-icon {
+    -fx-font-size: 64px;
+}
+
+.empty-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #374151;
+}
+
+.empty-message {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6b7280;
+    -fx-text-alignment: center;
+}
+
+.book-new-btn {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 15px 25px;
+    -fx-background-radius: 10px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, #3b82f630, 10, 0, 0, 4);
+}
+
+.book-new-btn:hover {
+    -fx-background-color: #2563eb;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+/* Bookings Section */
+.bookings-scroll {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.bookings-container {
+    -fx-padding: 30px;
+    -fx-alignment: top-center;
+    -fx-max-width: 1200px;
+}
+
+/* Booking Cards */
+.booking-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 25px;
+    -fx-border-width: 1px;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(gaussian, #00000010, 10, 0, 0, 3);
+    -fx-max-width: 1000px;
+}
+
+.booking-card:hover {
+    -fx-effect: dropshadow(gaussian, #00000020, 15, 0, 0, 5);
+    -fx-scale-x: 1.01;
+    -fx-scale-y: 1.01;
+}
+
+/* Booking Header */
+.booking-header {
+    -fx-alignment: center-left;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f3f4f6;
+    -fx-padding: 0 0 15 0;
+}
+
+.pnr-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e40af;
+    -fx-font-family: "Courier New", monospace;
+}
+
+.booking-date {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-font-weight: 500;
+}
+
+.booking-status {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 6px 12px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-border-width: 1px;
+}
+
+.booking-status.status-confirmed {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #059669;
+    -fx-border-color: #a7f3d0;
+}
+
+.booking-status.status-pending {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #d97706;
+    -fx-border-color: #fcd34d;
+}
+
+.booking-status.status-cancelled {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #dc2626;
+    -fx-border-color: #fca5a5;
+}
+
+/* Journey Section */
+.journey-section {
+    -fx-padding: 15 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f3f4f6;
+}
+
+.train-details {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.route-details {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+}
+
+.journey-date {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+    -fx-font-weight: 500;
+}
+
+.journey-upcoming {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+    -fx-background-color: #ecfdf5;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+}
+
+.journey-past {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6b7280;
+    -fx-background-color: #f3f4f6;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+}
+
+.journey-today {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #d97706;
+    -fx-background-color: #fef3c7;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+}
+
+/* Passenger Section */
+.passenger-section {
+    -fx-padding: 15 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f3f4f6;
+}
+
+.passenger-count {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #374151;
+    -fx-background-color: #f3f4f6;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+}
+
+.total-fare {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #059669;
+}
+
+.passenger-names {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+}
+
+/* Action Section */
+.action-section {
+    -fx-padding: 15 0 0 0;
+}
+
+.action-btn-primary {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.action-btn-primary:hover {
+    -fx-background-color: #2563eb;
+}
+
+.action-btn-secondary {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #374151;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: #d1d5db;
+}
+
+.action-btn-secondary:hover {
+    -fx-background-color: #e5e7eb;
+    -fx-border-color: #9ca3af;
+}
+
+.action-btn-danger {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.action-btn-danger:hover {
+    -fx-background-color: #dc2626;
+}
+
+/* No Bookings Label */
+.no-bookings-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6b7280;
+    -fx-font-style: italic;
+    -fx-padding: 40px;
+    -fx-text-alignment: center;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+    .stats-container {
+        -fx-spacing: 15px;
+    }
+
+    .stat-card {
+        -fx-min-width: 120px;
+        -fx-padding: 15px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .nav-bar, .title-stats-section, .filter-section {
+        -fx-padding: 15px 20px;
+    }
+
+    .bookings-container {
+        -fx-padding: 20px;
+    }
+
+    .booking-card {
+        -fx-padding: 20px;
+    }
+
+    .stats-container {
+        -fx-spacing: 10px;
+    }
+
+    .stat-card {
+        -fx-min-width: 100px;
+        -fx-padding: 12px;
+    }
+
+    .stat-number {
+        -fx-font-size: 24px;
+    }
+}

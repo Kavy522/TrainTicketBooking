@@ -22,34 +22,52 @@ import java.util.List;
 public class UserProfileController {
 
     // Header Controls
-    @FXML private Button backButton;
-    @FXML private Button logoutButton;
+    @FXML
+    private Button backButton;
+    @FXML
+    private Button logoutButton;
 
     // Profile Information
-    @FXML private Label welcomeLabel;
-    @FXML private Label userNameLabel;
-    @FXML private Label nameDisplay;
-    @FXML private Label emailDisplay;
-    @FXML private Label phoneDisplay;
-    @FXML private Label memberSinceDisplay;
-    @FXML private Label lastLoginDisplay;
+    @FXML
+    private Label welcomeLabel;
+    @FXML
+    private Label userNameLabel;
+    @FXML
+    private Label nameDisplay;
+    @FXML
+    private Label emailDisplay;
+    @FXML
+    private Label phoneDisplay;
+    @FXML
+    private Label memberSinceDisplay;
+    @FXML
+    private Label lastLoginDisplay;
 
     // Statistics
-    @FXML private Label totalBookingsLabel;
-    @FXML private Label completedTripsLabel;
-    @FXML private Label cancelledBookingsLabel;
+    @FXML
+    private Label totalBookingsLabel;
+    @FXML
+    private Label completedTripsLabel;
+    @FXML
+    private Label cancelledBookingsLabel;
 
     // Action Buttons
-    @FXML private Button editProfileButton;
-    @FXML private Button bookTicketButton;
-    @FXML private Button viewBookingsButton;
-    @FXML private Button changePasswordButton;
+    @FXML
+    private Button editProfileButton;
+    @FXML
+    private Button bookTicketButton;
+    @FXML
+    private Button viewBookingsButton;
+    @FXML
+    private Button changePasswordButton;
 
     // Recent Activity
-    @FXML private VBox recentActivityContainer;
+    @FXML
+    private VBox recentActivityContainer;
 
     // Message
-    @FXML private Label messageLabel;
+    @FXML
+    private Label messageLabel;
 
     // Services
     private final SessionManager sessionManager = SessionManager.getInstance();
@@ -206,16 +224,8 @@ public class UserProfileController {
      * Handle back to main menu
      */
     @FXML
-    public void handleBackToMenu(ActionEvent event) {
-        handleBackToMenu();
-    }
-
-    private void handleBackToMenu() {
-        try {
-            SceneManager.switchScene("/fxml/MainMenu.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to navigate to main menu.");
-        }
+    public void handleBackToMenu() {
+        SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
     /**
@@ -224,12 +234,7 @@ public class UserProfileController {
     @FXML
     public void handleLogout(ActionEvent event) {
         authService.logout();
-
-        try {
-            SceneManager.switchScene("/fxml/Login.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to logout properly.");
-        }
+        SceneManager.switchScene("/fxml/Login.fxml");
     }
 
     /**
@@ -237,11 +242,7 @@ public class UserProfileController {
      */
     @FXML
     public void handleEditProfile(ActionEvent event) {
-        try {
-            SceneManager.switchScene("/fxml/EditProfile.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to load profile edit page.");
-        }
+        SceneManager.switchScene("/fxml/EditProfile.fxml");
     }
 
     /**
@@ -249,11 +250,7 @@ public class UserProfileController {
      */
     @FXML
     public void handleBookTicket(ActionEvent event) {
-        try {
-            SceneManager.switchScene("/fxml/TrainSearch.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to load ticket booking page.");
-        }
+        SceneManager.switchScene("/fxml/TrainSearch.fxml");
     }
 
     /**
@@ -261,11 +258,7 @@ public class UserProfileController {
      */
     @FXML
     public void handleViewBookings(ActionEvent event) {
-        try {
-            SceneManager.switchScene("/fxml/MyBookings.fxml");
-        } catch (Exception e) {
-            showErrorMessage("Failed to load bookings page.");
-        }
+        SceneManager.switchScene("/fxml/MyBookings.fxml");
     }
 
     /**
