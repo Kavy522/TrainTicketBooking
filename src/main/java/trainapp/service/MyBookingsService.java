@@ -2,11 +2,16 @@ package trainapp.service;
 
 import trainapp.dao.*;
 import trainapp.model.*;
-
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
+/**
+ * MyBookingsService handles user booking retrieval, statistics calculation,
+ * detailed booking information creation, and status formatting.
+ *
+ * Sections organized by: booking retrieval, statistics, status formatting,
+ * helper methods, and data model classes.
+ */
 public class MyBookingsService {
 
     private final BookingDAO bookingDAO = new BookingDAO();
@@ -16,8 +21,16 @@ public class MyBookingsService {
     private final StationDAO stationDAO = new StationDAO();
     private final JourneyDAO journeyDAO = new JourneyDAO();
 
+    // -------------------------------------------------------------------------
+    // Booking Retrieval Methods
+    // -------------------------------------------------------------------------
+
     /**
-     * Get all bookings for a user
+     * Retrieves all bookings for a user with complete details.
+     * Includes train, station, passenger, payment, and journey information.
+     *
+     * @param userId User's database ID
+     * @return MyBookingsResult containing detailed booking list or error
      */
     public MyBookingsResult getAllBookings(int userId) {
         try {
@@ -50,39 +63,11 @@ public class MyBookingsService {
     }
 
     /**
-     * Get bookings filtered by status
-     */
-    public MyBookingsResult getBookingsByStatus(int userId, String status) {
-        try {
-            List<Booking> allBookings = bookingDAO.getBookingsByUserId(userId);
-            List<Booking> filteredBookings = allBookings.stream()
-                    .filter(booking -> booking.getStatus().equalsIgnoreCase(status) ||
-                            (status.equalsIgnoreCase("confirmed") && booking.getStatus().equalsIgnoreCase("conformed")))
-                    .collect(Collectors.toList());
-
-            if (filteredBookings.isEmpty()) {
-                return MyBookingsResult.noBookings("No " + status.toLowerCase() + " bookings found.");
-            }
-
-            List<DetailedBookingInfo> detailedBookings = new ArrayList<>();
-            for (Booking booking : filteredBookings) {
-                DetailedBookingInfo detailedInfo = createDetailedBookingInfo(booking);
-                if (detailedInfo != null) {
-                    detailedBookings.add(detailedInfo);
-                }
-            }
-
-            detailedBookings.sort((a, b) -> b.getBooking().getBookingTime().compareTo(a.getBooking().getBookingTime()));
-            return MyBookingsResult.success("Filtered bookings loaded", detailedBookings);
-
-        } catch (Exception e) {
-            System.err.println("Error filtering bookings: " + e.getMessage());
-            return MyBookingsResult.error("Failed to filter bookings.");
-        }
-    }
-
-    /**
-     * Create detailed booking information
+     * Creates detailed booking information by gathering related data.
+     * Assembles complete booking details from multiple tables.
+     *
+     * @param booking Base booking object
+     * @return DetailedBookingInfo with all related data or null on error
      */
     private DetailedBookingInfo createDetailedBookingInfo(Booking booking) {
         try {
@@ -119,8 +104,16 @@ public class MyBookingsService {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Statistics & Analytics Methods
+    // -------------------------------------------------------------------------
+
     /**
-     * Get booking statistics for the user
+     * Calculates comprehensive booking statistics for a user.
+     * Includes total bookings, status breakdown, and total spending.
+     *
+     * @param userId User's database ID
+     * @return BookingStatistics object with calculated metrics
      */
     public BookingStatistics getBookingStatistics(int userId) {
         try {
@@ -162,8 +155,16 @@ public class MyBookingsService {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Status Formatting & Display Helpers
+    // -------------------------------------------------------------------------
+
     /**
-     * Format booking status for display
+     * Formats database status for user-friendly display.
+     * Handles status variations and provides consistent formatting.
+     *
+     * @param dbStatus Raw status from database
+     * @return Formatted status string for display
      */
     public String getFormattedStatus(String dbStatus) {
         if (dbStatus == null) return "Unknown";
@@ -183,7 +184,11 @@ public class MyBookingsService {
     }
 
     /**
-     * Get status color class for UI styling
+     * Provides CSS class name for status styling in UI.
+     * Used for consistent visual representation of booking statuses.
+     *
+     * @param status Booking status
+     * @return CSS class name for styling
      */
     public String getStatusColorClass(String status) {
         switch (status.toLowerCase()) {
@@ -200,7 +205,14 @@ public class MyBookingsService {
         }
     }
 
-    // Inner Classes
+    // -------------------------------------------------------------------------
+    // Data Model Classes
+    // -------------------------------------------------------------------------
+
+    /**
+     * Comprehensive booking information container with all related data.
+     * Includes booking, train, stations, passengers, payment, and journey details.
+     */
     public static class DetailedBookingInfo {
         private Booking booking;
         private Train train;
@@ -232,7 +244,7 @@ public class MyBookingsService {
         public Journey getJourney() { return journey; }
         public void setJourney(Journey journey) { this.journey = journey; }
 
-        // Helper methods
+        /** @return formatted journey date for display */
         public String getFormattedJourneyDate() {
             if (journey != null && journey.getDepartureDate() != null) {
                 return journey.getDepartureDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy, EEEE"));
@@ -240,6 +252,7 @@ public class MyBookingsService {
             return "Date not available";
         }
 
+        /** @return train details as display string */
         public String getTrainDetails() {
             if (train != null) {
                 return train.getTrainNumber() + " - " + train.getName();
@@ -247,6 +260,7 @@ public class MyBookingsService {
             return "Train details not available";
         }
 
+        /** @return route details as display string */
         public String getRouteDetails() {
             if (fromStation != null && toStation != null) {
                 return fromStation.getName() + " → " + toStation.getName();
@@ -254,6 +268,7 @@ public class MyBookingsService {
             return "Route details not available";
         }
 
+        /** @return passenger count summary */
         public String getPassengerSummary() {
             if (passengers != null && !passengers.isEmpty()) {
                 int count = passengers.size();
@@ -262,6 +277,7 @@ public class MyBookingsService {
             return "No passengers";
         }
 
+        /** @return true if journey is in the future */
         public boolean isUpcomingJourney() {
             if (journey != null && journey.getDepartureDate() != null) {
                 return journey.getDepartureDate().isAfter(java.time.LocalDate.now());
@@ -269,6 +285,7 @@ public class MyBookingsService {
             return false;
         }
 
+        /** @return true if journey is in the past */
         public boolean isPastJourney() {
             if (journey != null && journey.getDepartureDate() != null) {
                 return journey.getDepartureDate().isBefore(java.time.LocalDate.now());
@@ -277,6 +294,9 @@ public class MyBookingsService {
         }
     }
 
+    /**
+     * Statistical summary of user's booking history.
+     */
     public static class BookingStatistics {
         private int totalBookings;
         private int confirmedBookings;
@@ -301,6 +321,9 @@ public class MyBookingsService {
         public void setTotalSpent(double totalSpent) { this.totalSpent = totalSpent; }
     }
 
+    /**
+     * Result wrapper for booking operations with status and data.
+     */
     public static class MyBookingsResult {
         private final boolean success;
         private final String message;
@@ -333,6 +356,9 @@ public class MyBookingsService {
         public MyBookingsResultType getType() { return type; }
     }
 
+    /**
+     * Classification for result types from booking operations.
+     */
     public enum MyBookingsResultType {
         SUCCESS, NO_BOOKINGS, ERROR
     }

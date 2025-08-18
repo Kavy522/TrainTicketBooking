@@ -2,11 +2,15 @@ package trainapp.service;
 
 import trainapp.dao.*;
 import trainapp.model.*;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.ArrayList;
 
+/**
+ * PNRService provides comprehensive status checks and formatting
+ * for PNR-related queries, result reporting, and display styling.
+ *
+ * Methods and inner classes are grouped by their responsibilities.
+ */
 public class PNRService {
 
     private final BookingDAO bookingDAO = new BookingDAO();
@@ -16,20 +20,26 @@ public class PNRService {
     private final StationDAO stationDAO = new StationDAO();
     private final JourneyDAO journeyDAO = new JourneyDAO();
 
+    // -------------------------------------------------------------------------
+    // Core PNR Lookup & Reporting Methods
+    // -------------------------------------------------------------------------
+
     /**
-     * Get complete PNR status information
+     * Retrieves comprehensive PNR status details for a given PNR number.
+     * Includes booking info, train, route, passengers, payment, and journey.
+     *
+     * @param pnrNumber Passenger Name Record number
+     * @return PNRStatusResult containing information or error/reason
      */
     public PNRStatusResult getPNRStatus(String pnrNumber) {
         try {
             System.out.println("Checking PNR status for: " + pnrNumber);
 
-            // Get booking by PNR
             Booking booking = getBookingByPNR(pnrNumber);
             if (booking == null) {
                 return PNRStatusResult.notFound("PNR not found. Please check your PNR number and try again.");
             }
 
-            // Get additional information
             Train train = trainDAO.getTrainById(booking.getTrainId());
             Station fromStation = stationDAO.getStationById(booking.getSourceStationId());
             Station toStation = stationDAO.getStationById(booking.getDestStationId());
@@ -37,7 +47,6 @@ public class PNRService {
             Payment payment = paymentDAO.getPaymentByBookingId(booking.getBookingId());
             Journey journey = journeyDAO.getJourneyById(booking.getJourneyId());
 
-            // Create comprehensive PNR status
             PNRStatusInfo pnrInfo = new PNRStatusInfo();
             pnrInfo.setPnr(pnrNumber);
             pnrInfo.setBooking(booking);
@@ -58,10 +67,11 @@ public class PNRService {
     }
 
     /**
-     * Get booking by PNR number with custom query
+     * Looks up booking info for a given PNR number.
+     * @param pnr the PNR number to search
+     * @return Booking object, or null if not found/error
      */
     private Booking getBookingByPNR(String pnr) {
-        // Use existing BookingDAO method or implement custom query
         try {
             return bookingDAO.getBookingByPNR(pnr);
         } catch (Exception e) {
@@ -70,12 +80,17 @@ public class PNRService {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Status Formatting & Styling Helpers
+    // -------------------------------------------------------------------------
+
     /**
-     * Get formatted booking status for display
+     * Converts status from DB to readable string.
+     * @param dbStatus DB status
+     * @return readable status string
      */
     public String getFormattedStatus(String dbStatus) {
         if (dbStatus == null) return "Unknown";
-
         switch (dbStatus.toLowerCase()) {
             case "conformed":
             case "confirmed":
@@ -91,7 +106,9 @@ public class PNRService {
     }
 
     /**
-     * Get status color class for UI styling
+     * Provides style class name for status styling in UI.
+     * @param status status string
+     * @return class name for CSS styling
      */
     public String getStatusColorClass(String status) {
         switch (status.toLowerCase()) {
@@ -108,7 +125,13 @@ public class PNRService {
         }
     }
 
-    // Inner classes
+    // -------------------------------------------------------------------------
+    // Data Model Classes for PNR Results
+    // -------------------------------------------------------------------------
+
+    /**
+     * Holds all relevant details for PNR status reporting.
+     */
     public static class PNRStatusInfo {
         private String pnr;
         private Booking booking;
@@ -144,7 +167,7 @@ public class PNRService {
         public Journey getJourney() { return journey; }
         public void setJourney(Journey journey) { this.journey = journey; }
 
-        // Helper methods
+        /** @return formatted journey date for display */
         public String getFormattedJourneyDate() {
             if (journey != null && journey.getDepartureDate() != null) {
                 return journey.getDepartureDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy, EEEE"));
@@ -152,6 +175,7 @@ public class PNRService {
             return "Date not available";
         }
 
+        /** @return train details as display string */
         public String getTrainDetails() {
             if (train != null) {
                 return train.getTrainNumber() + " - " + train.getName();
@@ -159,6 +183,7 @@ public class PNRService {
             return "Train details not available";
         }
 
+        /** @return route details as display string */
         public String getRouteDetails() {
             if (fromStation != null && toStation != null) {
                 return fromStation.getName() + " → " + toStation.getName();
@@ -167,6 +192,9 @@ public class PNRService {
         }
     }
 
+    /**
+     * Result container with status and PNRStatusInfo, for API/UI.
+     */
     public static class PNRStatusResult {
         private final boolean success;
         private final String message;
@@ -180,14 +208,17 @@ public class PNRService {
             this.type = type;
         }
 
+        /** @return success result */
         public static PNRStatusResult success(String message, PNRStatusInfo data) {
             return new PNRStatusResult(true, message, data, PNRResultType.SUCCESS);
         }
 
+        /** @return not found result */
         public static PNRStatusResult notFound(String message) {
             return new PNRStatusResult(false, message, null, PNRResultType.NOT_FOUND);
         }
 
+        /** @return error result */
         public static PNRStatusResult error(String message) {
             return new PNRStatusResult(false, message, null, PNRResultType.ERROR);
         }
@@ -199,7 +230,8 @@ public class PNRService {
         public PNRResultType getType() { return type; }
     }
 
-    public enum PNRResultType {
-        SUCCESS, NOT_FOUND, ERROR
-    }
+    /**
+     * Classification for result types returned from PNR lookup.
+     */
+    public enum PNRResultType { SUCCESS, NOT_FOUND, ERROR }
 }

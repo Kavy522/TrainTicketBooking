@@ -6,21 +6,40 @@ import trainapp.model.User;
 import trainapp.model.Admin;
 import trainapp.util.PasswordUtil;
 
+/**
+ * AuthService manages authentication and registration for users and admins.
+ *
+ * Responsibilities:
+ * <ul>
+ *   <li>Authenticate users/admins and manage session</li>
+ *   <li>Register new users with validation</li>
+ *   <li>Manage login/logout state via SessionManager</li>
+ *   <li>Expose convenience accessors for session information</li>
+ * </ul>
+ */
 public class AuthService {
 
     private final UserDAO userDAO = new UserDAO();
     private final AdminDAO adminDAO = new AdminDAO();
     private final SessionManager sessionManager = SessionManager.getInstance();
 
+    // -------------------------------------------------------------------------
+    // Auth & Registration API Methods
+    // -------------------------------------------------------------------------
+
     /**
-     * Login with name/username and password
-     * First tries admin login, then user login by name
+     * Performs login using username/name and password.
+     * Attempts admin authentication first, then falls back to user login.
+     * If successful, stores state in the SessionManager.
+     *
+     * @param nameOrUsername Admin username or User name
+     * @param password Raw password (plain text)
+     * @return AuthResult indicating success/failure, and user/admin info if applicable
      */
     public AuthResult login(String nameOrUsername, String password) {
         if (nameOrUsername == null || nameOrUsername.trim().isEmpty()) {
             return AuthResult.error("Name/Username is required");
         }
-
         if (password == null || password.trim().isEmpty()) {
             return AuthResult.error("Password is required");
         }
@@ -31,39 +50,38 @@ public class AuthService {
             sessionManager.loginAdmin(admin);
             return AuthResult.success("Welcome back, Administrator!", admin);
         }
-
         // Try user login by name
         User user = userDAO.authenticate(nameOrUsername.trim(), password);
         if (user != null) {
             sessionManager.loginUser(user);
             return AuthResult.success("Welcome back, " + user.getName() + "!", user);
         }
-
         return AuthResult.error("Invalid name or password");
     }
 
     /**
-     * Register a new user
+     * Registers a new user (not admin) with provided information.
+     * Validates uniqueness for name, email, phone, and sets up session.
+     *
+     * @param name Desired display name
+     * @param email User's email (must be unique)
+     * @param phone User's phone number (unique)
+     * @param password Initial password
+     * @param confirmPassword Confirmed password (future: enforce matching)
+     * @return AuthResult indicating outcome of registration and user info.
      */
     public AuthResult registerUser(String name, String email, String phone, String password, String confirmPassword) {
-        // Check if name already exists
         if (userDAO.nameExists(name)) {
             return AuthResult.error("Name already exists. Please choose a different name.");
         }
-
-        // Check if email already exists
         if (userDAO.emailExists(email)) {
             return AuthResult.error("Email already registered. Please use a different email.");
         }
-
-        // Check if phone already exists
         if (userDAO.phoneExists(phone)) {
             return AuthResult.error("Phone number already registered. Please use a different phone number.");
         }
 
-        // Create new user
         User newUser = new User(name.trim(), email.trim(), phone.trim());
-
         if (userDAO.createUser(newUser, password)) {
             sessionManager.loginUser(newUser);
             return AuthResult.success("Registration successful! Welcome to TrainApp!", newUser);
@@ -73,91 +91,59 @@ public class AuthService {
     }
 
     /**
-     * Register a new admin
-     */
-    public AuthResult registerAdmin(String username, String password, String confirmPassword) {
-        // Validation
-        if (username == null || username.trim().isEmpty()) {
-            return AuthResult.error("Username is required");
-        }
-
-        if (username.length() < 3 || username.length() > 50) {
-            return AuthResult.error("Username must be between 3 and 50 characters");
-        }
-
-        if (!username.matches("^[a-zA-Z0-9_]+$")) {
-            return AuthResult.error("Username can only contain letters, numbers, and underscores");
-        }
-
-        if (!PasswordUtil.isValidPassword(password)) {
-            return AuthResult.error(PasswordUtil.getPasswordStrengthMessage(password));
-        }
-
-        if (!password.equals(confirmPassword)) {
-            return AuthResult.error("Password and confirmation password don't match");
-        }
-
-        // Check if username already exists
-        if (adminDAO.usernameExists(username)) {
-            return AuthResult.error("Username already exists. Please choose a different username.");
-        }
-
-        // Create new admin
-        Admin newAdmin = new Admin(username.trim());
-
-        if (adminDAO.createAdmin(newAdmin, password)) {
-            return AuthResult.success("Admin registration successful! You can now login.", newAdmin);
-        } else {
-            return AuthResult.error("Admin registration failed. Please try again.");
-        }
-    }
-
-    /**
-     * Logout current user/admin
+     * Logs out the current session (either user or admin).
      */
     public void logout() {
         sessionManager.logout();
     }
 
+    // -------------------------------------------------------------------------
+    // Session State & Accessors
+    // -------------------------------------------------------------------------
+
     /**
-     * Check if user is currently logged in
+     * @return true if any user or admin is logged in
      */
     public boolean isLoggedIn() {
         return sessionManager.isLoggedIn();
     }
 
     /**
-     * Check if current session is admin
+     * @return true if the current session holder is admin
      */
     public boolean isAdmin() {
         return sessionManager.isAdmin();
     }
 
     /**
-     * Check if current session is user
+     * @return true if the current session holder is user
      */
     public boolean isUser() {
         return sessionManager.isUser();
     }
 
     /**
-     * Get current user
+     * Returns instance of the currently logged in User, or null if not a user session.
      */
     public User getCurrentUser() {
         return sessionManager.getCurrentUser();
     }
 
     /**
-     * Get current admin
+     * Returns instance of the currently logged in Admin, or null if not an admin session.
      */
     public Admin getCurrentAdmin() {
         return sessionManager.getCurrentAdmin();
     }
 
-
+    // -------------------------------------------------------------------------
+    // Auth Operation Result Wrapper
+    // -------------------------------------------------------------------------
 
     /**
-     * Authentication result wrapper
+     * Wrapper/result class for any authentication-related operation,
+     * including login, registration, and session state checks.
+     * Can carry user/admin info on success, error message otherwise.
      */
     public static class AuthResult {
         private final boolean success;
@@ -170,22 +156,40 @@ public class AuthService {
             this.data = data;
         }
 
+        /**
+         * Static factory for successful auth action with message only.
+         */
         public static AuthResult success(String message) {
             return new AuthResult(true, message, null);
         }
 
+        /**
+         * Static factory for successful auth action with result data (user/admin).
+         */
         public static AuthResult success(String message, Object data) {
             return new AuthResult(true, message, data);
         }
 
+        /**
+         * Static factory for failed auth action with error message.
+         */
         public static AuthResult error(String message) {
             return new AuthResult(false, message, null);
         }
 
+        /** @return true if operation succeeded */
         public boolean isSuccess() { return success; }
+
+        /** @return explanatory message (may be success or error) */
         public String getMessage() { return message; }
+
+        /** @return user object if result data is an instance of User, else null */
         public User getUser() { return data instanceof User ? (User) data : null; }
+
+        /** @return admin object if result data is an instance of Admin, else null */
         public Admin getAdmin() { return data instanceof Admin ? (Admin) data : null; }
+
+        /** @return raw underlying data (User/Admin/null) */
         public Object getData() { return data; }
     }
 }

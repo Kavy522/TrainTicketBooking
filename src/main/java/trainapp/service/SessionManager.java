@@ -8,9 +8,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * SessionManager handles login/logout, session status, pending booking data,
+ * permissions, and session listeners for user and admin sessions.
+ * <p>
+ * Methods are grouped by functionality for clarity and maintainability.
+ */
 public class SessionManager {
 
     private static SessionManager instance;
+
+    // Session state
     private User currentUser;
     private Admin currentAdmin;
     private boolean isLoggedIn;
@@ -25,16 +33,23 @@ public class SessionManager {
     private LocalDate pendingJourneyDate;
     private boolean hasPendingBooking = false;
 
-    public enum UserType {
-        USER, ADMIN, GUEST
-    }
+    /**
+     * Distinguishes user, admin, and guest session types.
+     */
+    public enum UserType {USER, ADMIN, GUEST}
 
+    // -------------------------------------------------------------------------
+    // Singleton Constructor
+    // -------------------------------------------------------------------------
     private SessionManager() {
         this.isLoggedIn = false;
         this.userType = UserType.GUEST;
         this.listeners = new ArrayList<>();
     }
 
+    /**
+     * Returns the singleton instance for session management.
+     */
     public static synchronized SessionManager getInstance() {
         if (instance == null) {
             instance = new SessionManager();
@@ -45,7 +60,9 @@ public class SessionManager {
     // ===================== LOGIN METHODS =====================
 
     /**
-     * Login a regular user
+     * Log in as a regular user.
+     *
+     * @param user the user object to log in with
      */
     public void loginUser(User user) {
         this.currentUser = user;
@@ -63,14 +80,18 @@ public class SessionManager {
     }
 
     /**
-     * Login method compatible with the existing login flow
+     * Login (delegates to loginUser for regular users).
+     *
+     * @param user the user to log in
      */
     public void login(User user) {
         loginUser(user);
     }
 
     /**
-     * Login an admin
+     * Log in as an administrator.
+     *
+     * @param admin admin object to log in with
      */
     public void loginAdmin(Admin admin) {
         this.currentAdmin = admin;
@@ -84,7 +105,7 @@ public class SessionManager {
     }
 
     /**
-     * Logout current user/admin
+     * Log out the current user or admin.
      */
     public void logout() {
         String loggedOutUser = "";
@@ -97,7 +118,6 @@ public class SessionManager {
         this.userType = UserType.GUEST;
         this.loginTime = null;
 
-        // Clear pending booking on logout
         clearPendingBooking();
 
         System.out.println("Logged out: " + loggedOutUser);
@@ -107,56 +127,56 @@ public class SessionManager {
     // ===================== STATUS GETTERS =====================
 
     /**
-     * Check if user is logged in
+     * @return true if any user or admin is logged in
      */
     public boolean isLoggedIn() {
         return isLoggedIn && (currentUser != null || currentAdmin != null);
     }
 
     /**
-     * Get current user (null if admin is logged in)
+     * @return the current logged-in user (null if admin)
      */
     public User getCurrentUser() {
         return currentUser;
     }
 
     /**
-     * Get current admin (null if user is logged in)
+     * @return the current logged-in admin (null if user)
      */
     public Admin getCurrentAdmin() {
         return currentAdmin;
     }
 
     /**
-     * Get current user type
+     * @return the current session type (user/admin/guest)
      */
     public UserType getUserType() {
         return userType;
     }
 
     /**
-     * Check if current session is a regular user
+     * @return true if the session is a user session
      */
     public boolean isUser() {
         return userType == UserType.USER && currentUser != null;
     }
 
     /**
-     * Check if current session is an admin
+     * @return true if the session is an admin session
      */
     public boolean isAdmin() {
         return userType == UserType.ADMIN && currentAdmin != null;
     }
 
     /**
-     * Get login time
+     * @return the login timestamp (null if not logged in)
      */
     public LocalDateTime getLoginTime() {
         return loginTime;
     }
 
     /**
-     * Get display name for current user/admin
+     * @return display name for the current session holder (user, admin, or guest)
      */
     public String getCurrentUserDisplayName() {
         if (currentUser != null) {
@@ -171,7 +191,7 @@ public class SessionManager {
     // ===================== PENDING BOOKING METHODS =====================
 
     /**
-     * Set pending booking data for after login
+     * Set pending booking data (for use after successful login).
      */
     public void setPendingBooking(int trainId, String fromStation, String toStation, LocalDate journeyDate) {
         this.pendingTrainId = trainId;
@@ -186,7 +206,7 @@ public class SessionManager {
     }
 
     /**
-     * Clear pending booking data
+     * Clear any saved pending booking after handling.
      */
     public void clearPendingBooking() {
         this.hasPendingBooking = false;
@@ -199,175 +219,51 @@ public class SessionManager {
     }
 
     /**
-     * Check if there's a pending booking
+     * @return true if there is currently a pending booking
      */
     public boolean hasPendingBooking() {
         return hasPendingBooking;
     }
 
     /**
-     * Get pending train ID
+     * @return pending train id, 0 if none
      */
     public int getPendingTrainId() {
         return pendingTrainId;
     }
 
     /**
-     * Get pending from station
+     * @return pending source station name, null if none
      */
     public String getPendingFromStation() {
         return pendingFromStation;
     }
 
     /**
-     * Get pending to station
+     * @return pending destination station name, null if none
      */
     public String getPendingToStation() {
         return pendingToStation;
     }
 
     /**
-     * Get pending journey date
+     * @return pending journey date, null if none
      */
     public LocalDate getPendingJourneyDate() {
         return pendingJourneyDate;
     }
 
-    // ===================== SESSION VALIDATION =====================
+    // ===================== SESSION LISTENER PATTERN =====================
 
     /**
-     * Check if current session is valid (not expired)
-     */
-    public boolean isSessionValid() {
-        if (!isLoggedIn()) return false;
-
-        // Check if session hasn't expired (24 hours)
-        if (loginTime != null) {
-            LocalDateTime expiryTime = loginTime.plusHours(24);
-            if (LocalDateTime.now().isAfter(expiryTime)) {
-                logout(); // Auto logout
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Get session duration in minutes
-     */
-    public long getSessionDurationMinutes() {
-        if (loginTime != null) {
-            return java.time.Duration.between(loginTime, LocalDateTime.now()).toMinutes();
-        }
-        return 0;
-    }
-
-    /**
-     * Get session expiry time
-     */
-    public LocalDateTime getSessionExpiryTime() {
-        if (loginTime != null) {
-            return loginTime.plusHours(24);
-        }
-        return null;
-    }
-
-    /**
-     * Extend session by resetting login time
-     */
-    public void extendSession() {
-        if (isLoggedIn()) {
-            this.loginTime = LocalDateTime.now();
-            System.out.println("Session extended for: " + getCurrentUserDisplayName());
-            notifyListeners();
-        }
-    }
-
-    // ===================== REFRESH METHODS =====================
-
-    /**
-     * Refresh current user data (for profile updates)
-     */
-    public void refreshCurrentUser(User updatedUser) {
-        if (isUser() && currentUser != null &&
-                currentUser.getUserId() == updatedUser.getUserId()) {
-            this.currentUser = updatedUser;
-            notifyListeners();
-            System.out.println("Current user data refreshed: " + updatedUser.getName());
-        }
-    }
-
-    /**
-     * Refresh current admin data (for profile updates)
-     */
-    public void refreshCurrentAdmin(Admin updatedAdmin) {
-        if (isAdmin() && currentAdmin != null &&
-                currentAdmin.getAdminId() == updatedAdmin.getAdminId()) {
-            this.currentAdmin = updatedAdmin;
-            notifyListeners();
-            System.out.println("Current admin data refreshed: " + updatedAdmin.getUsername());
-        }
-    }
-
-    // ===================== SECURITY METHODS =====================
-
-    /**
-     * Check if user has specific permission (for future use)
-     */
-    public boolean hasPermission(String permission) {
-        if (isAdmin()) {
-            return true; // Admins have all permissions
-        }
-
-        if (isUser()) {
-            // Add user permission logic here if needed
-            return true; // Basic users have basic permissions
-        }
-
-        return false; // Guests have no permissions
-    }
-
-    /**
-     * Get current user's role as string
-     */
-    public String getCurrentUserRole() {
-        if (isAdmin()) {
-            return "ADMIN";
-        } else if (isUser()) {
-            return "USER";
-        } else {
-            return "GUEST";
-        }
-    }
-
-    // ===================== LISTENER PATTERN =====================
-
-    /**
-     * Interface for session change listeners
+     * Interface for objects that listen for session change events.
      */
     public interface SessionListener {
         void onSessionChanged(boolean isLoggedIn, UserType userType, String displayName);
     }
 
     /**
-     * Add session listener
-     */
-    public void addSessionListener(SessionListener listener) {
-        if (listener != null && !listeners.contains(listener)) {
-            listeners.add(listener);
-        }
-    }
-
-    /**
-     * Remove session listener
-     */
-    public void removeSessionListener(SessionListener listener) {
-        listeners.remove(listener);
-    }
-
-    /**
-     * Notify all listeners of session changes
+     * Notify all listeners of any change in session status.
      */
     private void notifyListeners() {
         for (SessionListener listener : listeners) {
@@ -376,56 +272,6 @@ public class SessionManager {
             } catch (Exception e) {
                 System.err.println("Error notifying session listener: " + e.getMessage());
             }
-        }
-    }
-
-    // ===================== UTILITY METHODS =====================
-
-    /**
-     * Get session info as string (for debugging)
-     */
-    public String getSessionInfo() {
-        StringBuilder info = new StringBuilder();
-        info.append("Session Info:\n");
-        info.append("Logged In: ").append(isLoggedIn()).append("\n");
-        info.append("User Type: ").append(userType).append("\n");
-        info.append("Display Name: ").append(getCurrentUserDisplayName()).append("\n");
-        info.append("Login Time: ").append(loginTime).append("\n");
-        info.append("Session Duration: ").append(getSessionDurationMinutes()).append(" minutes\n");
-        info.append("Has Pending Booking: ").append(hasPendingBooking()).append("\n");
-
-        if (hasPendingBooking()) {
-            info.append("Pending Booking: Train ").append(pendingTrainId)
-                    .append(" from ").append(pendingFromStation)
-                    .append(" to ").append(pendingToStation)
-                    .append(" on ").append(pendingJourneyDate).append("\n");
-        }
-
-        return info.toString();
-    }
-
-    /**
-     * Quick session health check
-     */
-    public boolean performHealthCheck() {
-        try {
-            // Basic validation
-            if (isLoggedIn() && (currentUser == null && currentAdmin == null)) {
-                System.err.println("Session health check failed: No user/admin object");
-                logout();
-                return false;
-            }
-
-            // Session validity check
-            if (!isSessionValid()) {
-                System.err.println("Session health check failed: Session expired");
-                return false;
-            }
-
-            return true;
-        } catch (Exception e) {
-            System.err.println("Session health check error: " + e.getMessage());
-            return false;
         }
     }
 }

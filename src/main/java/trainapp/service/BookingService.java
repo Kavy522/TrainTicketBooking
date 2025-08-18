@@ -14,9 +14,28 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * BookingService orchestrates the workflow of train booking, including creation,
+ * payment integration, seat allocation, dynamic fare calculation, notification,
+ * passenger management, and record persistence.
+ *
+ * <p>
+ * Major responsibilities:
+ * <ul>
+ * <li>Validates and creates bookings with seat verification</li>
+ * <li>Handles online payment and payment results</li>
+ * <li>Allocates seats and generates tickets/invoices (PDF)</li>
+ * <li>Notifies user by email and SMS</li>
+ * <li>Records booking, payment, and notification data</li>
+ * <li>Supports dynamic fare pricing based on admin structures</li>
+ * </ul>
+ *
+ * All model and request/response classes are included as static inner classes.
+ */
 public class BookingService {
 
-    // DAOs
+    // ================== Dependencies & Data Access =====================
+
     private final BookingDAO bookingDAO = new BookingDAO();
     private final PassengerDAO passengerDAO = new PassengerDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
@@ -26,63 +45,60 @@ public class BookingService {
     private final TrainDAO trainDAO = new TrainDAO();
     private final StationDAO stationDAO = new StationDAO();
 
-    // Services and Utilities
     private final Razorpayclient razorpayClient = new Razorpayclient();
     private final EmailService emailService = new EmailService();
     private final SMSService smsService = new SMSService();
     private final PDFGenerator pdfGenerator = new PDFGenerator();
     private final TrainService trainService = new TrainService();
-    private final AdminDataStructureService adminService = new AdminDataStructureService();  // For dynamic pricing
+    private final AdminDataStructureService adminService = new AdminDataStructureService();
 
-    // Utilities
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // ================== Booking Creation & Payment =====================
+
     /**
-     * Create booking with payment integration (Updated method name)
+     * Creates a new booking and prepares for payment by generating a Razorpay order.
+     *
+     * <p>Validates request, checks seat availability, saves booking (pending), generates PNR,
+     * persists passengers, and creates payment order.
+     *
+     * @param bookingRequest Encapsulates user, train, date, route and passengers
+     * @return BookingResult carrying status, PNR, and Razorpay order ID (for client frontend)
      */
     public BookingResult createBookingWithPayment(BookingRequest bookingRequest) {
         BookingResult result = new BookingResult();
         try {
             System.out.println("Starting booking process for user: " + bookingRequest.getUserId());
 
-            // Step 1: Validate booking request
             if (!validateBookingRequest(bookingRequest)) {
                 result.setSuccess(false);
                 result.setMessage("Invalid booking request");
                 return result;
             }
-
-            // Step 2: Check seat availability
             if (!checkSeatAvailability(bookingRequest)) {
                 result.setSuccess(false);
                 result.setMessage("Seats not available for selected class");
                 return result;
             }
 
-            // Step 3: Create booking record (initially pending)
             Booking booking = createInitialBooking(bookingRequest);
             if (booking == null) {
                 result.setSuccess(false);
                 result.setMessage("Failed to create booking record");
                 return result;
             }
-
-            // Step 4: Create passenger records
             if (!createPassengerRecords(booking.getBookingId(), bookingRequest.getPassengers(), bookingRequest.getSeatClass())) {
                 result.setSuccess(false);
                 result.setMessage("Failed to create passenger records");
                 return result;
             }
 
-            // Step 5: Create Razorpay order
             String razorpayOrderId = razorpayClient.createOrder(booking.getTotalFare(), "INR", booking.getPnr());
             if (razorpayOrderId == null) {
                 result.setSuccess(false);
                 result.setMessage("Failed to create payment order");
                 return result;
             }
-
-            // Return initial result with Razorpay order details
             result.setSuccess(true);
             result.setBooking(booking);
             result.setRazorpayOrderId(razorpayOrderId);
@@ -99,14 +115,19 @@ public class BookingService {
     }
 
     /**
-     * Handle successful payment and complete booking
+     * Handles the callback/payments successful event for Razorpay integration.
+     *
+     * <p>After online payment is completed, verifies payment, updates status,
+     * persists the payment, updates seats, generates PDFs, notifies user, records notification.
+     *
+     * @param paymentRequest Payment request/response payload from Razorpay.
+     * @return BookingResult including updated booking details and status.
      */
     public BookingResult handleSuccessfulPayment(PaymentSuccessRequest paymentRequest) {
         BookingResult result = new BookingResult();
         try {
             System.out.println("Processing successful payment for booking: " + paymentRequest.getBookingId());
 
-            // Step 1: Verify payment with Razorpay
             boolean paymentVerified = razorpayClient.verifyPayment(
                     paymentRequest.getRazorpayOrderId(),
                     paymentRequest.getRazorpayPaymentId(),
@@ -118,24 +139,19 @@ public class BookingService {
                 return result;
             }
 
-            // Step 2: Get booking details
             Booking booking = bookingDAO.getBookingById(paymentRequest.getBookingId());
             if (booking == null) {
                 result.setSuccess(false);
                 result.setMessage("Booking not found");
                 return result;
             }
-
-            // Step 3: Update booking status to confirmed
             if (!bookingDAO.updateBookingStatus(booking.getBookingId(), "confirmed")) {
                 result.setSuccess(false);
                 result.setMessage("Failed to confirm booking");
                 return result;
             }
+            booking.setStatus("confirmed");
 
-            booking.setStatus("confirmed"); // Update local object
-
-            // Step 4: Create payment record
             Payment payment = new Payment();
             payment.setBookingId(booking.getBookingId());
             payment.setTransactionId(paymentRequest.getRazorpayPaymentId());
@@ -147,20 +163,11 @@ public class BookingService {
                 System.err.println("Warning: Failed to record payment details");
             }
 
-            // Step 5: Update seat availability
             updateSeatAvailabilityAfterBooking(booking);
-
-            // Step 6: Generate PDF ticket and invoice
             byte[] ticketPdf = generateTicketPDF(booking);
             byte[] invoicePdf = generateInvoicePDF(booking);
-
-            // Step 7: Send confirmation email with PDFs
             sendConfirmationEmail(booking, ticketPdf, invoicePdf);
-
-            // Step 8: Send SMS confirmation
             sendConfirmationSMS(booking);
-
-            // Step 9: Record notifications
             recordNotifications(booking.getBookingId());
 
             result.setSuccess(true);
@@ -178,16 +185,17 @@ public class BookingService {
     }
 
     /**
-     * Handle failed payment
+     * Handles booking cancellation and recording of failed payment.
+     * Updates booking to 'cancelled' and records failed payment.
+     *
+     * @param bookingId Booking record
+     * @param reason Why the payment failed (for audit/logging)
      */
     public void handleFailedPayment(long bookingId, String reason) {
         try {
             System.out.println("Processing failed payment for booking: " + bookingId);
-
-            // Update booking status to cancelled
             bookingDAO.updateBookingStatus(bookingId, "cancelled");
 
-            // Create failed payment record
             Payment payment = new Payment();
             payment.setBookingId(bookingId);
             payment.setAmount(0.0);
@@ -202,8 +210,11 @@ public class BookingService {
         }
     }
 
-    // Private helper methods
+    // ================== PRIVATE STEP HELPERS =====================
 
+    /**
+     * Validates the completeness of a booking request.
+     */
     private boolean validateBookingRequest(BookingRequest request) {
         return request.getUserId() > 0 &&
                 request.getTrainId() > 0 &&
@@ -215,6 +226,9 @@ public class BookingService {
                 request.getToStation() != null;
     }
 
+    /**
+     * Checks if required seats are available for the requested class and journey.
+     */
     private boolean checkSeatAvailability(BookingRequest request) {
         try {
             Journey journey = journeyDAO.getJourneyForTrainAndDate(request.getTrainId(), request.getJourneyDate());
@@ -231,27 +245,25 @@ public class BookingService {
         }
     }
 
+    /**
+     * Constructs and persists the new initial booking (status 'waiting').
+     * Looks up journey, station, computes dynamic fare and creates PNR.
+     */
     private Booking createInitialBooking(BookingRequest request) {
         try {
             Booking booking = new Booking();
             booking.setUserId(request.getUserId());
-
-            // Get or create journey
             Journey journey = journeyDAO.getJourneyForTrainAndDate(request.getTrainId(), request.getJourneyDate());
             if (journey == null) {
-                // Create journey if not exists (for admin-created trains)
                 trainService.ensureJourneyExists(request.getTrainId(), request.getJourneyDate());
                 journey = journeyDAO.getJourneyForTrainAndDate(request.getTrainId(), request.getJourneyDate());
             }
-
             if (journey == null) {
                 return null;
             }
-
             booking.setJourneyId(journey.getJourneyId());
             booking.setTrainId(request.getTrainId());
 
-            // Get station IDs from station names
             Station fromStation = stationDAO.getStationByName(request.getFromStation());
             Station toStation = stationDAO.getStationByName(request.getToStation());
             if (fromStation != null && toStation != null) {
@@ -262,9 +274,8 @@ public class BookingService {
                 return null;
             }
 
-            // Calculate dynamic fare
             double dynamicFare = calculateDynamicFare(request);
-            booking.setTotalFare(dynamicFare > 0 ? dynamicFare : request.getTotalAmount());  // Use dynamic if available, else fallback
+            booking.setTotalFare(dynamicFare > 0 ? dynamicFare : request.getTotalAmount());
 
             booking.setStatus("waiting");
             booking.setPnr(generatePNR());
@@ -284,6 +295,9 @@ public class BookingService {
         }
     }
 
+    /**
+     * Persists each passenger for this booking, with assigned seat numbers and class.
+     */
     private boolean createPassengerRecords(long bookingId, List<PassengerInfo> passengers, String selectedClass) {
         try {
             for (int i = 0; i < passengers.size(); i++) {
@@ -306,6 +320,9 @@ public class BookingService {
         }
     }
 
+    /**
+     * After booking confirmed, reduces seat count accordingly.
+     */
     private void updateSeatAvailabilityAfterBooking(Booking booking) {
         try {
             List<Passenger> passengers = passengerDAO.getPassengersByBookingId(booking.getBookingId());
@@ -314,9 +331,7 @@ public class BookingService {
                 int passengerCount = passengers.size();
                 Journey journey = journeyDAO.getJourneyById(booking.getJourneyId());
                 if (journey != null) {
-                    trainService.bookSeats(booking.getTrainId(),
-                            journey.getDepartureDate(),
-                            seatClass, passengerCount);
+                    trainService.bookSeats(booking.getTrainId(), journey.getDepartureDate(), seatClass, passengerCount);
                 }
             }
         } catch (Exception e) {
@@ -324,6 +339,11 @@ public class BookingService {
         }
     }
 
+    /**
+     * Generates an e-ticket (PDF) for confirmed booking.
+     * @param booking Booking to generate ticket for
+     * @return Byte array of PDF data or null on error
+     */
     private byte[] generateTicketPDF(Booking booking) {
         try {
             return pdfGenerator.generateTicketPDF(booking);
@@ -333,6 +353,11 @@ public class BookingService {
         }
     }
 
+    /**
+     * Generates a payment invoice as PDF.
+     * @param booking Booking for which to generate invoice
+     * @return Byte array PDF or null on error
+     */
     private byte[] generateInvoicePDF(Booking booking) {
         try {
             return pdfGenerator.generateInvoicePDF(booking);
@@ -342,6 +367,9 @@ public class BookingService {
         }
     }
 
+    /**
+     * Sends ETA, journey, and ticket/invoice by email after confirmation.
+     */
     private void sendConfirmationEmail(Booking booking, byte[] ticketPdf, byte[] invoicePdf) {
         try {
             User user = userDAO.getUserById(booking.getUserId());
@@ -349,27 +377,18 @@ public class BookingService {
             Station fromStation = stationDAO.getStationById(booking.getSourceStationId());
             Station toStation = stationDAO.getStationById(booking.getDestStationId());
             if (user != null) {
-                // Prepare email content
-                String trainDetails = (train != null) ?
-                        train.getTrainNumber() + " - " + train.getName() :
-                        "Train Details";
-                String journeyDetails = (fromStation != null && toStation != null) ?
-                        fromStation.getName() + " → " + toStation.getName() + " | " +
-                                booking.getBookingTime().toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy")) +
-                                " | Confirmed" :
-                        "Journey Details";
-
-                // Send email with both attachments
+                String trainDetails = (train != null)
+                        ? train.getTrainNumber() + " - " + train.getName()
+                        : "Train Details";
+                String journeyDetails = (fromStation != null && toStation != null)
+                        ? fromStation.getName() + " → " + toStation.getName() + " | " +
+                        booking.getBookingTime().toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy")) +
+                        " | Confirmed"
+                        : "Journey Details";
                 boolean emailSent = emailService.sendBookingConfirmationWithAttachments(
-                        user.getEmail(),
-                        user.getName(),
-                        booking.getPnr(),
-                        trainDetails,
-                        journeyDetails,
-                        ticketPdf,
-                        invoicePdf
+                        user.getEmail(), user.getName(), booking.getPnr(),
+                        trainDetails, journeyDetails, ticketPdf, invoicePdf
                 );
-
                 if (emailSent) {
                     System.out.println("Booking confirmation email sent successfully with attachments");
                 } else {
@@ -382,16 +401,15 @@ public class BookingService {
         }
     }
 
+    /**
+     * Sends confirmation SMS for booking.
+     */
     private void sendConfirmationSMS(Booking booking) {
         try {
             User user = userDAO.getUserById(booking.getUserId());
             if (user != null) {
                 boolean smsSent = smsService.sendBookingConfirmation(
-                        user.getPhone(),
-                        booking.getPnr(),
-                        booking.getTotalFare()
-                );
-
+                        user.getPhone(), booking.getPnr(), booking.getTotalFare());
                 if (smsSent) {
                     System.out.println("Booking confirmation SMS sent successfully");
                 } else {
@@ -403,6 +421,9 @@ public class BookingService {
         }
     }
 
+    /**
+     * Records notification record after confirmation (email and SMS).
+     */
     private void recordNotifications(long bookingId) {
         try {
             Notification notification = new Notification();
@@ -416,12 +437,16 @@ public class BookingService {
         }
     }
 
-    // Helper methods
-
+    /**
+     * Generates a unique PNR number using current timestamp.
+     */
     private String generatePNR() {
         return "PNR" + System.currentTimeMillis() % 10000000L;
     }
 
+    /**
+     * Maps gender inputs to canonical values ("M", "F", "O").
+     */
     private String mapGender(String gender) {
         switch (gender.toLowerCase()) {
             case "male": return "M";
@@ -430,6 +455,12 @@ public class BookingService {
         }
     }
 
+    /**
+     * Generates seat numbers per class, incremented for each passenger.
+     * @param classType Seat class code
+     * @param sequenceNumber index for seat assignment
+     * @return Seat number string (e.g. S1, A2)
+     */
     private String generateSeatNumber(String classType, int sequenceNumber) {
         String prefix = switch (classType) {
             case "SL" -> "S";
@@ -442,36 +473,32 @@ public class BookingService {
     }
 
     /**
-     * Calculate dynamic fare based on class, distance, and admin-set pricing
+     * Calculates fare dynamically based on admin pricing, class, and distance.
+     * If no pricing exists, returns 0.
      */
     private double calculateDynamicFare(BookingRequest request) {
-        // Get distance (use your TrainService)
         Train train = trainDAO.getTrainById(request.getTrainId());
         int distance = new TrainService().getDistanceBetween(train, request.getFromStation(), request.getToStation());
-
         TrainClass trainClass = TrainClass.fromString(request.getSeatClass());
         TreeMap<Integer, Double> classFares = adminService.getFareStructureForClass(trainClass);
 
         if (classFares.isEmpty()) {
-            return 0.0;  // Fallback
+            return 0.0;
         }
-
-        // Find fare for distance (use floorEntry for nearest lower)
         Map.Entry<Integer, Double> entry = classFares.floorEntry(distance);
         if (entry == null) {
-            return 0.0;  // No fare set
+            return 0.0;
         }
-
         double baseFare = entry.getValue();
-        // Adjust for actual distance (e.g., proportional)
         double adjustedFare = baseFare * (distance / (double) entry.getKey());
-
-        // Per passenger, multiply by count
         return adjustedFare * request.getPassengers().size();
     }
 
-    // Inner classes for request/response
+    // ================== Data Models & Request/Result Wrappers =====================
 
+    /**
+     * Booking request object for frontend/backend interaction and workflow.
+     */
     public static class BookingRequest {
         private int userId;
         private int trainId;
@@ -483,7 +510,7 @@ public class BookingService {
         private int passengerCount;
         private double totalAmount;
 
-        // Getters and setters
+        // Getters and setters...
         public int getUserId() { return userId; }
         public void setUserId(int userId) { this.userId = userId; }
         public int getTrainId() { return trainId; }
@@ -504,12 +531,14 @@ public class BookingService {
         public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
     }
 
+    /**
+     * Simple passenger info for booking request inbound payloads.
+     */
     public static class PassengerInfo {
         private String name;
         private int age;
         private String gender;
 
-        // Getters and setters
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public int getAge() { return age; }
@@ -518,13 +547,15 @@ public class BookingService {
         public void setGender(String gender) { this.gender = gender; }
     }
 
+    /**
+     * Payment callback request model for Razorpay/webhook.
+     */
     public static class PaymentSuccessRequest {
         private long bookingId;
         private String razorpayOrderId;
         private String razorpayPaymentId;
         private String razorpaySignature;
 
-        // Getters and setters
         public long getBookingId() { return bookingId; }
         public void setBookingId(long bookingId) { this.bookingId = bookingId; }
         public String getRazorpayOrderId() { return razorpayOrderId; }
@@ -535,13 +566,15 @@ public class BookingService {
         public void setRazorpaySignature(String razorpaySignature) { this.razorpaySignature = razorpaySignature; }
     }
 
+    /**
+     * Results returned from booking creation or confirmation process.
+     */
     public static class BookingResult {
         private boolean success;
         private String message;
         private Booking booking;
         private String razorpayOrderId;
 
-        // Getters and setters
         public boolean isSuccess() { return success; }
         public void setSuccess(boolean success) { this.success = success; }
         public String getMessage() { return message; }

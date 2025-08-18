@@ -19,13 +19,13 @@ public class UserProfileService {
      */
     public UserStatistics getUserStatistics(int userId) {
         String sql = """
-            SELECT 
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as completed,
-                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-                SUM(CASE WHEN status = 'waiting' THEN 1 ELSE 0 END) as pending
-            FROM bookings WHERE user_id = ?
-        """;
+                    SELECT 
+                        COUNT(*) as total,
+                        SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as completed,
+                        SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+                        SUM(CASE WHEN status = 'waiting' THEN 1 ELSE 0 END) as pending
+                    FROM bookings WHERE user_id = ?
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -93,17 +93,37 @@ public class UserProfileService {
         private int cancelledBookings;
         private int pendingBookings;
 
-        public int getTotalBookings() { return totalBookings; }
-        public void setTotalBookings(int totalBookings) { this.totalBookings = totalBookings; }
+        public int getTotalBookings() {
+            return totalBookings;
+        }
 
-        public int getCompletedTrips() { return completedTrips; }
-        public void setCompletedTrips(int completedTrips) { this.completedTrips = completedTrips; }
+        public void setTotalBookings(int totalBookings) {
+            this.totalBookings = totalBookings;
+        }
 
-        public int getCancelledBookings() { return cancelledBookings; }
-        public void setCancelledBookings(int cancelledBookings) { this.cancelledBookings = cancelledBookings; }
+        public int getCompletedTrips() {
+            return completedTrips;
+        }
 
-        public int getPendingBookings() { return pendingBookings; }
-        public void setPendingBookings(int pendingBookings) { this.pendingBookings = pendingBookings; }
+        public void setCompletedTrips(int completedTrips) {
+            this.completedTrips = completedTrips;
+        }
+
+        public int getCancelledBookings() {
+            return cancelledBookings;
+        }
+
+        public void setCancelledBookings(int cancelledBookings) {
+            this.cancelledBookings = cancelledBookings;
+        }
+
+        public int getPendingBookings() {
+            return pendingBookings;
+        }
+
+        public void setPendingBookings(int pendingBookings) {
+            this.pendingBookings = pendingBookings;
+        }
     }
 
     /**
@@ -118,11 +138,21 @@ public class UserProfileService {
             this.timestamp = timestamp;
         }
 
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
+        public String getDescription() {
+            return description;
+        }
 
-        public LocalDateTime getTimestamp() { return timestamp; }
-        public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(LocalDateTime timestamp) {
+            this.timestamp = timestamp;
+        }
 
         public String getFormattedTime() {
             LocalDateTime now = LocalDateTime.now();

@@ -6,45 +6,67 @@ import trainapp.util.PasswordUtil;
 
 import java.sql.*;
 
+/**
+ * Data Access Object (DAO) for Admin-related database operations.
+ * Provides authentication and CRUD operations for administrative users.
+ *
+ * <p>This DAO handles all database interactions for admin management including:
+ * <ul>
+ *   <li>Admin authentication with password verification</li>
+ *   <li>Admin account management and queries</li>
+ *   <li>Secure password handling using PasswordUtil</li>
+ * </ul>
+ *
+ * <p>All methods use prepared statements to prevent SQL injection attacks.
+ *
+ */
 public class AdminDAO {
 
+    // -------------------------------------------------------------------------
+    // Database Connection
+    // -------------------------------------------------------------------------
+
+    /**
+     * Database connection instance for all admin operations
+     */
     private final Connection connection;
 
+    /**
+     * Constructor that initializes the database connection.
+     * Uses DBConnection utility to establish connection to the database.
+     */
     public AdminDAO() {
         this.connection = DBConnection.getConnection();
     }
 
-    /**
-     * Create a new admin
-     */
-    public boolean createAdmin(Admin admin, String password) {
-        String sql = "INSERT INTO admins (username, password_hash) VALUES (?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, admin.getUsername());
-            stmt.setString(2, PasswordUtil.hashPassword(password));
-
-            int result = stmt.executeUpdate();
-
-            if (result > 0) {
-                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        admin.setAdminId(generatedKeys.getInt(1));
-                        return true;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error creating admin: " + e.getMessage());
-        }
-
-        return false;
-    }
+    // -------------------------------------------------------------------------
+    // Authentication Operations
+    // -------------------------------------------------------------------------
 
     /**
-     * Authenticate admin by username
+     * Authenticates an admin user using username and password.
+     * Verifies the provided password against the stored hash using secure password verification.
+     *
+     * <p>Security features:
+     * <ul>
+     *   <li>Uses prepared statements to prevent SQL injection</li>
+     *   <li>Employs secure password hashing via PasswordUtil</li>
+     *   <li>Returns complete admin object only on successful authentication</li>
+     * </ul>
+     *
+     * @param username the admin's unique username
+     * @param password the plain text password to verify
+     * @return Admin object if authentication successful, null otherwise
+     * @throws IllegalArgumentException if username or password is null or empty
      */
     public Admin authenticate(String username, String password) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be null or empty");
+        }
+
         String sql = "SELECT admin_id, username, password_hash FROM admins WHERE username = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -65,27 +87,9 @@ public class AdminDAO {
             }
         } catch (SQLException e) {
             System.err.println("Error authenticating admin: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return null;
-    }
-
-    /**
-     * Check if admin username exists
-     */
-    public boolean usernameExists(String username) {
-        String sql = "SELECT COUNT(*) FROM admins WHERE username = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            System.err.println("Error checking admin username existence: " + e.getMessage());
-        }
-
-        return false;
     }
 }

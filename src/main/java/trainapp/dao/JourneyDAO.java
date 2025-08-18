@@ -8,10 +8,32 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) for train journey management.
+ * Provides methods to create, find, and update journeys by train, date, and ID.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Fetch journey by train & date or by ID</li>
+ *   <li>Update available seat JSON for a journey</li>
+ *   <li>Create new journey records with seats and departure date</li>
+ *   <li>Ensures proper resource management via try-with-resources</li>
+ * </ul>
+ * <p>
+ * All operations use prepared statements to prevent SQL injection.
+ */
 public class JourneyDAO {
 
+    // -------------------------------------------------------------------------
+    // Read Operations
+    // -------------------------------------------------------------------------
+
     /**
-     * Get the journey of a train on the exact date.
+     * Retrieves a journey for a given train on a specific date.
+     *
+     * @param trainId the train's unique ID
+     * @param date    the journey's departure date
+     * @return Journey object if found, otherwise null
      */
     public Journey getJourneyForTrainAndDate(int trainId, LocalDate date) {
         String sql = """
@@ -19,11 +41,8 @@ public class JourneyDAO {
                 FROM journeys
                 WHERE train_id = ? AND departure_date = ?
                 """;
-
-        // ✅ FIXED: Use try-with-resources for automatic connection closing
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, trainId);
             stmt.setDate(2, Date.valueOf(date));
 
@@ -41,12 +60,14 @@ public class JourneyDAO {
             System.err.println("Error getting journey for date: " + e.getMessage());
             e.printStackTrace();
         }
-
         return null;
     }
 
     /**
-     * Fetch journey by journey_id
+     * Retrieves a journey by its unique journey ID.
+     *
+     * @param journeyId the unique journey ID
+     * @return Journey object if found, else null
      */
     public Journey getJourneyById(long journeyId) {
         String sql = """
@@ -54,13 +75,9 @@ public class JourneyDAO {
                 FROM journeys
                 WHERE journey_id = ?
                 """;
-
-        // ✅ FIXED: Use try-with-resources for automatic connection closing
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setLong(1, journeyId);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Journey journey = new Journey();
@@ -75,25 +92,28 @@ public class JourneyDAO {
             System.err.println("Error getting journey by ID: " + e.getMessage());
             e.printStackTrace();
         }
-
         return null;
     }
 
+    // -------------------------------------------------------------------------
+    // Update Operations
+    // -------------------------------------------------------------------------
+
     /**
-     * Update available seats for a journey
+     * Updates available seats JSON for a specific journey.
+     *
+     * @param journeyId          journey whose seat availability is to be updated
+     * @param availableSeatsJson new available seats JSON mapping
+     * @return true if update succeeded, false otherwise
      */
     public boolean updateAvailableSeats(long journeyId, String availableSeatsJson) {
         String sql = "UPDATE journeys SET available_seats = ? WHERE journey_id = ?";
-
-        // ✅ FIXED: Use try-with-resources for automatic connection closing
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, availableSeatsJson);
             stmt.setLong(2, journeyId);
             int rowsUpdated = stmt.executeUpdate();
             return rowsUpdated > 0;
-
         } catch (SQLException e) {
             System.err.println("Error updating seats: " + e.getMessage());
             e.printStackTrace();
@@ -101,42 +121,42 @@ public class JourneyDAO {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Create Operations
+    // -------------------------------------------------------------------------
+
     /**
-     * Create a new journey
+     * Creates a new journey record in the database with given train, date, and seat mapping.
+     *
+     * @param trainId            ID of the train for the journey
+     * @param departureDate      Departure date of the journey
+     * @param availableSeatsJson JSON string with seat availability info
+     * @return generated journey ID if successful, -1 if failed
      */
     public long createJourney(int trainId, LocalDate departureDate, String availableSeatsJson) {
         String sql = """
                 INSERT INTO journeys (train_id, departure_date, available_seats)
                 VALUES (?, ?, ?)
                 """;
-
-        // ✅ FIXED: Use try-with-resources for automatic connection closing
-        // Added RETURN_GENERATED_KEYS to get the auto-generated journey ID
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-
             stmt.setInt(1, trainId);
             stmt.setDate(2, Date.valueOf(departureDate));
             stmt.setString(3, availableSeatsJson);
 
             int rowsInserted = stmt.executeUpdate();
-
             if (rowsInserted > 0) {
-                // Get the generated journey ID
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         return generatedKeys.getLong(1);
                     }
                 }
             }
-
-            return -1; // Return -1 if insertion failed or no ID was generated
-
+            return -1;
         } catch (SQLException e) {
             System.err.println("Error creating journey: " + e.getMessage());
             e.printStackTrace();
-            return -1; // Return -1 on error
+            return -1;
         }
     }
-
 }
