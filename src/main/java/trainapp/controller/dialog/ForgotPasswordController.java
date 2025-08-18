@@ -17,46 +17,85 @@ import trainapp.service.PasswordResetService;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * ForgotPasswordController manages secure password recovery workflow with multi-step verification.
+ * Provides comprehensive password reset functionality with OTP verification and validation.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Multi-step password recovery workflow with email verification</li>
+ *   <li>OTP-based verification system for enhanced security</li>
+ *   <li>Real-time validation with comprehensive input checking</li>
+ *   <li>Animated transitions between workflow steps</li>
+ *   <li>Asynchronous operations with loading indicators</li>
+ *   <li>Comprehensive error handling and user feedback</li>
+ * </ul>
+ *
+ * <p>Security Features:
+ * <ul>
+ *   <li>Email format validation with regex pattern matching</li>
+ *   <li>Password strength validation with minimum requirements</li>
+ *   <li>Password confirmation matching with real-time feedback</li>
+ *   <li>OTP verification through secure dialog integration</li>
+ *   <li>Session-based email verification tracking</li>
+ * </ul>
+ *
+ * <p>User Experience Features:
+ * <ul>
+ *   <li>Smooth animated transitions between workflow steps</li>
+ *   <li>Real-time field validation with immediate feedback</li>
+ *   <li>Loading states with contextual progress messages</li>
+ *   <li>Clear error messaging with field-specific guidance</li>
+ *   <li>Success feedback with automatic dialog closure</li>
+ * </ul>
+ */
 public class ForgotPasswordController {
 
+    // -------------------------------------------------------------------------
+    // FXML UI Components
+    // -------------------------------------------------------------------------
+
     // Email Step Controls
-    @FXML
-    private VBox emailStep;
-    @FXML
-    private TextField emailField;
-    @FXML
-    private Label emailError;
-    @FXML
-    private Button sendOtpButton;
+    @FXML private VBox emailStep;
+    @FXML private TextField emailField;
+    @FXML private Label emailError;
+    @FXML private Button sendOtpButton;
 
     // Password Step Controls
-    @FXML
-    private VBox passwordStep;
-    @FXML
-    private PasswordField newPasswordField;
-    @FXML
-    private PasswordField confirmPasswordField;
-    @FXML
-    private Label passwordError;
-    @FXML
-    private Label confirmPasswordError;
-    @FXML
-    private Button resetPasswordButton;
+    @FXML private VBox passwordStep;
+    @FXML private PasswordField newPasswordField;
+    @FXML private PasswordField confirmPasswordField;
+    @FXML private Label passwordError;
+    @FXML private Label confirmPasswordError;
+    @FXML private Button resetPasswordButton;
 
     // Common Controls
-    @FXML
-    private Label messageLabel;
-    @FXML
-    private HBox loadingBox;
+    @FXML private Label messageLabel;
+    @FXML private HBox loadingBox;
+
+    // -------------------------------------------------------------------------
+    // Services and State Management
+    // -------------------------------------------------------------------------
 
     private final PasswordResetService passwordResetService = new PasswordResetService();
     private String verifiedEmail;
 
+    // -------------------------------------------------------------------------
+    // Initialization and Setup
+    // -------------------------------------------------------------------------
+
+    /**
+     * Initializes the forgot password dialog with field validation setup.
+     * Called automatically by JavaFX after FXML loading.
+     */
     @FXML
     public void initialize() {
         setupFieldValidation();
     }
 
+    /**
+     * Sets up comprehensive field validation with real-time feedback.
+     */
     private void setupFieldValidation() {
         // Email field validation
         emailField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -76,6 +115,15 @@ public class ForgotPasswordController {
         });
     }
 
+    // -------------------------------------------------------------------------
+    // OTP Request and Verification Flow
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handles OTP sending with email validation and asynchronous processing.
+     *
+     * @param event ActionEvent from send OTP button
+     */
     @FXML
     public void handleSendOtp(ActionEvent event) {
         String email = emailField.getText().trim();
@@ -125,6 +173,11 @@ public class ForgotPasswordController {
         new Thread(sendOtpTask).start();
     }
 
+    /**
+     * Opens OTP verification dialog with modal display and result handling.
+     *
+     * @param email the email address for OTP verification
+     */
     private void openOtpVerificationDialog(String email) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dialogs/OtpVerify.fxml"));
@@ -153,6 +206,15 @@ public class ForgotPasswordController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Password Reset Processing
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handles password reset with validation and asynchronous processing.
+     *
+     * @param event ActionEvent from reset password button
+     */
     @FXML
     public void handleResetPassword(ActionEvent event) {
         if (!validateNewPassword()) {
@@ -208,6 +270,13 @@ public class ForgotPasswordController {
         new Thread(resetTask).start();
     }
 
+    // -------------------------------------------------------------------------
+    // UI Step Transition Management
+    // -------------------------------------------------------------------------
+
+    /**
+     * Animates transition from email step to password step with smooth fade effects.
+     */
     private void showPasswordStep() {
         // Fade out email step
         FadeTransition fadeOut = new FadeTransition(Duration.millis(300), emailStep);
@@ -228,6 +297,16 @@ public class ForgotPasswordController {
         fadeOut.play();
     }
 
+    // -------------------------------------------------------------------------
+    // Input Validation Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Validates email format with comprehensive pattern matching.
+     *
+     * @param email the email address to validate
+     * @return true if email is valid
+     */
     private boolean validateEmail(String email) {
         if (email.isEmpty()) {
             showEmailError("Email is required");
@@ -242,6 +321,11 @@ public class ForgotPasswordController {
         return true;
     }
 
+    /**
+     * Validates new password with strength requirements and confirmation matching.
+     *
+     * @return true if password validation passes
+     */
     private boolean validateNewPassword() {
         String password = newPasswordField.getText();
         String confirmPassword = confirmPasswordField.getText();
@@ -269,6 +353,9 @@ public class ForgotPasswordController {
         return true;
     }
 
+    /**
+     * Validates password confirmation matching in real-time.
+     */
     private void validatePasswords() {
         String password = newPasswordField.getText();
         String confirmPassword = confirmPasswordField.getText();
@@ -278,30 +365,54 @@ public class ForgotPasswordController {
         }
     }
 
-    // UI Helper Methods
+    // -------------------------------------------------------------------------
+    // UI Helper Methods for Error Display
+    // -------------------------------------------------------------------------
+
+    /**
+     * Displays email validation error with appropriate styling.
+     *
+     * @param message the error message to display
+     */
     private void showEmailError(String message) {
         emailError.setText(message);
         emailError.setVisible(true);
         emailError.setManaged(true);
     }
 
+    /**
+     * Clears email validation error display.
+     */
     private void clearEmailError() {
         emailError.setVisible(false);
         emailError.setManaged(false);
     }
 
+    /**
+     * Displays password validation error with appropriate styling.
+     *
+     * @param message the error message to display
+     */
     private void showPasswordError(String message) {
         passwordError.setText(message);
         passwordError.setVisible(true);
         passwordError.setManaged(true);
     }
 
+    /**
+     * Displays password confirmation error with appropriate styling.
+     *
+     * @param message the error message to display
+     */
     private void showConfirmPasswordError(String message) {
         confirmPasswordError.setText(message);
         confirmPasswordError.setVisible(true);
         confirmPasswordError.setManaged(true);
     }
 
+    /**
+     * Clears all password validation error displays.
+     */
     private void clearPasswordErrors() {
         passwordError.setVisible(false);
         passwordError.setManaged(false);
@@ -309,6 +420,15 @@ public class ForgotPasswordController {
         confirmPasswordError.setManaged(false);
     }
 
+    // -------------------------------------------------------------------------
+    // UI Helper Methods for Messaging and Loading
+    // -------------------------------------------------------------------------
+
+    /**
+     * Displays success message with appropriate styling.
+     *
+     * @param message the success message to display
+     */
     private void showSuccessMessage(String message) {
         messageLabel.setText(message);
         messageLabel.getStyleClass().removeAll("error-message");
@@ -317,6 +437,11 @@ public class ForgotPasswordController {
         messageLabel.setManaged(true);
     }
 
+    /**
+     * Displays error message with appropriate styling.
+     *
+     * @param message the error message to display
+     */
     private void showErrorMessage(String message) {
         messageLabel.setText(message);
         messageLabel.getStyleClass().removeAll("success-message");
@@ -325,11 +450,20 @@ public class ForgotPasswordController {
         messageLabel.setManaged(true);
     }
 
+    /**
+     * Clears all displayed messages.
+     */
     private void clearMessage() {
         messageLabel.setVisible(false);
         messageLabel.setManaged(false);
     }
 
+    /**
+     * Shows or hides loading indicator with contextual message.
+     *
+     * @param show true to show loading indicator
+     * @param message the loading message to display
+     */
     private void showLoading(boolean show, String message) {
         loadingBox.setVisible(show);
         loadingBox.setManaged(show);
@@ -340,6 +474,9 @@ public class ForgotPasswordController {
         }
     }
 
+    /**
+     * Closes the forgot password dialog.
+     */
     private void closeDialog() {
         Stage stage = (Stage) emailField.getScene().getWindow();
         stage.close();
