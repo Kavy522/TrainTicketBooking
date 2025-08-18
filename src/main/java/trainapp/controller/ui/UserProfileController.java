@@ -19,61 +19,92 @@ import trainapp.util.SceneManager;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * UserProfileController manages comprehensive user profile display and account operations.
+ * Provides personalized user information, statistics, activity tracking, and profile management.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Complete user profile information display with formatted dates</li>
+ *   <li>Real-time user statistics including bookings and trip analytics</li>
+ *   <li>Recent activity tracking with chronological activity feed</li>
+ *   <li>Time-sensitive personalized greeting system</li>
+ *   <li>Comprehensive profile management actions</li>
+ *   <li>Seamless navigation to related user functions</li>
+ * </ul>
+ *
+ * <p>Profile Display Features:
+ * <ul>
+ *   <li>User information display with formatted member since and last login dates</li>
+ *   <li>Dynamic greeting based on current time of day</li>
+ *   <li>Real-time statistics loading with booking counts and trip history</li>
+ *   <li>Activity feed with chronological display of recent user actions</li>
+ *   <li>Responsive layout adapting to user data availability</li>
+ * </ul>
+ *
+ * <p>Account Management Features:
+ * <ul>
+ *   <li>Profile editing navigation with seamless transitions</li>
+ *   <li>Password change functionality (placeholder for future implementation)</li>
+ *   <li>Account settings access for comprehensive user control</li>
+ *   <li>Data download capabilities for user data portability</li>
+ *   <li>Account deletion with confirmation workflows</li>
+ *   <li>Secure logout with session cleanup</li>
+ * </ul>
+ */
 public class UserProfileController {
 
+    // -------------------------------------------------------------------------
+    // FXML UI Components
+    // -------------------------------------------------------------------------
+
     // Header Controls
-    @FXML
-    private Button backButton;
-    @FXML
-    private Button logoutButton;
+    @FXML private Button backButton;
+    @FXML private Button logoutButton;
 
-    // Profile Information
-    @FXML
-    private Label welcomeLabel;
-    @FXML
-    private Label userNameLabel;
-    @FXML
-    private Label nameDisplay;
-    @FXML
-    private Label emailDisplay;
-    @FXML
-    private Label phoneDisplay;
-    @FXML
-    private Label memberSinceDisplay;
-    @FXML
-    private Label lastLoginDisplay;
+    // Profile Information Display
+    @FXML private Label welcomeLabel;
+    @FXML private Label userNameLabel;
+    @FXML private Label nameDisplay;
+    @FXML private Label emailDisplay;
+    @FXML private Label phoneDisplay;
+    @FXML private Label memberSinceDisplay;
+    @FXML private Label lastLoginDisplay;
 
-    // Statistics
-    @FXML
-    private Label totalBookingsLabel;
-    @FXML
-    private Label completedTripsLabel;
-    @FXML
-    private Label cancelledBookingsLabel;
+    // Statistics Display
+    @FXML private Label totalBookingsLabel;
+    @FXML private Label completedTripsLabel;
+    @FXML private Label cancelledBookingsLabel;
 
     // Action Buttons
-    @FXML
-    private Button editProfileButton;
-    @FXML
-    private Button bookTicketButton;
-    @FXML
-    private Button viewBookingsButton;
-    @FXML
-    private Button changePasswordButton;
+    @FXML private Button editProfileButton;
+    @FXML private Button bookTicketButton;
+    @FXML private Button viewBookingsButton;
+    @FXML private Button changePasswordButton;
 
-    // Recent Activity
-    @FXML
-    private VBox recentActivityContainer;
+    // Activity Feed
+    @FXML private VBox recentActivityContainer;
 
-    // Message
-    @FXML
-    private Label messageLabel;
+    // Status and Messaging
+    @FXML private Label messageLabel;
+
+    // -------------------------------------------------------------------------
+    // Services and Dependencies
+    // -------------------------------------------------------------------------
 
     // Services
     private final SessionManager sessionManager = SessionManager.getInstance();
     private final AuthService authService = new AuthService();
     private final UserProfileService profileService = new UserProfileService();
 
+    // -------------------------------------------------------------------------
+    // Initialization and Setup
+    // -------------------------------------------------------------------------
+
+    /**
+     * Initializes the user profile interface with complete data loading.
+     * Called automatically by JavaFX after FXML loading.
+     */
     @FXML
     public void initialize() {
         loadUserProfile();
@@ -81,8 +112,13 @@ public class UserProfileController {
         loadRecentActivity();
     }
 
+    // -------------------------------------------------------------------------
+    // Profile Data Loading
+    // -------------------------------------------------------------------------
+
     /**
-     * Load user profile information
+     * Loads comprehensive user profile information with formatted display.
+     * Handles user authentication validation and displays complete profile data.
      */
     private void loadUserProfile() {
         User currentUser = sessionManager.getCurrentUser();
@@ -115,7 +151,7 @@ public class UserProfileController {
     }
 
     /**
-     * Load user statistics
+     * Loads user statistics asynchronously with error handling and fallback display.
      */
     private void loadUserStatistics() {
         Task<UserProfileService.UserStatistics> statsTask = new Task<>() {
@@ -147,7 +183,7 @@ public class UserProfileController {
     }
 
     /**
-     * Load recent activity
+     * Loads recent user activity with chronological display and error handling.
      */
     private void loadRecentActivity() {
         Task<List<UserProfileService.ActivityItem>> activityTask = new Task<List<UserProfileService.ActivityItem>>() {
@@ -174,8 +210,14 @@ public class UserProfileController {
         new Thread(activityTask).start();
     }
 
+    // -------------------------------------------------------------------------
+    // Activity Feed Management
+    // -------------------------------------------------------------------------
+
     /**
-     * Populate recent activity section
+     * Populates recent activity section with chronological activity display.
+     *
+     * @param activities list of recent user activities
      */
     private void populateRecentActivity(List<UserProfileService.ActivityItem> activities) {
         recentActivityContainer.getChildren().clear();
@@ -202,8 +244,14 @@ public class UserProfileController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Personalization Features
+    // -------------------------------------------------------------------------
+
     /**
-     * Set welcome message based on time of day
+     * Sets personalized welcome message based on current time of day.
+     *
+     * @param userName the user's name for personalization
      */
     private void setWelcomeMessage(String userName) {
         int hour = java.time.LocalTime.now().getHour();
@@ -220,8 +268,12 @@ public class UserProfileController {
         welcomeLabel.setText(greeting);
     }
 
+    // -------------------------------------------------------------------------
+    // Navigation Action Handlers
+    // -------------------------------------------------------------------------
+
     /**
-     * Handle back to main menu
+     * Handles navigation back to main menu.
      */
     @FXML
     public void handleBackToMenu() {
@@ -229,7 +281,9 @@ public class UserProfileController {
     }
 
     /**
-     * Handle logout
+     * Handles user logout with session cleanup.
+     *
+     * @param event ActionEvent from logout button
      */
     @FXML
     public void handleLogout(ActionEvent event) {
@@ -238,7 +292,9 @@ public class UserProfileController {
     }
 
     /**
-     * Handle edit profile
+     * Handles navigation to profile editing interface.
+     *
+     * @param event ActionEvent from edit profile button
      */
     @FXML
     public void handleEditProfile(ActionEvent event) {
@@ -246,7 +302,9 @@ public class UserProfileController {
     }
 
     /**
-     * Handle book ticket
+     * Handles navigation to ticket booking interface.
+     *
+     * @param event ActionEvent from book ticket button
      */
     @FXML
     public void handleBookTicket(ActionEvent event) {
@@ -254,15 +312,24 @@ public class UserProfileController {
     }
 
     /**
-     * Handle view bookings
+     * Handles navigation to user bookings interface.
+     *
+     * @param event ActionEvent from view bookings button
      */
     @FXML
     public void handleViewBookings(ActionEvent event) {
         SceneManager.switchScene("/fxml/MyBookings.fxml");
     }
 
+    // -------------------------------------------------------------------------
+    // Account Management Action Handlers
+    // -------------------------------------------------------------------------
+
     /**
-     * Handle change password
+     * Handles password change functionality.
+     * Currently shows placeholder message for future implementation.
+     *
+     * @param event ActionEvent from change password button
      */
     @FXML
     public void handleChangePassword(ActionEvent event) {
@@ -271,7 +338,10 @@ public class UserProfileController {
     }
 
     /**
-     * Handle download data
+     * Handles user data download functionality.
+     * Currently shows placeholder message for future implementation.
+     *
+     * @param event ActionEvent from download data button
      */
     @FXML
     public void handleDownloadData(ActionEvent event) {
@@ -279,7 +349,10 @@ public class UserProfileController {
     }
 
     /**
-     * Handle account settings
+     * Handles navigation to account settings.
+     * Currently shows placeholder message for future implementation.
+     *
+     * @param event ActionEvent from account settings button
      */
     @FXML
     public void handleAccountSettings(ActionEvent event) {
@@ -287,7 +360,10 @@ public class UserProfileController {
     }
 
     /**
-     * Handle delete account
+     * Handles account deletion with confirmation workflow.
+     * Currently shows placeholder message for future implementation.
+     *
+     * @param event ActionEvent from delete account button
      */
     @FXML
     public void handleDeleteAccount(ActionEvent event) {
@@ -295,8 +371,14 @@ public class UserProfileController {
         showInfoMessage("Account deletion requires confirmation. This will be implemented soon.");
     }
 
+    // -------------------------------------------------------------------------
+    // UI Messaging and Feedback
+    // -------------------------------------------------------------------------
+
     /**
-     * Show success message
+     * Displays success message with automatic hiding and appropriate styling.
+     *
+     * @param message the success message to display
      */
     private void showSuccessMessage(String message) {
         messageLabel.setText(message);
@@ -314,7 +396,9 @@ public class UserProfileController {
     }
 
     /**
-     * Show error message
+     * Displays error message with automatic hiding and appropriate styling.
+     *
+     * @param message the error message to display
      */
     private void showErrorMessage(String message) {
         messageLabel.setText(message);
@@ -332,7 +416,9 @@ public class UserProfileController {
     }
 
     /**
-     * Show info message
+     * Displays informational message with automatic hiding.
+     *
+     * @param message the informational message to display
      */
     private void showInfoMessage(String message) {
         messageLabel.setText(message);

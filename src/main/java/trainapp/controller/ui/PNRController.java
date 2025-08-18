@@ -18,23 +18,41 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * PNRController manages PNR status lookup and booking details display.
+ * Provides real-time PNR inquiry, booking lookup, and related actions for users.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Auto-search and manual PNR lookup with instant feedback</li>
+ *   <li>Detailed PNR and booking information display</li>
+ *   <li>Status-based styling and context-aware messaging</li>
+ *   <li>Passenger summary in dynamic card layout</li>
+ *   <li>Booking cancellation with confirmation</li>
+ *   <li>Graceful fallback states and comprehensive error handling</li>
+ * </ul>
+ */
 public class PNRController {
+
+    // -------------------------------------------------------------------------
+    // FXML UI Components
+    // -------------------------------------------------------------------------
 
     // Header
     @FXML private Button backButton;
     @FXML private Label titleLabel;
 
-    // PNR Input Section
+    // PNR Input
     @FXML private TextField pnrSearchField;
     @FXML private Button searchButton;
 
-    // Loading and Status
+    // Loading & Status Sections
     @FXML private VBox loadingSection;
     @FXML private VBox pnrDetailsSection;
     @FXML private VBox notFoundSection;
     @FXML private Label statusMessage;
 
-    // PNR Details
+    // PNR & Booking Details
     @FXML private Label pnrNumberLabel;
     @FXML private Label bookingStatusLabel;
     @FXML private Label trainDetailsLabel;
@@ -48,23 +66,37 @@ public class PNRController {
     @FXML private VBox passengerListContainer;
     @FXML private Label passengerCountLabel;
 
-    // Services
+    // -------------------------------------------------------------------------
+    // Services and Data Management
+    // -------------------------------------------------------------------------
+
     private final PNRService pnrService = new PNRService();
     private PNRStatusInfo currentPNRInfo;
-
-    //Dao
     private final BookingDAO bookingDAO = new BookingDAO();
 
+    // -------------------------------------------------------------------------
+    // Initialization and Setup
+    // -------------------------------------------------------------------------
+
+    /**
+     * Initializes the PNR status UI.
+     * Called automatically by JavaFX after FXML loading.
+     */
     @FXML
     public void initialize() {
-        // Hide all sections initially
         showLoadingSection(false);
         showPNRDetailsSection(false);
         showNotFoundSection(false);
     }
 
+    // -------------------------------------------------------------------------
+    // PNR Search Input and Trigger
+    // -------------------------------------------------------------------------
+
     /**
-     * Set PNR number from MainMenu and search automatically
+     * Sets the PNR number programmatically and auto-triggers lookup.
+     *
+     * @param pnr the PNR to be looked up
      */
     public void setPNRNumber(String pnr) {
         pnrSearchField.setText(pnr);
@@ -72,7 +104,9 @@ public class PNRController {
     }
 
     /**
-     * Handle manual PNR search
+     * Handles manual PNR search when triggered by user input.
+     *
+     * @param event ActionEvent from search button
      */
     @FXML
     public void handleSearch(ActionEvent event) {
@@ -92,7 +126,9 @@ public class PNRController {
     }
 
     /**
-     * Search for PNR status
+     * Searches for PNR status asynchronously and updates the UI.
+     *
+     * @param pnr the PNR to be searched
      */
     private void searchPNR(String pnr) {
         showLoadingSection(true);
@@ -107,59 +143,59 @@ public class PNRController {
             }
         };
 
-        searchTask.setOnSucceeded(e -> {
-            Platform.runLater(() -> {
-                PNRStatusResult result = searchTask.getValue();
-                showLoadingSection(false);
-                searchButton.setDisable(false);
+        searchTask.setOnSucceeded(e -> Platform.runLater(() -> {
+            PNRStatusResult result = searchTask.getValue();
+            showLoadingSection(false);
+            searchButton.setDisable(false);
 
-                if (result.isSuccess()) {
-                    currentPNRInfo = result.getData();
-                    displayPNRDetails(currentPNRInfo);
-                    showPNRDetailsSection(true);
-                } else {
-                    showNotFoundSection(true);
-                    showStatusMessage(result.getMessage(), "error");
-                }
-            });
-        });
-
-        searchTask.setOnFailed(e -> {
-            Platform.runLater(() -> {
-                showLoadingSection(false);
-                searchButton.setDisable(false);
+            if (result.isSuccess()) {
+                currentPNRInfo = result.getData();
+                displayPNRDetails(currentPNRInfo);
+                showPNRDetailsSection(true);
+            } else {
                 showNotFoundSection(true);
-                showStatusMessage("Failed to retrieve PNR status. Please try again.", "error");
-            });
-        });
+                showStatusMessage(result.getMessage(), "error");
+            }
+        }));
+
+        searchTask.setOnFailed(e -> Platform.runLater(() -> {
+            showLoadingSection(false);
+            searchButton.setDisable(false);
+            showNotFoundSection(true);
+            showStatusMessage("Failed to retrieve PNR status. Please try again.", "error");
+        }));
 
         new Thread(searchTask).start();
     }
 
+    // -------------------------------------------------------------------------
+    // PNR Details Display
+    // -------------------------------------------------------------------------
+
     /**
-     * Display PNR details in the UI
+     * Displays all PNR status information in the UI.
+     *
+     * @param pnrInfo the retrieved PNR status and booking data
      */
     private void displayPNRDetails(PNRStatusInfo pnrInfo) {
-        // Basic details
+        // Basic PNR and status
         pnrNumberLabel.setText(pnrInfo.getPnr());
 
-        // Booking status with styling
         String status = pnrService.getFormattedStatus(pnrInfo.getBooking().getStatus());
         bookingStatusLabel.setText(status);
         bookingStatusLabel.getStyleClass().removeAll("status-confirmed", "status-pending", "status-cancelled");
         bookingStatusLabel.getStyleClass().add(pnrService.getStatusColorClass(status));
 
-        // Train and journey details
+        // Train and route/journey
         trainDetailsLabel.setText(pnrInfo.getTrainDetails());
         routeDetailsLabel.setText(pnrInfo.getRouteDetails());
         journeyDateLabel.setText(pnrInfo.getFormattedJourneyDate());
 
-        // Booking and payment details
+        // Booking date and total fare
         if (pnrInfo.getBooking().getBookingTime() != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
             bookingTimeLabel.setText(pnrInfo.getBooking().getBookingTime().format(formatter));
         }
-
         totalFareLabel.setText("₹" + String.format("%.2f", pnrInfo.getBooking().getTotalFare()));
 
         // Payment status
@@ -169,12 +205,13 @@ public class PNRController {
             paymentStatusLabel.setText("PENDING");
         }
 
-        // Passenger details
         displayPassengerDetails(pnrInfo.getPassengers());
     }
 
     /**
-     * Display passenger information
+     * Displays detailed passenger information in a dynamic, card-based layout.
+     *
+     * @param passengers the list of passengers for this PNR
      */
     private void displayPassengerDetails(List<Passenger> passengers) {
         passengerListContainer.getChildren().clear();
@@ -197,41 +234,46 @@ public class PNRController {
     }
 
     /**
-     * Create passenger card UI
+     * Creates a UI card view for an individual passenger.
+     *
+     * @param passenger the passenger data
+     * @param serialNo the passenger's serial number
+     * @return VBox containing the passenger card
      */
     private VBox createPassengerCard(Passenger passenger, int serialNo) {
         VBox card = new VBox(8);
         card.getStyleClass().add("passenger-card");
 
-        // Header with serial number and name
+        // Header
         HBox header = new HBox(10);
         header.getStyleClass().add("passenger-header");
-
         Label serialLabel = new Label("Passenger " + serialNo);
         serialLabel.getStyleClass().add("passenger-serial");
-
         Label nameLabel = new Label(passenger.getName());
         nameLabel.getStyleClass().add("passenger-name");
-
         header.getChildren().addAll(serialLabel, nameLabel);
 
         // Details row
         HBox details = new HBox(20);
         details.getStyleClass().add("passenger-details");
-
         Label ageLabel = new Label("Age: " + passenger.getAge());
         Label genderLabel = new Label("Gender: " + passenger.getGender());
         Label seatLabel = new Label("Seat: " + (passenger.getSeatNumber() != null ? passenger.getSeatNumber() : "Not assigned"));
         Label coachLabel = new Label("Coach: " + (passenger.getCoachType() != null ? passenger.getCoachType() : "N/A"));
-
         details.getChildren().addAll(ageLabel, genderLabel, seatLabel, coachLabel);
 
         card.getChildren().addAll(header, details);
         return card;
     }
 
+    // -------------------------------------------------------------------------
+    // Actions and Handlers
+    // -------------------------------------------------------------------------
+
     /**
-     * Handle refresh PNR status
+     * Handles refresh of current PNR status.
+     *
+     * @param event ActionEvent from refresh button
      */
     @FXML
     public void handleRefresh(ActionEvent event) {
@@ -242,18 +284,22 @@ public class PNRController {
     }
 
     /**
-     * Handle download ticket
+     * Handles ticket download request for current PNR.
+     *
+     * @param event ActionEvent from download button
      */
     @FXML
     public void handleDownloadTicket(ActionEvent event) {
         if (currentPNRInfo != null) {
-            // TODO: Implement PDF download
+            // TODO: Implement PDF download functionality
             showStatusMessage("Download feature will be available soon!", "info");
         }
     }
 
     /**
-     * Handle cancel booking
+     * Handles booking cancellation with confirmation dialog.
+     *
+     * @param event ActionEvent from cancel booking button
      */
     @FXML
     public void handleCancelBooking(ActionEvent event) {
@@ -262,14 +308,11 @@ public class PNRController {
         confirm.setHeaderText("Cancel booking for PNR: " + currentPNRInfo.getPnr());
         confirm.setContentText("Are you sure you want to cancel this booking? This action cannot be undone.");
 
-        // Show the dialog and wait for user response
         Optional<ButtonType> result = confirm.showAndWait();
 
-        // Only cancel if user confirms (OK button)
         if (result.isPresent() && result.get() == ButtonType.OK) {
             boolean canceled = bookingDAO.cancelBooking(currentPNRInfo.getBooking().getBookingId());
             if (canceled) {
-                // Optional: Show success message
                 Alert success = new Alert(Alert.AlertType.INFORMATION);
                 success.setTitle("Success");
                 success.setHeaderText(null);
@@ -277,7 +320,6 @@ public class PNRController {
                 success.showAndWait();
                 handleRefresh(new ActionEvent());
             } else {
-                // Optional: Show failure message
                 Alert failure = new Alert(Alert.AlertType.ERROR);
                 failure.setTitle("Error");
                 failure.setHeaderText(null);
@@ -287,16 +329,24 @@ public class PNRController {
         }
     }
 
-
     /**
-     * Handle back to main menu
+     * Handles navigation back to the main menu.
+     *
+     * @param event ActionEvent from back button
      */
     @FXML
     public void handleBack(ActionEvent event) {
         SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
-    // UI Helper methods
+    // -------------------------------------------------------------------------
+    // UI State and Messaging Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Shows or hides loading section.
+     * @param show true to show loading
+     */
     private void showLoadingSection(boolean show) {
         if (loadingSection != null) {
             loadingSection.setVisible(show);
@@ -304,6 +354,10 @@ public class PNRController {
         }
     }
 
+    /**
+     * Shows or hides booking details section.
+     * @param show true to show details
+     */
     private void showPNRDetailsSection(boolean show) {
         if (pnrDetailsSection != null) {
             pnrDetailsSection.setVisible(show);
@@ -311,6 +365,10 @@ public class PNRController {
         }
     }
 
+    /**
+     * Shows or hides not found section.
+     * @param show true to show not found state
+     */
     private void showNotFoundSection(boolean show) {
         if (notFoundSection != null) {
             notFoundSection.setVisible(show);
@@ -318,6 +376,12 @@ public class PNRController {
         }
     }
 
+    /**
+     * Displays a status message with appropriate styling.
+     *
+     * @param message the text to display
+     * @param type style class (e.g., "success", "error", "info")
+     */
     private void showStatusMessage(String message, String type) {
         if (statusMessage != null) {
             statusMessage.setText(message);
@@ -328,7 +392,10 @@ public class PNRController {
         }
     }
 
-    private void hideStatusMessage(){
+    /**
+     * Hides the status message.
+     */
+    private void hideStatusMessage() {
         if(statusMessage != null){
             statusMessage.setVisible(false);
             statusMessage.setManaged(false);

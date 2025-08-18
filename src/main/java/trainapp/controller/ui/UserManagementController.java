@@ -19,19 +19,55 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * UserManagementController manages comprehensive user administration and account oversight.
+ * Provides complete user lifecycle management with advanced filtering and analytics capabilities.
+ *
+ * <p>Key Features:
+ * <ul>
+ *   <li>Complete user account management with CRUD operations</li>
+ *   <li>Advanced filtering by status and comprehensive search functionality</li>
+ *   <li>Real-time user statistics with status-based analytics</li>
+ *   <li>Detailed user information display with activity tracking</li>
+ *   <li>Secure user creation and modification with validation</li>
+ *   <li>Responsive table layout with contextual action buttons</li>
+ * </ul>
+ *
+ * <p>Administrative Operations:
+ * <ul>
+ *   <li>User account creation with comprehensive validation</li>
+ *   <li>Account modification with optional password updates</li>
+ *   <li>Safe account deletion with confirmation dialogs</li>
+ *   <li>Detailed user profile viewing with complete information</li>
+ *   <li>Status management with visual indicators</li>
+ * </ul>
+ *
+ * <p>Analytics and Monitoring Features:
+ * <ul>
+ *   <li>Real-time user statistics (total, active, new, inactive)</li>
+ *   <li>Status-based user categorization and filtering</li>
+ *   <li>Account activity tracking with last login information</li>
+ *   <li>Search functionality across user attributes</li>
+ *   <li>Data refresh capabilities for real-time monitoring</li>
+ * </ul>
+ */
 public class UserManagementController {
+
+    // -------------------------------------------------------------------------
+    // FXML UI Components
+    // -------------------------------------------------------------------------
 
     // Search and Filter Controls
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilterCombo;
 
-    // Statistics Labels
+    // Statistics Display
     @FXML private Label totalUsersLabel;
     @FXML private Label activeUsersLabel;
     @FXML private Label newUsersLabel;
     @FXML private Label inactiveUsersLabel;
 
-    // Table and Columns
+    // Data Table and Columns
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, Number> colId;
     @FXML private TableColumn<User, String> colName;
@@ -42,15 +78,28 @@ public class UserManagementController {
     @FXML private TableColumn<User, String> colStatus;
     @FXML private TableColumn<User, Void> colActions;
 
+    // Status and Messaging
     @FXML private Label messageLabel;
+
+    // -------------------------------------------------------------------------
+    // Data Access and State Management
+    // -------------------------------------------------------------------------
 
     // Services and DAOs
     private final UserDAO userDAO = new UserDAO();
 
-    // Data
+    // Data Collections
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
     private ObservableList<User> filteredUsers = FXCollections.observableArrayList();
 
+    // -------------------------------------------------------------------------
+    // Initialization and Setup
+    // -------------------------------------------------------------------------
+
+    /**
+     * Initializes the user management interface with full-screen layout and data loading.
+     * Called automatically by JavaFX after FXML loading.
+     */
     @FXML
     public void initialize() {
         Platform.runLater(() -> {
@@ -66,6 +115,9 @@ public class UserManagementController {
         updateStatistics();
     }
 
+    /**
+     * Sets up comprehensive table columns with data binding and custom formatting.
+     */
     private void setupTableColumns() {
         // Configure table columns
         colId.setCellValueFactory(cellData -> cellData.getValue().userIdProperty());
@@ -152,6 +204,9 @@ public class UserManagementController {
         userTable.setItems(filteredUsers);
     }
 
+    /**
+     * Sets up filter controls with status options and event handlers.
+     */
     private void setupFilters() {
         // Status filter
         statusFilterCombo.getItems().addAll("All Status", "Active", "Inactive", "New");
@@ -161,6 +216,13 @@ public class UserManagementController {
         statusFilterCombo.setOnAction(e -> applyFilters());
     }
 
+    // -------------------------------------------------------------------------
+    // Data Loading and Management
+    // -------------------------------------------------------------------------
+
+    /**
+     * Loads all users from database and updates display.
+     */
     private void loadUsers() {
         try {
             List<User> users = userDAO.getAllUsers();
@@ -178,6 +240,9 @@ public class UserManagementController {
         }
     }
 
+    /**
+     * Updates user statistics with current data calculations.
+     */
     private void updateStatistics() {
         try {
             int totalUsers = allUsers.size();
@@ -202,11 +267,21 @@ public class UserManagementController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Search and Filter Operations
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handles search functionality with current filter criteria.
+     */
     @FXML
     public void handleSearch() {
         applyFilters();
     }
 
+    /**
+     * Clears all search and filter criteria and resets display.
+     */
     @FXML
     public void handleClearSearch() {
         searchField.clear();
@@ -215,13 +290,9 @@ public class UserManagementController {
         showMessage("Filters cleared.", "info");
     }
 
-    @FXML
-    public void handleRefresh() {
-        loadUsers();
-        updateStatistics();
-        showMessage("Data refreshed successfully.", "success");
-    }
-
+    /**
+     * Applies comprehensive filtering based on search text and status selection.
+     */
     private void applyFilters() {
         String searchText = searchField.getText().trim().toLowerCase();
         String selectedStatus = statusFilterCombo.getValue();
@@ -246,15 +317,32 @@ public class UserManagementController {
         showMessage("Found " + filtered.size() + " users matching criteria.", "info");
     }
 
+    // -------------------------------------------------------------------------
+    // User CRUD Operations
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handles adding a new user.
+     */
     @FXML
     public void handleAddUser() {
         showUserDialog(null);
     }
 
+    /**
+     * Handles editing an existing user.
+     *
+     * @param user the user to edit
+     */
     private void handleEditUser(User user) {
         showUserDialog(user);
     }
 
+    /**
+     * Handles deleting a user with confirmation.
+     *
+     * @param user the user to delete
+     */
     private void handleDeleteUser(User user) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Delete User");
@@ -278,6 +366,11 @@ public class UserManagementController {
         }
     }
 
+    /**
+     * Displays detailed user information in dialog.
+     *
+     * @param user the user to view details for
+     */
     private void viewUserDetails(User user) {
         try {
             Alert detailsDialog = new Alert(Alert.AlertType.INFORMATION);
@@ -302,6 +395,15 @@ public class UserManagementController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // User Dialog Management
+    // -------------------------------------------------------------------------
+
+    /**
+     * Shows user add/edit dialog with comprehensive form validation.
+     *
+     * @param user the user to edit, or null for new user
+     */
     private void showUserDialog(User user) {
         Dialog<User> dialog = new Dialog<>();
         dialog.setTitle(user == null ? "Add New User" : "Edit User");
@@ -387,6 +489,11 @@ public class UserManagementController {
         result.ifPresent(this::saveUser);
     }
 
+    /**
+     * Saves user to database with appropriate add or update operation.
+     *
+     * @param user the user to save
+     */
     private void saveUser(User user) {
         try {
             boolean success;
@@ -416,12 +523,39 @@ public class UserManagementController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Data Refresh and Window Management
+    // -------------------------------------------------------------------------
+
+    /**
+     * Handles data refresh operation.
+     */
+    @FXML
+    public void handleRefresh() {
+        loadUsers();
+        updateStatistics();
+        showMessage("Data refreshed successfully.", "success");
+    }
+
+    /**
+     * Closes the user management window.
+     */
     @FXML
     public void handleClose() {
         Stage stage = (Stage) userTable.getScene().getWindow();
         stage.close();
     }
 
+    // -------------------------------------------------------------------------
+    // UI State Management and Messaging
+    // -------------------------------------------------------------------------
+
+    /**
+     * Displays status message with automatic hiding after delay.
+     *
+     * @param message the message to display
+     * @param type the message type for styling
+     */
     private void showMessage(String message, String type) {
         messageLabel.setText(message);
         messageLabel.setVisible(true);
