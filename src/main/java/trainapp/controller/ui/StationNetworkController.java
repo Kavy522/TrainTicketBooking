@@ -620,9 +620,9 @@ public class StationNetworkController {
 
                 // FIX: Access individual TextField elements from the array
                 station.setStationCode(fields[0].getText().trim().toUpperCase());  // codeField
-                station.setName(fields[0].getText().trim());                       // nameField
-                station.setCity(fields[0].getText().trim());                       // cityField
-                station.setState(fields[0].getText().trim());                      // stateField
+                station.setName(fields[1].getText().trim());                       // nameField
+                station.setCity(fields[2].getText().trim());                       // cityField
+                station.setState(fields[3].getText().trim());                      // stateField
 
                 return station;
             }
