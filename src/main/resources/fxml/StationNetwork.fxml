@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import java.net.URL?>
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.StationNetworkController">
+
+    <stylesheets>
+        <URL value="@../css/StationNetwork.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="station-header" alignment="CENTER_LEFT" spacing="20">
+            <padding>
+                <Insets top="24" left="32" right="32" bottom="16"/>
+            </padding>
+            <Label styleClass="station-title" text="Station Network Management"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button styleClass="station-close-btn" text="✕" onAction="#handleClose"/>
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="24" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" left="40" right="40" bottom="20"/>
+            </padding>
+
+            <!-- Controls Section -->
+            <HBox spacing="16" alignment="CENTER">
+                <TextField fx:id="searchField" promptText="Search stations by name, code, or city" styleClass="station-search" HBox.hgrow="ALWAYS"/>
+                <Button styleClass="station-btn-search" text="Search" onAction="#handleSearch"/>
+                <Button styleClass="station-btn-clear" text="Clear" onAction="#handleClearSearch"/>
+                <Button styleClass="station-btn-add" text="+ Add Station" onAction="#handleAddStation"/>
+                <Button styleClass="station-btn-refresh" text="↻ Refresh" onAction="#handleRefresh"/>
+            </HBox>
+
+            <!-- Statistics Cards -->
+            <HBox spacing="20" alignment="CENTER">
+                <VBox styleClass="stats-card" alignment="CENTER" spacing="8">
+                    <Label fx:id="totalStationsLabel" styleClass="stats-number" text="0"/>
+                    <Label styleClass="stats-label" text="Total Stations"/>
+                </VBox>
+                <VBox styleClass="stats-card" alignment="CENTER" spacing="8">
+                    <Label fx:id="statesCountLabel" styleClass="stats-number" text="0"/>
+                    <Label styleClass="stats-label" text="States Covered"/>
+                </VBox>
+                <VBox styleClass="stats-card" alignment="CENTER" spacing="8">
+                    <Label fx:id="citiesCountLabel" styleClass="stats-number" text="0"/>
+                    <Label styleClass="stats-label" text="Cities Covered"/>
+                </VBox>
+            </HBox>
+
+            <!-- Filter Section -->
+            <HBox spacing="16" alignment="CENTER">
+                <Label text="Filter by State:" styleClass="filter-label"/>
+                <ComboBox fx:id="stateFilterCombo" promptText="All States" styleClass="station-combo"/>
+                <Label text="Filter by City:" styleClass="filter-label"/>
+                <ComboBox fx:id="cityFilterCombo" promptText="All Cities" styleClass="station-combo"/>
+                <Button styleClass="station-btn-filter" text="Apply Filter" onAction="#handleApplyFilter"/>
+            </HBox>
+
+            <!-- Stations Table -->
+            <TableView fx:id="stationsTable" styleClass="station-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colCode" text="Station Code" prefWidth="120"/>
+                    <TableColumn fx:id="colName" text="Station Name" prefWidth="200"/>
+                    <TableColumn fx:id="colCity" text="City" prefWidth="150"/>
+                    <TableColumn fx:id="colState" text="State" prefWidth="150"/>
+                    <TableColumn fx:id="colActions" text="Actions" prefWidth="180"/>
+                </columns>
+            </TableView>
+
+            <!-- Status Message -->
+            <Label fx:id="messageLabel" styleClass="station-message" visible="false" managed="false"/>
+        </VBox>
+    </center>
+</BorderPane>

@@ -76,21 +76,4 @@ public class PaymentDAO {
 
         return null;
     }
-
-    public boolean updatePaymentStatus(long paymentId, String status) {
-        String sql = "UPDATE payments SET status = ? WHERE payment_id = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, status);
-            stmt.setLong(2, paymentId);
-
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating payment status: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
 }

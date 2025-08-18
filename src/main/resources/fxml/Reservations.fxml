@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import java.net.URL?>
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.ReservationsController">
+
+    <stylesheets>
+        <URL value="@../css/Reservations.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="res-header" alignment="CENTER_LEFT" spacing="20">
+            <padding>
+                <Insets top="24" left="32" right="32" bottom="16"/>
+            </padding>
+            <Label styleClass="res-title" text="Reservations Management"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button styleClass="res-close-btn" text="✕ Close" onAction="#handleClose"/>
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="24" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" left="40" right="40" bottom="20"/>
+            </padding>
+
+            <!-- Search and Filter Controls -->
+            <HBox spacing="16" alignment="CENTER">
+                <TextField fx:id="searchField" promptText="Search by PNR, Name, Train, or Route" styleClass="res-input" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="statusFilterCombo" promptText="Filter by Status" styleClass="res-combo"/>
+                <ComboBox fx:id="dateFilterCombo" promptText="Filter by Date" styleClass="res-combo"/>
+                <Button styleClass="res-btn-search" text="🔍 Search" onAction="#handleSearch"/>
+                <Button styleClass="res-btn-clear" text="🧹 Clear" onAction="#handleClearSearch"/>
+                <Button styleClass="res-btn-refresh" text="🔄 Refresh" onAction="#handleRefresh"/>
+            </HBox>
+
+            <!-- Statistics Cards -->
+            <HBox spacing="20" alignment="CENTER">
+                <VBox styleClass="res-stats-card" alignment="CENTER" spacing="6">
+                    <Label fx:id="totalBookingsLabel" styleClass="res-stats-number" text="0"/>
+                    <Label styleClass="res-stats-label" text="Total Bookings"/>
+                </VBox>
+                <VBox styleClass="res-stats-card confirmed" alignment="CENTER" spacing="6">
+                    <Label fx:id="confirmedBookingsLabel" styleClass="res-stats-number" text="0"/>
+                    <Label styleClass="res-stats-label" text="Confirmed"/>
+                </VBox>
+                <VBox styleClass="res-stats-card pending" alignment="CENTER" spacing="6">
+                    <Label fx:id="pendingBookingsLabel" styleClass="res-stats-number" text="0"/>
+                    <Label styleClass="res-stats-label" text="Pending"/>
+                </VBox>
+                <VBox styleClass="res-stats-card cancelled" alignment="CENTER" spacing="6">
+                    <Label fx:id="cancelledBookingsLabel" styleClass="res-stats-number" text="0"/>
+                    <Label styleClass="res-stats-label" text="Cancelled"/>
+                </VBox>
+                <VBox styleClass="res-stats-card revenue" alignment="CENTER" spacing="6">
+                    <Label fx:id="totalRevenueLabel" styleClass="res-stats-number" text="₹0"/>
+                    <Label styleClass="res-stats-label" text="Total Revenue"/>
+                </VBox>
+            </HBox>
+
+            <!-- Quick Actions -->
+            <HBox spacing="16" alignment="CENTER">
+                <Button styleClass="res-btn-export" text="📊 Export Data" onAction="#handleExportData"/>
+                <Button styleClass="res-btn-report" text="📈 Generate Report" onAction="#handleGenerateReport"/>
+                <Button styleClass="res-btn-bulk" text="📋 Bulk Actions" onAction="#handleBulkActions"/>
+            </HBox>
+
+            <!-- Reservations Table -->
+            <TableView fx:id="bookingTable" styleClass="res-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colPNR" text="PNR" prefWidth="120"/>
+                    <TableColumn fx:id="colUserName" text="Passenger Name" prefWidth="150"/>
+                    <TableColumn fx:id="colTrainNumber" text="Train" prefWidth="120"/>
+                    <TableColumn fx:id="colRoute" text="Route" prefWidth="180"/>
+                    <TableColumn fx:id="colJourneyDate" text="Journey Date" prefWidth="120"/>
+                    <TableColumn fx:id="colBookingDate" text="Booking Date" prefWidth="120"/>
+                    <TableColumn fx:id="colClass" text="Class" prefWidth="80"/>
+                    <TableColumn fx:id="colPassengers" text="Passengers" prefWidth="90"/>
+                    <TableColumn fx:id="colAmount" text="Amount" prefWidth="100"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                    <TableColumn fx:id="colPaymentStatus" text="Payment" prefWidth="100"/>
+                    <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                </columns>
+            </TableView>
+
+            <!-- Status Message -->
+            <Label fx:id="messageLabel" styleClass="res-message" visible="false" managed="false"/>
+        </VBox>
+    </center>
+</BorderPane>

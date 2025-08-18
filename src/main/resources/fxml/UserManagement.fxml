@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import java.net.URL?>
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.UserManagementController">
+
+    <stylesheets>
+        <URL value="@../css/UserManagement.css"/>
+    </stylesheets>
+
+    <!-- Header -->
+    <top>
+        <HBox styleClass="user-header" alignment="CENTER_LEFT" spacing="20">
+            <padding>
+                <Insets top="24" left="32" right="32" bottom="16"/>
+            </padding>
+            <Label styleClass="user-title" text="User Management"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button styleClass="user-close-btn" text="✕ Close" onAction="#handleClose"/>
+        </HBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="24" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" left="40" right="40" bottom="20"/>
+            </padding>
+
+            <!-- Search and Filter Controls -->
+            <HBox spacing="16" alignment="CENTER">
+                <TextField fx:id="searchField" promptText="Search by name, email, or phone" styleClass="user-search" HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="statusFilterCombo" promptText="Filter by Status" styleClass="user-combo"/>
+                <Button styleClass="user-btn-search" text="🔍 Search" onAction="#handleSearch"/>
+                <Button styleClass="user-btn-clear" text="🧹 Clear" onAction="#handleClearSearch"/>
+                <Button styleClass="user-btn-add" text="+ Add User" onAction="#handleAddUser"/>
+                <Button styleClass="user-btn-refresh" text="🔄 Refresh" onAction="#handleRefresh"/>
+            </HBox>
+
+            <!-- Statistics Cards -->
+            <HBox spacing="20" alignment="CENTER">
+                <VBox styleClass="user-stats-card" alignment="CENTER" spacing="8">
+                    <Label fx:id="totalUsersLabel" styleClass="user-stats-number" text="0"/>
+                    <Label styleClass="user-stats-label" text="Total Users"/>
+                </VBox>
+                <VBox styleClass="user-stats-card active" alignment="CENTER" spacing="8">
+                    <Label fx:id="activeUsersLabel" styleClass="user-stats-number" text="0"/>
+                    <Label styleClass="user-stats-label" text="Active Users"/>
+                </VBox>
+                <VBox styleClass="user-stats-card new" alignment="CENTER" spacing="8">
+                    <Label fx:id="newUsersLabel" styleClass="user-stats-number" text="0"/>
+                    <Label styleClass="user-stats-label" text="New Users"/>
+                </VBox>
+                <VBox styleClass="user-stats-card inactive" alignment="CENTER" spacing="8">
+                    <Label fx:id="inactiveUsersLabel" styleClass="user-stats-number" text="0"/>
+                    <Label styleClass="user-stats-label" text="Inactive Users"/>
+                </VBox>
+            </HBox>
+
+            <!-- Users Table -->
+            <TableView fx:id="userTable" styleClass="user-table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
+                    <TableColumn fx:id="colEmail" text="Email" prefWidth="180"/>
+                    <TableColumn fx:id="colPhone" text="Phone" prefWidth="120"/>
+                    <TableColumn fx:id="colCreatedAt" text="Created" prefWidth="130"/>
+                    <TableColumn fx:id="colLastLogin" text="Last Login" prefWidth="130"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="90"/>
+                    <TableColumn fx:id="colActions" text="Actions" prefWidth="180"/>
+                </columns>
+            </TableView>
+
+            <!-- Status Message -->
+            <Label fx:id="messageLabel" styleClass="user-message" visible="false" managed="false"/>
+        </VBox>
+    </center>
+</BorderPane>

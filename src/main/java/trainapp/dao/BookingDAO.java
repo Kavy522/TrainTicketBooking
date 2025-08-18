@@ -5,17 +5,16 @@ import trainapp.util.DBConnection;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class BookingDAO {
 
     public long createBooking(Booking booking) {
         String sql = """
-            INSERT INTO bookings (user_id, journey_id, train_id, source_station_id, dest_station_id,
-                                 total_fare, status, pnr, booking_time)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """;
+                INSERT INTO bookings (user_id, journey_id, train_id, source_station_id, dest_station_id,
+                                     total_fare, status, pnr, booking_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -50,10 +49,10 @@ public class BookingDAO {
 
     public Booking getBookingById(long bookingId) {
         String sql = """
-            SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
-                   booking_time, total_fare, status, pnr
-            FROM bookings WHERE booking_id = ?
-            """;
+                SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
+                       booking_time, total_fare, status, pnr
+                FROM bookings WHERE booking_id = ?
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -159,12 +158,12 @@ public class BookingDAO {
     public List<Booking> getBookingsByUserId(int userId) {
         List<Booking> bookings = new ArrayList<>();
         String sql = """
-            SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
-                   booking_time, total_fare, status, pnr
-            FROM bookings
-            WHERE user_id = ?
-            ORDER BY booking_time DESC
-            """;
+                SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
+                       booking_time, total_fare, status, pnr
+                FROM bookings
+                WHERE user_id = ?
+                ORDER BY booking_time DESC
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -196,40 +195,16 @@ public class BookingDAO {
         return bookings;
     }
 
-    /**
-     * Check if PNR exists (essential for uniqueness validation)
-     */
-    public boolean pnrExists(String pnr) {
-        String sql = "SELECT COUNT(*) FROM bookings WHERE pnr = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, pnr);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error checking PNR existence: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return false;
-    }
 
     /**
      * Get booking by PNR number
      */
     public Booking getBookingByPNR(String pnr) {
         String sql = """
-        SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
-               booking_time, total_fare, status, pnr
-        FROM bookings WHERE pnr = ?
-        """;
+                SELECT booking_id, user_id, journey_id, train_id, source_station_id, dest_station_id,
+                       booking_time, total_fare, status, pnr
+                FROM bookings WHERE pnr = ?
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -258,5 +233,107 @@ public class BookingDAO {
         }
 
         return null;
+    }
+
+    /**
+     * Get total number of bookings
+     */
+    public int getBookingCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM bookings";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting booking count: " + e.getMessage());
+            throw e;
+        }
+        return 0;
+    }
+
+    /**
+     * Get total revenue from confirmed bookings
+     */
+    public double getTotalRevenue() throws SQLException {
+        String sql = "SELECT SUM(total_fare) FROM bookings WHERE status IN ('conformed', 'confirmed')";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting total revenue: " + e.getMessage());
+            throw e;
+        }
+        return 0.0;
+    }
+
+    // NEW: Get all bookings
+    public List<Booking> getAllBookings() {
+        List<Booking> bookings = new ArrayList<>();
+        String sql = """
+                SELECT b.booking_id, b.user_id, b.journey_id, b.train_id, b.source_station_id, b.dest_station_id,
+                       b.booking_time, b.total_fare, b.status, b.pnr, u.name AS user_name, t.train_number AS train_number
+                FROM bookings b
+                JOIN users u ON b.user_id = u.user_id
+                JOIN trains t ON b.train_id = t.train_id
+                ORDER BY b.booking_time DESC
+                """;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Booking booking = new Booking();
+                booking.setBookingId(rs.getLong("booking_id"));
+                booking.setUserId(rs.getInt("user_id"));
+                booking.setJourneyId(rs.getLong("journey_id"));
+                booking.setTrainId(rs.getInt("train_id"));
+                booking.setSourceStationId(rs.getInt("source_station_id"));
+                booking.setDestStationId(rs.getInt("dest_station_id"));
+                booking.setBookingTime(rs.getTimestamp("booking_time").toLocalDateTime());
+                booking.setTotalFare(rs.getDouble("total_fare"));
+                booking.setStatus(rs.getString("status"));
+                booking.setPnr(rs.getString("pnr"));
+                booking.setUserName(rs.getString("user_name"));  // New field
+                booking.setTrainNumber(rs.getString("train_number"));  // New field
+                bookings.add(booking);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all bookings: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return bookings;
+    }
+
+    // NEW: Cancel booking by ID (sets status to 'cancelled')
+    public boolean cancelBooking(long bookingId) {
+        String sql = "UPDATE bookings SET status = 'cancelled' WHERE booking_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, bookingId);
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.err.println("Error canceling booking: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteBooking(long bookingId) {
+        String sql = "DELETE FROM bookings WHERE booking_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, bookingId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error deleting booking: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 }

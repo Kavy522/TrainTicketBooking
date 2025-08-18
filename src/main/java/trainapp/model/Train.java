@@ -16,7 +16,8 @@ public class Train {
     private int totalCoaches;
 
     // Constructors
-    public Train() {}
+    public Train() {
+    }
 
     public Train(int trainId, String trainNumber, String name, int sourceStationId, int destinationStationId, int totalCoaches) {
         this.trainId = trainId;
@@ -79,14 +80,5 @@ public class Train {
     @Override
     public String toString() {
         return trainNumber + " - " + name;
-    }
-
-
-    public String getSourceStationName(Train train) {
-        return stationDAO.getStationByCode(String.valueOf(train.getSourceStationId())).getName();
-    }
-
-    public String getDestinationStationName(Train train) {
-        return stationDAO.getStationByCode(String.valueOf(train.getDestinationStationId())).getName();
     }
 }

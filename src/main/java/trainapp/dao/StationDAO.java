@@ -40,36 +40,6 @@ public class StationDAO {
     }
 
     /**
-     * Get Station by station code
-     */
-    public Station getStationByCode(String stationCode) {
-        String sql = "SELECT station_id, station_code, name, city, state FROM stations WHERE station_code = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, stationCode);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Station station = new Station();
-                    station.setStationId(rs.getInt("station_id"));
-                    station.setStationCode(rs.getString("station_code"));
-                    station.setName(rs.getString("name"));
-                    station.setCity(rs.getString("city"));
-                    station.setState(rs.getString("state"));
-                    return station;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting station by code: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    /**
      * Get all stations
      */
     public List<Station> getAllStations() {
@@ -98,33 +68,35 @@ public class StationDAO {
     }
 
     /**
-     * Search stations by name pattern
+     * Get Station by exact name match
      */
-    public Station getStationByName(String namePattern) {
-        Station station = new Station();
-        String sql = "SELECT station_id, station_code, name, city, state FROM stations WHERE name LIKE ? ORDER BY name LIMIT 10";
+    public Station getStationByName(String name) {
+        String sql = "SELECT station_id, station_code, name, city, state FROM stations WHERE name = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, "%" + namePattern + "%");
+            stmt.setString(1, name);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
+                if (rs.next()) {
+                    Station station = new Station();
                     station.setStationId(rs.getInt("station_id"));
                     station.setStationCode(rs.getString("station_code"));
                     station.setName(rs.getString("name"));
                     station.setCity(rs.getString("city"));
                     station.setState(rs.getString("state"));
+                    return station;
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error searching stations: " + e.getMessage());
+            System.err.println("Error getting station by name: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return station;
+        return null;
     }
+
 
     /**
      * Add a new station to the database
@@ -195,65 +167,11 @@ public class StationDAO {
         }
     }
 
-    /**
-     * Check if station code already exists
-     */
-    public boolean stationCodeExists(String stationCode) {
-        String sql = "SELECT COUNT(*) FROM stations WHERE station_code = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, stationCode);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error checking station code existence: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    /**
-     * Get stations by state
-     */
-    public List<Station> getStationsByState(String state) {
-        List<Station> stations = new ArrayList<>();
-        String sql = "SELECT station_id, station_code, name, city, state FROM stations WHERE state = ? ORDER BY name";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, state);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Station station = new Station();
-                    station.setStationId(rs.getInt("station_id"));
-                    station.setStationCode(rs.getString("station_code"));
-                    station.setName(rs.getString("name"));
-                    station.setCity(rs.getString("city"));
-                    station.setState(rs.getString("state"));
-                    stations.add(station);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting stations by state: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return stations;
-    }
 
     /**
      * Get all unique states from stations
      */
-    public List<String> getAllStates() {
+    public List<String> getAllUniqueStates() {
         List<String> states = new ArrayList<>();
         String sql = "SELECT DISTINCT state FROM stations WHERE state IS NOT NULL ORDER BY state";
 
@@ -265,7 +183,7 @@ public class StationDAO {
                 states.add(rs.getString("state"));
             }
         } catch (SQLException e) {
-            System.err.println("Error getting all states: " + e.getMessage());
+            System.err.println("Error getting all unique states: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -273,54 +191,24 @@ public class StationDAO {
     }
 
     /**
-     * Get stations by city
+     * Get all unique cities from stations
      */
-    public List<Station> getStationsByCity(String city) {
-        List<Station> stations = new ArrayList<>();
-        String sql = "SELECT station_id, station_code, name, city, state FROM stations WHERE city = ? ORDER BY name";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, city);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Station station = new Station();
-                    station.setStationId(rs.getInt("station_id"));
-                    station.setStationCode(rs.getString("station_code"));
-                    station.setName(rs.getString("name"));
-                    station.setCity(rs.getString("city"));
-                    station.setState(rs.getString("state"));
-                    stations.add(station);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting stations by city: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return stations;
-    }
-
-    /**
-     * Get station count
-     */
-    public int getStationCount() {
-        String sql = "SELECT COUNT(*) FROM stations";
+    public List<String> getAllUniqueCities() {
+        List<String> cities = new ArrayList<>();
+        String sql = "SELECT DISTINCT city FROM stations WHERE city IS NOT NULL ORDER BY city";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
-            if (rs.next()) {
-                return rs.getInt(1);
+            while (rs.next()) {
+                cities.add(rs.getString("city"));
             }
         } catch (SQLException e) {
-            System.err.println("Error getting station count: " + e.getMessage());
+            System.err.println("Error getting all unique cities: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return 0;
+        return cities;
     }
 }

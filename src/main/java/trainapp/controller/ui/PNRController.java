@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import trainapp.dao.BookingDAO;
 import trainapp.model.Passenger;
 import trainapp.service.PNRService;
 import trainapp.service.PNRService.PNRStatusInfo;
@@ -15,6 +16,7 @@ import trainapp.util.SceneManager;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class PNRController {
 
@@ -49,6 +51,9 @@ public class PNRController {
     // Services
     private final PNRService pnrService = new PNRService();
     private PNRStatusInfo currentPNRInfo;
+
+    //Dao
+    private final BookingDAO bookingDAO = new BookingDAO();
 
     @FXML
     public void initialize() {
@@ -252,11 +257,36 @@ public class PNRController {
      */
     @FXML
     public void handleCancelBooking(ActionEvent event) {
-        if (currentPNRInfo != null) {
-            // TODO: Implement booking cancellation
-            showStatusMessage("Cancellation feature will be available soon!", "info");
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Cancel Booking");
+        confirm.setHeaderText("Cancel booking for PNR: " + currentPNRInfo.getPnr());
+        confirm.setContentText("Are you sure you want to cancel this booking? This action cannot be undone.");
+
+        // Show the dialog and wait for user response
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        // Only cancel if user confirms (OK button)
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            boolean canceled = bookingDAO.cancelBooking(currentPNRInfo.getBooking().getBookingId());
+            if (canceled) {
+                // Optional: Show success message
+                Alert success = new Alert(Alert.AlertType.INFORMATION);
+                success.setTitle("Success");
+                success.setHeaderText(null);
+                success.setContentText("Booking canceled successfully.");
+                success.showAndWait();
+                handleRefresh(new ActionEvent());
+            } else {
+                // Optional: Show failure message
+                Alert failure = new Alert(Alert.AlertType.ERROR);
+                failure.setTitle("Error");
+                failure.setHeaderText(null);
+                failure.setContentText("Failed to cancel booking. Please try again.");
+                failure.showAndWait();
+            }
         }
     }
+
 
     /**
      * Handle back to main menu

@@ -1,20 +1,18 @@
 package trainapp.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import trainapp.dao.*;
 import trainapp.model.*;
 import trainapp.util.PDFGenerator;
 import trainapp.util.Razorpayclient;
 import trainapp.util.SMSService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import trainapp.model.TrainClass;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 
 public class BookingService {
 
@@ -34,6 +32,7 @@ public class BookingService {
     private final SMSService smsService = new SMSService();
     private final PDFGenerator pdfGenerator = new PDFGenerator();
     private final TrainService trainService = new TrainService();
+    private final AdminDataStructureService adminService = new AdminDataStructureService();  // For dynamic pricing
 
     // Utilities
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -43,7 +42,6 @@ public class BookingService {
      */
     public BookingResult createBookingWithPayment(BookingRequest bookingRequest) {
         BookingResult result = new BookingResult();
-
         try {
             System.out.println("Starting booking process for user: " + bookingRequest.getUserId());
 
@@ -89,10 +87,8 @@ public class BookingService {
             result.setBooking(booking);
             result.setRazorpayOrderId(razorpayOrderId);
             result.setMessage("Booking created successfully. Please proceed with payment.");
-
             System.out.println("Booking process initiated successfully. Booking ID: " + booking.getBookingId());
             return result;
-
         } catch (Exception e) {
             System.err.println("Error in booking process: " + e.getMessage());
             e.printStackTrace();
@@ -107,7 +103,6 @@ public class BookingService {
      */
     public BookingResult handleSuccessfulPayment(PaymentSuccessRequest paymentRequest) {
         BookingResult result = new BookingResult();
-
         try {
             System.out.println("Processing successful payment for booking: " + paymentRequest.getBookingId());
 
@@ -117,7 +112,6 @@ public class BookingService {
                     paymentRequest.getRazorpayPaymentId(),
                     paymentRequest.getRazorpaySignature()
             );
-
             if (!paymentVerified) {
                 result.setSuccess(false);
                 result.setMessage("Payment verification failed");
@@ -138,6 +132,7 @@ public class BookingService {
                 result.setMessage("Failed to confirm booking");
                 return result;
             }
+
             booking.setStatus("confirmed"); // Update local object
 
             // Step 4: Create payment record
@@ -148,7 +143,6 @@ public class BookingService {
             payment.setStatus("success");
             payment.setMethod("razorpay");
             payment.setProvider("razorpay");
-
             if (!paymentDAO.createPayment(payment)) {
                 System.err.println("Warning: Failed to record payment details");
             }
@@ -172,10 +166,8 @@ public class BookingService {
             result.setSuccess(true);
             result.setBooking(booking);
             result.setMessage("Booking confirmed successfully! Confirmation details sent to your email and phone.");
-
             System.out.println("Booking completed successfully: " + booking.getPnr());
             return result;
-
         } catch (Exception e) {
             System.err.println("Error processing successful payment: " + e.getMessage());
             e.printStackTrace();
@@ -202,11 +194,8 @@ public class BookingService {
             payment.setStatus("failed");
             payment.setMethod("razorpay");
             payment.setProvider("razorpay");
-
             paymentDAO.createPayment(payment);
-
             System.out.println("Failed payment processed for booking: " + bookingId);
-
         } catch (Exception e) {
             System.err.println("Error handling failed payment: " + e.getMessage());
             e.printStackTrace();
@@ -232,7 +221,6 @@ public class BookingService {
             if (journey != null) {
                 Train train = trainDAO.getTrainById(request.getTrainId());
                 Map<String, Integer> availability = trainService.getAvailableSeatsForDate(train, request.getJourneyDate());
-
                 int availableSeats = availability.getOrDefault(request.getSeatClass(), 0);
                 return availableSeats >= request.getPassengers().size();
             }
@@ -266,7 +254,6 @@ public class BookingService {
             // Get station IDs from station names
             Station fromStation = stationDAO.getStationByName(request.getFromStation());
             Station toStation = stationDAO.getStationByName(request.getToStation());
-
             if (fromStation != null && toStation != null) {
                 booking.setSourceStationId(fromStation.getStationId());
                 booking.setDestStationId(toStation.getStationId());
@@ -275,7 +262,10 @@ public class BookingService {
                 return null;
             }
 
-            booking.setTotalFare(request.getTotalAmount());
+            // Calculate dynamic fare
+            double dynamicFare = calculateDynamicFare(request);
+            booking.setTotalFare(dynamicFare > 0 ? dynamicFare : request.getTotalAmount());  // Use dynamic if available, else fallback
+
             booking.setStatus("waiting");
             booking.setPnr(generatePNR());
             booking.setBookingTime(LocalDateTime.now());
@@ -298,7 +288,6 @@ public class BookingService {
         try {
             for (int i = 0; i < passengers.size(); i++) {
                 PassengerInfo passenger = passengers.get(i);
-
                 trainapp.model.Passenger dbPassenger = new trainapp.model.Passenger();
                 dbPassenger.setBookingId(bookingId);
                 dbPassenger.setName(passenger.getName());
@@ -306,7 +295,6 @@ public class BookingService {
                 dbPassenger.setGender(mapGender(passenger.getGender()));
                 dbPassenger.setCoachType(selectedClass);
                 dbPassenger.setSeatNumber(generateSeatNumber(selectedClass, i + 1));
-
                 if (!passengerDAO.createPassenger(dbPassenger)) {
                     return false;
                 }
@@ -320,11 +308,10 @@ public class BookingService {
 
     private void updateSeatAvailabilityAfterBooking(Booking booking) {
         try {
-            List<trainapp.model.Passenger> passengers = passengerDAO.getPassengersByBookingId(booking.getBookingId());
+            List<Passenger> passengers = passengerDAO.getPassengersByBookingId(booking.getBookingId());
             if (!passengers.isEmpty()) {
                 String seatClass = passengers.get(0).getCoachType();
                 int passengerCount = passengers.size();
-
                 Journey journey = journeyDAO.getJourneyById(booking.getJourneyId());
                 if (journey != null) {
                     trainService.bookSeats(booking.getTrainId(),
@@ -361,13 +348,11 @@ public class BookingService {
             Train train = trainDAO.getTrainById(booking.getTrainId());
             Station fromStation = stationDAO.getStationById(booking.getSourceStationId());
             Station toStation = stationDAO.getStationById(booking.getDestStationId());
-
             if (user != null) {
                 // Prepare email content
                 String trainDetails = (train != null) ?
                         train.getTrainNumber() + " - " + train.getName() :
                         "Train Details";
-
                 String journeyDetails = (fromStation != null && toStation != null) ?
                         fromStation.getName() + " → " + toStation.getName() + " | " +
                                 booking.getBookingTime().toLocalDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy")) +
@@ -425,7 +410,6 @@ public class BookingService {
             notification.setEmailSent(true);
             notification.setSmsSent(true);
             notification.setSentAt(LocalDateTime.now());
-
             notificationDAO.createNotification(notification);
         } catch (Exception e) {
             System.err.println("Error recording notifications: " + e.getMessage());
@@ -433,6 +417,7 @@ public class BookingService {
     }
 
     // Helper methods
+
     private String generatePNR() {
         return "PNR" + System.currentTimeMillis() % 10000000L;
     }
@@ -456,7 +441,37 @@ public class BookingService {
         return prefix + sequenceNumber;
     }
 
+    /**
+     * Calculate dynamic fare based on class, distance, and admin-set pricing
+     */
+    private double calculateDynamicFare(BookingRequest request) {
+        // Get distance (use your TrainService)
+        Train train = trainDAO.getTrainById(request.getTrainId());
+        int distance = new TrainService().getDistanceBetween(train, request.getFromStation(), request.getToStation());
+
+        TrainClass trainClass = TrainClass.fromString(request.getSeatClass());
+        TreeMap<Integer, Double> classFares = adminService.getFareStructureForClass(trainClass);
+
+        if (classFares.isEmpty()) {
+            return 0.0;  // Fallback
+        }
+
+        // Find fare for distance (use floorEntry for nearest lower)
+        Map.Entry<Integer, Double> entry = classFares.floorEntry(distance);
+        if (entry == null) {
+            return 0.0;  // No fare set
+        }
+
+        double baseFare = entry.getValue();
+        // Adjust for actual distance (e.g., proportional)
+        double adjustedFare = baseFare * (distance / (double) entry.getKey());
+
+        // Per passenger, multiply by count
+        return adjustedFare * request.getPassengers().size();
+    }
+
     // Inner classes for request/response
+
     public static class BookingRequest {
         private int userId;
         private int trainId;

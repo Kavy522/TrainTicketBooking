@@ -1,9 +1,16 @@
 package trainapp.service;
 
+import trainapp.dao.BookingDAO;
+import trainapp.dao.TrainDAO;
+import trainapp.dao.UserDAO;
+import trainapp.model.TrainClass;
+import trainapp.model.TravelStatistics;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Map.Entry;
 
 /**
  * Service demonstrating practical usage of various data structures
@@ -20,8 +27,8 @@ public class AdminDataStructureService {
     // HashTable for thread-safe user session management
     private final Hashtable<String, String> userSessions;
 
-    // TreeMap for automatically sorted fare structure by distance
-    private final TreeMap<Integer, Double> fareStructure;
+    // Map of TreeMaps for per-class fare structure (automatically sorted by distance)
+    private final Map<TrainClass, TreeMap<Integer, Double>> fareStructureByClass;
 
     // ArrayList for managing train data (demonstrating different use case)
     private final ArrayList<String> trainList;
@@ -34,7 +41,7 @@ public class AdminDataStructureService {
         recentActivities = new LinkedList<>();
         routeCache = new HashMap<>();
         userSessions = new Hashtable<>();
-        fareStructure = new TreeMap<>();
+        fareStructureByClass = new HashMap<>();
         trainList = new ArrayList<>();
         uniqueUsers = new HashSet<>();
 
@@ -63,12 +70,16 @@ public class AdminDataStructureService {
         userSessions.put("mary_explorer", currentTime);
         userSessions.put("admin_user", currentTime);
 
-        // TreeMap: Fare Structure (Automatically sorted by distance)
-        fareStructure.put(100, 150.0);  // 100 km = ₹150
-        fareStructure.put(250, 300.0);  // 250 km = ₹300
-        fareStructure.put(500, 550.0);  // 500 km = ₹550
-        fareStructure.put(750, 750.0);  // 750 km = ₹750
-        fareStructure.put(1000, 950.0); // 1000 km = ₹950
+        // TreeMap: Fare Structure per class (Automatically sorted by distance)
+        for (TrainClass trainClass : TrainClass.values()) {
+            TreeMap<Integer, Double> classFares = new TreeMap<>();
+            classFares.put(100, getSampleFareForClass(trainClass, 100));
+            classFares.put(250, getSampleFareForClass(trainClass, 250));
+            classFares.put(500, getSampleFareForClass(trainClass, 500));
+            classFares.put(750, getSampleFareForClass(trainClass, 750));
+            classFares.put(1000, getSampleFareForClass(trainClass, 1000));
+            fareStructureByClass.put(trainClass, classFares);
+        }
 
         // ArrayList: Train List
         trainList.add("Rajdhani Express");
@@ -81,6 +92,20 @@ public class AdminDataStructureService {
         uniqueUsers.add("mary_explorer");
         uniqueUsers.add("frequent_flyer");
         uniqueUsers.add("business_user");
+    }
+
+    /**
+     * Helper for sample fares (adjust as needed)
+     */
+    private double getSampleFareForClass(TrainClass trainClass, int distance) {
+        double baseFare = distance * 0.5;  // Base calculation
+        switch (trainClass) {
+            case SL: return baseFare * 1.0;
+            case _3A: return baseFare * 1.5;
+            case _2A: return baseFare * 2.0;
+            case _1A: return baseFare * 3.0;
+            default: return baseFare;
+        }
     }
 
     // ======================== LINKEDLIST OPERATIONS ========================
@@ -187,48 +212,100 @@ public class AdminDataStructureService {
         return userSessions.size();
     }
 
-    // ======================== TREEMAP OPERATIONS ========================
+    // ======================== TREEMAP OPERATIONS (DYNAMIC PRICING) ========================
 
     /**
-     * Set fare for distance - demonstrates TreeMap.put() with auto-sorting
+     * Set fare for distance and class - demonstrates TreeMap.put() with auto-sorting
      */
-    public void setFare(int distance, double fare) {
-        fareStructure.put(distance, fare);
+    public void setFare(TrainClass trainClass, int distance, double fare) {
+        TreeMap<Integer, Double> classFares = fareStructureByClass.computeIfAbsent(trainClass, k -> new TreeMap<>());
+        classFares.put(distance, fare);
     }
 
     /**
-     * Get fare for distance - demonstrates TreeMap.get()
+     * Get fare for distance and class - demonstrates TreeMap.get()
      */
-    public Double getFareForDistance(int distance) {
-        return fareStructure.get(distance);
+    public Double getFareForDistance(TrainClass trainClass, int distance) {
+        TreeMap<Integer, Double> classFares = fareStructureByClass.get(trainClass);
+        if (classFares == null) return null;
+        return classFares.get(distance);
     }
 
     /**
-     * Get fare structure - demonstrates TreeMap's sorted nature
+     * Get fare structure for a specific class
      */
-    public TreeMap<Integer, Double> getFareStructure() {
-        return new TreeMap<>(fareStructure); // Return copy for safety
+    public TreeMap<Integer, Double> getFareStructureForClass(TrainClass trainClass) {
+        return new TreeMap<>(fareStructureByClass.getOrDefault(trainClass, new TreeMap<>()));
     }
 
     /**
-     * Get fare for distance range - demonstrates TreeMap.subMap()
+     * Get all fare structures
      */
-    public Map<Integer, Double> getFareRange(int minDistance, int maxDistance) {
-        return fareStructure.subMap(minDistance, true, maxDistance, true);
+    public Map<TrainClass, TreeMap<Integer, Double>> getAllFareStructures() {
+        return new HashMap<>(fareStructureByClass);
     }
 
     /**
-     * Get nearest lower fare - demonstrates TreeMap.floorEntry()
+     * Get fare for distance range and class - demonstrates TreeMap.subMap()
      */
-    public Map.Entry<Integer, Double> getNearestLowerFare(int distance) {
-        return fareStructure.floorEntry(distance);
+    public Map<Integer, Double> getFareRange(TrainClass trainClass, int minDistance, int maxDistance) {
+        TreeMap<Integer, Double> classFares = fareStructureByClass.get(trainClass);
+        if (classFares == null) return new HashMap<>();
+        return classFares.subMap(minDistance, true, maxDistance, true);
     }
 
     /**
-     * Get nearest higher fare - demonstrates TreeMap.ceilingEntry()
+     * Get nearest lower fare for class - demonstrates TreeMap.floorEntry()
      */
-    public Map.Entry<Integer, Double> getNearestHigherFare(int distance) {
-        return fareStructure.ceilingEntry(distance);
+    public Map.Entry<Integer, Double> getNearestLowerFare(TrainClass trainClass, int distance) {
+        TreeMap<Integer, Double> classFares = fareStructureByClass.get(trainClass);
+        if (classFares == null) return null;
+        return classFares.floorEntry(distance);
+    }
+
+    /**
+     * Get nearest higher fare for class - demonstrates TreeMap.ceilingEntry()
+     */
+    public Map.Entry<Integer, Double> getNearestHigherFare(TrainClass trainClass, int distance) {
+        TreeMap<Integer, Double> classFares = fareStructureByClass.get(trainClass);
+        if (classFares == null) return null;
+        return classFares.ceilingEntry(distance);
+    }
+
+    /**
+     * Calculate dynamic fare based on distance and class
+     * Uses TreeMap to find exact or nearest fare, with linear interpolation if needed
+     */
+    public double calculateDynamicFare(TrainClass trainClass, int distance) {
+        TreeMap<Integer, Double> fares = getFareStructureForClass(trainClass);
+        if (fares.isEmpty()) {
+            return getSampleFareForClass(trainClass, distance);  // Fallback to sample calculation
+        }
+
+        // Exact match
+        if (fares.containsKey(distance)) {
+            return fares.get(distance);
+        }
+
+        // Get nearest lower and higher
+        Entry<Integer, Double> lower = fares.floorEntry(distance);
+        Entry<Integer, Double> higher = fares.ceilingEntry(distance);
+
+        if (lower == null && higher == null) {
+            return 0.0;  // No data
+        } else if (lower == null) {
+            // Below minimum distance, use lowest
+            return higher.getValue() * ((double) distance / higher.getKey());
+        } else if (higher == null) {
+            // Above maximum distance, use highest with extrapolation
+            return lower.getValue() * ((double) distance / lower.getKey());
+        } else {
+            // Linear interpolation between lower and higher
+            double distDiff = higher.getKey() - lower.getKey();
+            double fareDiff = higher.getValue() - lower.getValue();
+            double ratio = (distance - lower.getKey()) / distDiff;
+            return lower.getValue() + (ratio * fareDiff);
+        }
     }
 
     // ======================== ADDITIONAL DATA STRUCTURE DEMOS ========================
@@ -290,9 +367,33 @@ public class AdminDataStructureService {
      * Calculate total revenue using TreeMap values
      */
     public String getTotalRevenue() {
-        double total = fareStructure.values().stream().mapToDouble(Double::doubleValue).sum();
+        double total = fareStructureByClass.values().stream()
+                .flatMap(classFares -> classFares.values().stream())
+                .mapToDouble(Double::doubleValue)
+                .sum();
         total *= 125; // Multiply by estimated usage
         return String.format("%.0f", total);
+    }
+
+    /**
+     * Fetch travel statistics from database
+     */
+    public TravelStatistics getTravelStatistics() {
+        TravelStatistics stats = new TravelStatistics();
+        try {
+            stats.setTotalUsers(new UserDAO().getUserCount());
+            stats.setActiveTrains(new TrainDAO().getTrainCount());
+            stats.setTotalBookings(new BookingDAO().getBookingCount());
+            stats.setTotalRevenue(new BookingDAO().getTotalRevenue());
+        } catch (SQLException e) {
+            System.err.println("Error fetching travel statistics: " + e.getMessage());
+            // Fallback to zero values or mocks if needed
+            stats.setTotalUsers(0);
+            stats.setActiveTrains(0);
+            stats.setTotalBookings(0);
+            stats.setTotalRevenue(0.0);
+        }
+        return stats;
     }
 
     // ======================== PERFORMANCE COMPARISON METHODS ========================

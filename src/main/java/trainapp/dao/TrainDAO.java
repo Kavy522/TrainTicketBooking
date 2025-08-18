@@ -18,23 +18,23 @@ public class TrainDAO {
         List<Train> trains = new ArrayList<>();
 
         String sql = """
-        SELECT DISTINCT
-        t.train_id,
-        t.train_number,
-        t.name,
-        t.source_station_id,
-        t.destination_station_id,
-        t.total_coaches
-        FROM trains t
-        JOIN train_schedule ts1 ON t.train_id = ts1.train_id
-        JOIN train_schedule ts2 ON t.train_id = ts2.train_id
-        JOIN stations s1 ON ts1.station_id = s1.station_id
-        JOIN stations s2 ON ts2.station_id = s2.station_id
-        WHERE s1.name = ?
-        AND s2.name = ?
-        AND ts1.sequence_order < ts2.sequence_order
-        ORDER BY t.train_number
-        """;
+                SELECT DISTINCT
+                t.train_id,
+                t.train_number,
+                t.name,
+                t.source_station_id,
+                t.destination_station_id,
+                t.total_coaches
+                FROM trains t
+                JOIN train_schedule ts1 ON t.train_id = ts1.train_id
+                JOIN train_schedule ts2 ON t.train_id = ts2.train_id
+                JOIN stations s1 ON ts1.station_id = s1.station_id
+                JOIN stations s2 ON ts2.station_id = s2.station_id
+                WHERE s1.name = ?
+                AND s2.name = ?
+                AND ts1.sequence_order < ts2.sequence_order
+                ORDER BY t.train_number
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -194,12 +194,12 @@ public class TrainDAO {
         List<TrainSchedule> schedules = new ArrayList<>();
 
         String sql = """
-        SELECT schedule_id, train_id, station_id, arrival_time, departure_time, 
-               day_number, sequence_order
-        FROM train_schedule
-        WHERE train_id = ?
-        ORDER BY sequence_order
-        """;
+                SELECT schedule_id, train_id, station_id, arrival_time, departure_time, 
+                       day_number, sequence_order
+                FROM train_schedule
+                WHERE train_id = ?
+                ORDER BY sequence_order
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -241,9 +241,9 @@ public class TrainDAO {
      */
     public boolean addTrain(Train train) {
         String sql = """
-            INSERT INTO trains (train_number, name, source_station_id, destination_station_id, total_coaches) 
-            VALUES (?, ?, ?, ?, ?)
-            """;
+                INSERT INTO trains (train_number, name, source_station_id, destination_station_id, total_coaches) 
+                VALUES (?, ?, ?, ?, ?)
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -269,10 +269,10 @@ public class TrainDAO {
      */
     public boolean updateTrain(Train train) {
         String sql = """
-            UPDATE trains 
-            SET name = ?, source_station_id = ?, destination_station_id = ?, total_coaches = ? 
-            WHERE train_id = ?
-            """;
+                UPDATE trains 
+                SET name = ?, source_station_id = ?, destination_station_id = ?, total_coaches = ? 
+                WHERE train_id = ?
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -395,36 +395,14 @@ public class TrainDAO {
     }
 
     /**
-     * Delete all journey entries for a specific train
-     */
-    public boolean deleteAllJourneysForTrain(int trainId) {
-        String sql = "DELETE FROM train_schedule WHERE train_id = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, trainId);
-            int rowsAffected = stmt.executeUpdate();
-
-            System.out.println("Deleted " + rowsAffected + " journey entries for train ID: " + trainId);
-            return rowsAffected >= 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error deleting journey entries for train: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    /**
      * Get train by ID
      */
     public Train getTrainById(int trainId) {
         String sql = """
-            SELECT train_id, train_number, name, source_station_id, 
-                   destination_station_id, total_coaches
-            FROM trains WHERE train_id = ?
-            """;
+                SELECT train_id, train_number, name, source_station_id, 
+                       destination_station_id, total_coaches
+                FROM trains WHERE train_id = ?
+                """;
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -451,26 +429,23 @@ public class TrainDAO {
         return null;
     }
 
+
     /**
-     * Check if train number already exists
+     * Get total number of trains (assuming all are active; add filters if needed)
      */
-    public boolean trainNumberExists(String trainNumber) {
-        String sql = "SELECT COUNT(*) FROM trains WHERE train_number = ?";
-
+    public int getTrainCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM trains";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, trainNumber);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
             }
         } catch (SQLException e) {
-            System.err.println("Error checking train number existence: " + e.getMessage());
+            System.err.println("Error getting train count: " + e.getMessage());
+            throw e;
         }
-
-        return false;
+        return 0;
     }
+
 }

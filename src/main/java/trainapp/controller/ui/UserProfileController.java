@@ -118,7 +118,7 @@ public class UserProfileController {
      * Load user statistics
      */
     private void loadUserStatistics() {
-        Task<UserProfileService.UserStatistics> statsTask = new Task<UserProfileService.UserStatistics>() {
+        Task<UserProfileService.UserStatistics> statsTask = new Task<>() {
             @Override
             protected UserProfileService.UserStatistics call() throws Exception {
                 User currentUser = sessionManager.getCurrentUser();

@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import trainapp.dao.BookingDAO;
 import trainapp.model.*;
 import trainapp.service.MyBookingsService;
 import trainapp.service.MyBookingsService.*;
@@ -50,6 +51,7 @@ public class MyBookingsController {
     // Services
     private final MyBookingsService bookingsService = new MyBookingsService();
     private final SessionManager sessionManager = SessionManager.getInstance();
+    private final BookingDAO bookingDAO = new BookingDAO();
 
     // Data
     private List<DetailedBookingInfo> allBookings;
@@ -411,8 +413,7 @@ public class MyBookingsController {
         confirm.setContentText("Are you sure you want to cancel this booking? This action cannot be undone.");
 
         if (confirm.showAndWait().get() == ButtonType.OK) {
-            // TODO: Implement booking cancellation
-            showStatusMessage("Cancellation feature will be available soon!", "info");
+            bookingDAO.cancelBooking(bookingInfo.getBooking().getBookingId());
         }
     }
 
