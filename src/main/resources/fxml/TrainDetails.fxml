@@ -141,7 +141,6 @@
                         <TableColumn fx:id="arrivalTimeCol" text="Arrival" prefWidth="100"/>
                         <TableColumn fx:id="departureTimeCol" text="Departure" prefWidth="100"/>
                         <TableColumn fx:id="haltTimeCol" text="Halt" prefWidth="80"/>
-                        <TableColumn fx:id="distanceCol" text="Distance (km)" prefWidth="120"/>
                         <TableColumn fx:id="dayCol" text="Day" prefWidth="60"/>
                     </columns>
                 </TableView>

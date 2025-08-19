@@ -91,13 +91,12 @@ public class TrainDetailsController {
     @FXML private Label firstAAvailableLabel;
     @FXML private Label firstAPriceLabel;
 
-    // Schedule Table Components
+    // Schedule Table Components - UPDATED: Removed distanceCol
     @FXML private TableView<ScheduleItem> scheduleTable;
     @FXML private TableColumn<ScheduleItem, String> stationNameCol;
     @FXML private TableColumn<ScheduleItem, String> arrivalTimeCol;
     @FXML private TableColumn<ScheduleItem, String> departureTimeCol;
     @FXML private TableColumn<ScheduleItem, String> haltTimeCol;
-    @FXML private TableColumn<ScheduleItem, String> distanceCol;
     @FXML private TableColumn<ScheduleItem, String> dayCol;
 
     // Amenities Display
@@ -136,14 +135,15 @@ public class TrainDetailsController {
 
     /**
      * Configures the schedule table columns with appropriate data binding.
+     * UPDATED: Removed distance column binding.
      */
     private void setupScheduleTable() {
         stationNameCol.setCellValueFactory(new PropertyValueFactory<>("stationName"));
         arrivalTimeCol.setCellValueFactory(new PropertyValueFactory<>("arrivalTime"));
         departureTimeCol.setCellValueFactory(new PropertyValueFactory<>("departureTime"));
         haltTimeCol.setCellValueFactory(new PropertyValueFactory<>("haltTime"));
-        distanceCol.setCellValueFactory(new PropertyValueFactory<>("distance"));
         dayCol.setCellValueFactory(new PropertyValueFactory<>("day"));
+        // REMOVED: distanceCol.setCellValueFactory(new PropertyValueFactory<>("distance"));
     }
 
     // -------------------------------------------------------------------------
@@ -153,10 +153,10 @@ public class TrainDetailsController {
     /**
      * Sets train details and initiates comprehensive data loading.
      *
-     * @param train the train to display details for
+     * @param train       the train to display details for
      * @param journeyDate the journey date for availability and pricing
      * @param fromStation departure station name
-     * @param toStation destination station name
+     * @param toStation   destination station name
      */
     public void setTrainDetails(Train train, LocalDate journeyDate, String fromStation, String toStation) {
         this.currentTrain = train;
@@ -311,9 +311,9 @@ public class TrainDetailsController {
      * Updates individual class availability and pricing display.
      *
      * @param availableLabel label showing seat availability
-     * @param priceLabel label showing class price
-     * @param seats number of available seats
-     * @param price calculated price for the class
+     * @param priceLabel     label showing class price
+     * @param seats          number of available seats
+     * @param price          calculated price for the class
      */
     private void updateClassAvailability(Label availableLabel, Label priceLabel, int seats, double price) {
         availableLabel.setText(String.valueOf(seats));
@@ -337,11 +337,12 @@ public class TrainDetailsController {
     }
 
     // -------------------------------------------------------------------------
-    // Schedule Management
+    // Schedule Management - UPDATED: No Distance Column
     // -------------------------------------------------------------------------
 
     /**
      * Loads complete train schedule with station-wise timing and halt information.
+     * UPDATED: No longer includes distance information.
      */
     private void loadCompleteSchedule() {
         try {
@@ -355,7 +356,8 @@ public class TrainDetailsController {
     }
 
     /**
-     * Processes train schedule data into display-ready format.
+     * Processes train schedule data into display-ready format without distance.
+     * UPDATED: Removed distance calculations and parameters.
      *
      * @param schedule list of train schedule entries
      * @return ObservableList of ScheduleItem for table display
@@ -368,12 +370,12 @@ public class TrainDetailsController {
             Station station = stationDAO.getStationById(stop.getStationId());
             String stationName = station != null ? station.getName() : "Unknown";
 
+            // UPDATED: Create ScheduleItem without distance parameter
             ScheduleItem item = new ScheduleItem(
                     stationName,
                     stop.getArrivalTime() != null ? stop.getArrivalTime().toString() : "Start",
                     stop.getDepartureTime() != null ? stop.getDepartureTime().toString() : "End",
                     calculateHaltTime(stop),
-                    String.valueOf(0), // Distance will be calculated separately
                     String.valueOf(day)
             );
             scheduleItems.add(item);
@@ -389,15 +391,16 @@ public class TrainDetailsController {
 
     /**
      * Loads sample schedule data when database schedule is unavailable.
+     * UPDATED: Sample data without distance information.
      */
     private void loadSampleSchedule() {
         ObservableList<ScheduleItem> sampleSchedule = FXCollections.observableArrayList(
-                new ScheduleItem("New Delhi", "Start", "06:00", "0m", "0", "1"),
-                new ScheduleItem("Gwalior Jn", "08:45", "08:47", "2m", "319", "1"),
-                new ScheduleItem("Jhansi Jn", "10:03", "10:08", "5m", "415", "1"),
-                new ScheduleItem("Bhopal Jn", "13:05", "13:10", "5m", "707", "1"),
-                new ScheduleItem("Nagpur", "17:35", "17:45", "10m", "1061", "1"),
-                new ScheduleItem("Mumbai Central", "22:30", "End", "0m", "1384", "1")
+                new ScheduleItem("New Delhi", "Start", "06:00", "0m", "1"),
+                new ScheduleItem("Gwalior Jn", "08:45", "08:47", "2m", "1"),
+                new ScheduleItem("Jhansi Jn", "10:03", "10:08", "5m", "1"),
+                new ScheduleItem("Bhopal Jn", "13:05", "13:10", "5m", "1"),
+                new ScheduleItem("Nagpur", "17:35", "17:45", "10m", "1"),
+                new ScheduleItem("Mumbai Central", "22:30", "End", "0m", "1")
         );
         scheduleTable.setItems(sampleSchedule);
     }
@@ -459,7 +462,7 @@ public class TrainDetailsController {
      */
     private Label createAmenityTag(String amenity) {
         Label amenityLabel = new Label(amenity);
-        amenityLabel.getStyleClass().add("amenity-tag");
+        amenityLabel.getStyleClass().add("amenity-chip");
         return amenityLabel;
     }
 
@@ -488,10 +491,14 @@ public class TrainDetailsController {
     private String determineSelectedClass(Button sourceButton) {
         if (sourceButton.getParent().getId() != null) {
             switch (sourceButton.getParent().getId()) {
-                case "slSeatCard": return "Sleeper (SL)";
-                case "threeASeatCard": return "AC 3-Tier (3A)";
-                case "twoASeatCard": return "AC 2-Tier (2A)";
-                case "firstASeatCard": return "First AC (1A)";
+                case "slSeatCard":
+                    return "Sleeper (SL)";
+                case "threeASeatCard":
+                    return "AC 3-Tier (3A)";
+                case "twoASeatCard":
+                    return "AC 2-Tier (2A)";
+                case "firstASeatCard":
+                    return "First AC (1A)";
             }
         }
         return "Unknown";
@@ -634,11 +641,12 @@ public class TrainDetailsController {
     }
 
     // -------------------------------------------------------------------------
-    // Inner Classes for Data Management
+    // Inner Classes for Data Management - UPDATED: No Distance Field
     // -------------------------------------------------------------------------
 
     /**
      * ScheduleItem holds station schedule information for table display.
+     * UPDATED: Removed distance field and related functionality.
      */
     public static class ScheduleItem {
         private String stationName;
@@ -649,16 +657,16 @@ public class TrainDetailsController {
 
         /**
          * Constructs a ScheduleItem with complete timing information.
+         * UPDATED: Removed distance parameter.
          *
-         * @param stationName name of the station
-         * @param arrivalTime arrival time at station
+         * @param stationName   name of the station
+         * @param arrivalTime   arrival time at station
          * @param departureTime departure time from station
-         * @param haltTime duration of halt at station
-         * @param distance distance from origin (unused in current implementation)
-         * @param day journey day number
+         * @param haltTime      duration of halt at station
+         * @param day           journey day number
          */
         public ScheduleItem(String stationName, String arrivalTime, String departureTime,
-                            String haltTime, String distance, String day) {
+                            String haltTime, String day) {
             this.stationName = stationName;
             this.arrivalTime = arrivalTime;
             this.departureTime = departureTime;
@@ -667,11 +675,27 @@ public class TrainDetailsController {
         }
 
         // Getters for JavaFX property binding
-        public String getStationName() { return stationName; }
-        public String getArrivalTime() { return arrivalTime; }
-        public String getDepartureTime() { return departureTime; }
-        public String getHaltTime() { return haltTime; }
-        public String getDay() { return day; }
+        public String getStationName() {
+            return stationName;
+        }
+
+        public String getArrivalTime() {
+            return arrivalTime;
+        }
+
+        public String getDepartureTime() {
+            return departureTime;
+        }
+
+        public String getHaltTime() {
+            return haltTime;
+        }
+
+        public String getDay() {
+            return day;
+        }
+
+        // REMOVED: getDistance() method
     }
 
     /**
