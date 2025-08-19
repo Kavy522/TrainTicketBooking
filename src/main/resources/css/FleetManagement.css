@@ -1,4 +1,4 @@
-/* Fleet Management CRUD Styling - Complete Final Version with Compact Route Form */
+/* Fleet Management CRUD Styling - Complete Final Version with Enhanced Route Management */
 .root {
     -fx-font-family: "Segoe UI", system-ui, sans-serif;
     -fx-background-color: #f5f7fa;
@@ -171,6 +171,157 @@
     -fx-transition: -fx-border-color 0.15s ease-out, -fx-effect 0.15s ease-out;
 }
 
+/* ENHANCED: Train Selector ComboBox Styling in Route Management */
+.train-selector {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #ffffff, #f8fafc);
+    -fx-border-color: linear-gradient(from 0% 0% to 100% 0%, #3b82f6, #1d4ed8);
+    -fx-border-width: 2.5;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 18;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-pref-width: 420px;
+    -fx-min-height: 45px;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.15), 8, 0, 0, 2);
+    -fx-cursor: hand;
+    -fx-transition: all 0.3s ease-out;
+}
+
+.train-selector:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #ffffff, #f0f9ff);
+    -fx-border-color: linear-gradient(from 0% 0% to 100% 0%, #2563eb, #1e40af);
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.25), 12, 0, 0, 3);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.train-selector:focused {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #ffffff, #eff6ff);
+    -fx-border-color: linear-gradient(from 0% 0% to 100% 0%, #1d4ed8, #1e3a8a);
+    -fx-border-width: 3;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.4), 16, 0, 0, 4);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+/* Train Selector Text Field */
+.train-selector .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-prompt-text-fill: #9ca3af;
+    -fx-text-fill: #1f2937;
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+    -fx-padding: 0;
+}
+
+.train-selector:focused .text-field {
+    -fx-text-fill: #1e40af;
+    -fx-prompt-text-fill: #6b7280;
+}
+
+.train-selector:hover .text-field {
+    -fx-text-fill: #374151;
+}
+
+/* Train Selector Arrow Button */
+.train-selector .arrow-button {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #f3f4f6, #e5e7eb);
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-border-color: #d1d5db;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-transition: all 0.2s ease-out;
+}
+
+.train-selector:hover .arrow-button {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #dbeafe, #bfdbfe);
+    -fx-border-color: #3b82f6;
+}
+
+.train-selector:focused .arrow-button {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #dbeafe, #93c5fd);
+    -fx-border-color: #1d4ed8;
+    -fx-border-width: 2;
+}
+
+.train-selector .arrow-button .arrow {
+    -fx-background-color: #6b7280;
+    -fx-shape: "M 0 0 L 5 5 L 10 0 Z";
+    -fx-scale-shape: true;
+    -fx-pref-width: 10;
+    -fx-pref-height: 6;
+    -fx-transition: -fx-background-color 0.2s ease-out;
+}
+
+.train-selector:hover .arrow-button .arrow {
+    -fx-background-color: #3b82f6;
+}
+
+.train-selector:focused .arrow-button .arrow {
+    -fx-background-color: #1d4ed8;
+}
+
+/* Enhanced Train Selector Dropdown */
+.train-selector .list-view {
+    -fx-max-height: 320px;
+    -fx-pref-height: 320px;
+    -fx-min-height: 120px;
+    -fx-background-color: white;
+    -fx-border-color: linear-gradient(from 0% 0% to 100% 100%, #d1d5db, #9ca3af);
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 8);
+    -fx-padding: 8;
+}
+
+.train-selector .list-cell {
+    -fx-padding: 14 18;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-wrap-text: false;
+    -fx-text-overrun: ELLIPSIS;
+    -fx-transition: all 0.2s ease-out;
+    -fx-margin: 2;
+}
+
+.train-selector .list-cell:hover {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #f0f9ff, #e0f2fe);
+    -fx-text-fill: #1e40af;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-border-color: #3b82f6;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.2), 4, 0, 0, 1);
+}
+
+.train-selector .list-cell:selected {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #dbeafe, #bfdbfe);
+    -fx-text-fill: #1e40af;
+    -fx-font-weight: 700;
+    -fx-border-color: #1d4ed8;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(29,78,216,0.3), 6, 0, 0, 2);
+}
+
+.train-selector .list-cell:empty {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-min-height: 0;
+    -fx-pref-height: 0;
+    -fx-max-height: 0;
+    -fx-margin: 0;
+}
+
 /* Compact ComboBox Styling */
 .form-section-compact .form-combo {
     -fx-padding: 6 10;
@@ -191,6 +342,10 @@
     -fx-text-fill: #374151;
 }
 
+.form-combo:focused .text-field {
+    -fx-text-fill: #1e40af;
+}
+
 .form-combo .arrow-button {
     -fx-background-color: transparent;
     -fx-padding: 0 8;
@@ -202,6 +357,10 @@
     -fx-scale-shape: true;
     -fx-pref-width: 8;
     -fx-pref-height: 4;
+}
+
+.form-combo:focused .arrow-button .arrow {
+    -fx-background-color: #3b82f6;
 }
 
 /* ENHANCED: ComboBox Dropdown Styling */
@@ -370,7 +529,7 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.02), 2, 0, 0, 1);
 }
 
-/* FIXED: Enhanced ScrollPane for TableViews */
+/* ENHANCED: ScrollPane for TableViews */
 .list-section .scroll-pane {
     -fx-background-color: white;
     -fx-border-color: transparent;
@@ -385,7 +544,7 @@
     -fx-background-color: white;
 }
 
-/* CRITICAL FIX: TableView Styling to Prevent VirtualFlow Errors */
+/* TableView Styling */
 .data-table {
     -fx-background-color: white;
     -fx-border-color: #e2e8f0;
@@ -397,18 +556,7 @@
     -fx-fixed-cell-size: 35px;
 }
 
-/* Enhanced Route Table for More Visible Space */
-.route-tab .data-table {
-    -fx-background-color: white;
-    -fx-border-color: #e2e8f0;
-    -fx-border-width: 1;
-    -fx-border-radius: 8;
-    -fx-table-cell-border-color: transparent;
-    -fx-selection-bar-non-focused: #f0f9ff;
-    -fx-fixed-cell-size: 35px;
-}
-
-/* FIXED: Column Header Styling */
+/* Column Header Styling */
 .data-table .column-header-background {
     -fx-background-color: #f9fafb;
     -fx-border-color: #e5e7eb;
@@ -426,7 +574,7 @@
     -fx-alignment: CENTER_LEFT;
 }
 
-/* FIXED: Table Row Styling with Consistent Heights */
+/* Table Row Styling */
 .data-table .table-row-cell {
     -fx-background-color: white;
     -fx-border-color: transparent;
@@ -437,28 +585,16 @@
     -fx-pref-height: 35px;
 }
 
-/* Route Table Row Styling */
-.route-tab .data-table .table-row-cell {
-    -fx-background-color: white;
-    -fx-border-color: transparent;
-    -fx-transition: -fx-background-color 0.15s ease-out;
-    -fx-min-height: 35px;
-    -fx-max-height: 35px;
-    -fx-pref-height: 35px;
-}
-
-.data-table .table-row-cell:hover,
-.route-tab .data-table .table-row-cell:hover {
+.data-table .table-row-cell:hover {
     -fx-background-color: #f8fafc;
 }
 
-.data-table .table-row-cell:selected,
-.route-tab .data-table .table-row-cell:selected {
+.data-table .table-row-cell:selected {
     -fx-background-color: #eff6ff;
     -fx-text-fill: #1e40af;
 }
 
-/* FIXED: Table Cell Styling with Proper Sizing */
+/* Table Cell Styling */
 .data-table .table-cell {
     -fx-padding: 8 8;
     -fx-text-fill: #374151;
@@ -476,84 +612,6 @@
 .data-table .table-row-cell:selected .table-cell {
     -fx-text-fill: #1e40af;
     -fx-font-weight: 500;
-}
-
-/* FIXED: Empty Table Row Styling */
-.data-table .table-row-cell:empty {
-    -fx-background-color: white;
-    -fx-border-color: transparent;
-    -fx-min-height: 35px;
-    -fx-max-height: 35px;
-    -fx-pref-height: 35px;
-}
-
-.data-table .table-row-cell:empty .table-cell {
-    -fx-min-height: 35px;
-    -fx-max-height: 35px;
-    -fx-pref-height: 35px;
-    -fx-padding: 0;
-}
-
-/* FIXED: Ensure proper scrollbar visibility */
-.data-table .scroll-bar:vertical {
-    -fx-background-color: #f9fafb;
-    -fx-background-radius: 6;
-    -fx-pref-width: 14;
-    -fx-padding: 2;
-    -fx-opacity: 1;
-}
-
-.data-table .scroll-bar:vertical .track {
-    -fx-background-color: #f1f5f9;
-    -fx-background-radius: 6;
-    -fx-border-color: transparent;
-}
-
-.data-table .scroll-bar:vertical .thumb {
-    -fx-background-color: #cbd5e1;
-    -fx-background-radius: 6;
-    -fx-transition: -fx-background-color 0.2s ease-out;
-}
-
-.data-table .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #94a3b8;
-}
-
-.data-table .scroll-bar:horizontal {
-    -fx-background-color: #f9fafb;
-    -fx-background-radius: 6;
-    -fx-pref-height: 14;
-    -fx-padding: 2;
-    -fx-opacity: 1;
-}
-
-.data-table .scroll-bar:horizontal .track {
-    -fx-background-color: #f1f5f9;
-    -fx-background-radius: 6;
-    -fx-border-color: transparent;
-}
-
-.data-table .scroll-bar:horizontal .thumb {
-    -fx-background-color: #cbd5e1;
-    -fx-background-radius: 6;
-    -fx-transition: -fx-background-color 0.2s ease-out;
-}
-
-.data-table .scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: #94a3b8;
-}
-
-/* FIXED: VirtualFlow Styling */
-.data-table .virtual-flow {
-    -fx-background-color: white;
-}
-
-.data-table .virtual-flow .clipped-container {
-    -fx-background-color: white;
-}
-
-.data-table .virtual-flow .sheet {
-    -fx-background-color: white;
 }
 
 /* Status Bar */
@@ -607,32 +665,17 @@
     -fx-effect: dropshadow(gaussian, rgba(245,158,11,0.3), 8, 0, 0, 4);
 }
 
-/* Global Scroll Bars */
-.scroll-pane {
-    -fx-background-color: transparent;
-    -fx-hbar-policy: as-needed;
-    -fx-vbar-policy: as-needed;
+/* LAZY LOADING: Loading Text Styling */
+.loading-text {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-font-style: italic;
 }
 
-.scroll-bar {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-.scroll-bar .track {
-    -fx-background-color: #f1f5f9;
-    -fx-background-radius: 4;
-    -fx-border-color: transparent;
-}
-
-.scroll-bar .thumb {
-    -fx-background-color: #cbd5e1;
-    -fx-background-radius: 4;
-    -fx-transition: -fx-background-color 0.2s ease-out;
-}
-
-.scroll-bar .thumb:hover {
-    -fx-background-color: #94a3b8;
+.loading-text.loading {
+    -fx-text-fill: #3b82f6;
+    -fx-font-weight: 600;
 }
 
 /* Focus indicators */
@@ -657,6 +700,28 @@
     -fx-opacity: 0.6;
 }
 
+/* Train Selector Disabled State */
+.train-selector:disabled {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #e5e7eb;
+    -fx-effect: none;
+    -fx-cursor: default;
+    -fx-opacity: 0.7;
+}
+
+.train-selector:disabled .text-field {
+    -fx-text-fill: #9ca3af;
+}
+
+.train-selector:disabled .arrow-button {
+    -fx-background-color: #f3f4f6;
+    -fx-border-color: #e5e7eb;
+}
+
+.train-selector:disabled .arrow-button .arrow {
+    -fx-background-color: #d1d5db;
+}
+
 /* Button Disabled States */
 .add-btn:disabled,
 .save-btn:disabled,
@@ -670,35 +735,19 @@
     -fx-effect: none;
 }
 
-/* Loading State Styling */
-.loading {
-    -fx-cursor: wait;
-    -fx-opacity: 0.7;
-}
-
-.loading-overlay {
-    -fx-background-color: rgba(255, 255, 255, 0.8);
-    -fx-alignment: CENTER;
-}
-
-.loading-text {
-    -fx-text-fill: #6b7280;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-}
-
 /* Responsive Grid Layouts */
 .train-form, .route-form {
     -fx-hgap: 15;
     -fx-vgap: 15;
 }
 
-/* Animation Classes */
-.fade-in {
-    -fx-opacity: 0;
-    -fx-transition: -fx-opacity 0.3s ease-in;
+/* Animation for Train Selector */
+@keyframes train-selector-pulse {
+    0% { -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.15), 8, 0, 0, 2); }
+    50% { -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 12, 0, 0, 4); }
+    100% { -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.15), 8, 0, 0, 2); }
 }
 
-.fade-in-active {
-    -fx-opacity: 1;
+.train-selector.pulse {
+    -fx-animation: train-selector-pulse 2s infinite;
 }

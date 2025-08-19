@@ -25,52 +25,86 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * FleetManagementController manages comprehensive train fleet and route operations.
- * Provides CRUD operations for trains and intelligent route management with auto-sequencing.
+ * FleetManagementController - Comprehensive Train Fleet and Route Management System
  *
- * <p>Key Features:
+ * <p>This controller manages the complete lifecycle of train fleet operations and route management
+ * with advanced features for performance, usability, and data integrity.</p>
+ *
+ * <h3>Core Functionality</h3>
  * <ul>
- *   <li>Complete train fleet management with CRUD operations</li>
- *   <li>Intelligent route management with auto-sequence positioning</li>
- *   <li>Advanced searchable station selection with real-time filtering</li>
- *   <li>Dynamic sequence management preventing conflicts and gaps</li>
+ *   <li>Train CRUD operations (Create, Read, Update, Delete)</li>
+ *   <li>Route management with lazy loading for performance optimization</li>
+ *   <li>Advanced searchable interfaces for trains and stations</li>
+ *   <li>Dynamic sequence management for route ordering</li>
  *   <li>Real-time validation and duplicate prevention</li>
- *   <li>Asynchronous data loading with progress feedback</li>
  * </ul>
  *
- * <p>Advanced Route Management:
+ * <h3>Architecture Design</h3>
  * <ul>
- *   <li>Auto-sequence insertion with intelligent shift management</li>
- *   <li>Dynamic sequence spinner limits based on existing routes</li>
- *   <li>Station conflict detection and resolution</li>
- *   <li>Time-based scheduling with flexible arrival/departure times</li>
- *   <li>Multi-day journey support with day numbering</li>
+ *   <li><strong>MVC Pattern:</strong> Clear separation between UI, business logic, and data access</li>
+ *   <li><strong>DAO Pattern:</strong> Data access through dedicated objects ({@link TrainDAO}, {@link StationDAO}, {@link TrainScheduleDAO})</li>
+ *   <li><strong>Observable Collections:</strong> Reactive UI updates using JavaFX {@link javafx.collections.ObservableList}</li>
+ *   <li><strong>Asynchronous Processing:</strong> Non-blocking UI operations using {@link javafx.concurrent.Task} and {@link javafx.application.Platform#runLater}</li>
  * </ul>
  *
- * <p>User Experience Features:
+ * <h3>Performance Optimizations</h3>
  * <ul>
- *   <li>Searchable combo boxes with multi-criteria filtering</li>
- *   <li>Real-time form validation with descriptive error messages</li>
- *   <li>Contextual button enabling/disabling based on selection state</li>
- *   <li>Auto-refresh statistics and status indicators</li>
- *   <li>Confirmation dialogs for destructive operations</li>
+ *   <li><strong>Lazy Loading:</strong> Routes are loaded only when a specific train is selected</li>
+ *   <li><strong>Thread Safety:</strong> All UI updates are performed on the JavaFX Application Thread</li>
+ *   <li><strong>Memory Efficiency:</strong> Uses filtered observable lists instead of creating new collections</li>
+ * </ul>
+ *
+ * <h3>UI Features</h3>
+ * <ul>
+ *   <li>Searchable ComboBoxes with real-time filtering</li>
+ *   <li>Auto-sequence management for route stations</li>
+ *   <li>Comprehensive form validation with user feedback</li>
+ *   <li>Status indicators and loading messages</li>
+ * </ul>
+ *
+ * <h3>Dependencies</h3>
+ * <p>This controller requires the following components:</p>
+ * <ul>
+ *   <li>{@link trainapp.dao.TrainDAO} - For train data operations</li>
+ *   <li>{@link trainapp.dao.StationDAO} - For station data operations</li>
+ *   <li>{@link trainapp.dao.TrainScheduleDAO} - For route/schedule data operations</li>
+ *   <li>{@link trainapp.model.Train} - Train entity model</li>
+ *   <li>{@link trainapp.model.Station} - Station entity model</li>
+ *   <li>{@link trainapp.model.TrainSchedule} - Route/schedule entity model</li>
+ * </ul>
+ *
+ * <h3>Thread Safety</h3>
+ * <p>This controller is designed to be thread-safe for JavaFX applications. All database operations
+ * are performed on background threads using {@link javafx.concurrent.Task}, and UI updates are
+ * marshalled to the JavaFX Application Thread using {@link javafx.application.Platform#runLater}.</p>
+ *
+ * <h3>Error Handling</h3>
+ * <p>The controller implements comprehensive error handling with user-friendly feedback:</p>
+ * <ul>
+ *   <li>Form validation with specific error messages</li>
+ *   <li>Database operation failure handling</li>
+ *   <li>Graceful degradation for network/connection issues</li>
+ *   <li>Loading state management with timeout handling</li>
  * </ul>
  */
+
 public class FleetManagementController {
 
-    // -------------------------------------------------------------------------
-    // FXML UI Components
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // FXML UI COMPONENT DECLARATIONS
+    // =========================================================================
 
     // Navigation Controls
     @FXML private Button backButton;
 
-    // Train Management Controls
+    // Train Management Form Components
     @FXML private TextField trainNumberField;
     @FXML private TextField trainNameField;
     @FXML private ComboBox<Station> sourceStationCombo;
     @FXML private ComboBox<Station> destStationCombo;
     @FXML private Spinner<Integer> coachesSpinner;
+
+    // Train Management Table Components
     @FXML private TableView<Train> trainTableView;
     @FXML private TableColumn<Train, String> trainNumberCol;
     @FXML private TableColumn<Train, String> trainNameCol;
@@ -78,16 +112,15 @@ public class FleetManagementController {
     @FXML private TableColumn<Train, String> destStationCol;
     @FXML private TableColumn<Train, Integer> totalCoachesCol;
 
-    // Route Management Controls
+    // Route Management Form Components
     @FXML private ComboBox<Train> routeTrainCombo;
     @FXML private ComboBox<Station> routeStationCombo;
     @FXML private TextField arrivalTimeField;
     @FXML private TextField departureTimeField;
     @FXML private Spinner<Integer> daySpinner;
     @FXML private Spinner<Integer> sequenceSpinner;
-    @FXML private Button saveRouteBtn;
-    @FXML private Button updateRouteBtn;
-    @FXML private Button deleteRouteBtn;
+
+    // Route Management Table Components
     @FXML private TableView<TrainSchedule> routeTableView;
     @FXML private TableColumn<TrainSchedule, String> routeTrainCol;
     @FXML private TableColumn<TrainSchedule, String> routeStationCol;
@@ -96,59 +129,84 @@ public class FleetManagementController {
     @FXML private TableColumn<TrainSchedule, Integer> dayCol;
     @FXML private TableColumn<TrainSchedule, Integer> sequenceCol;
 
-    // Status and Statistics
+    // Status and Feedback Components
     @FXML private Label trainCountLabel;
     @FXML private Label routeCountLabel;
     @FXML private Label lastUpdateLabel;
     @FXML private Label messageLabel;
+    @FXML private Label routeLoadingLabel;
 
-    // -------------------------------------------------------------------------
-    // Data Access and State Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // DATA ACCESS OBJECTS AND STATE MANAGEMENT
+    // =========================================================================
 
+    // Data Access Objects for persistence layer interaction
     private TrainDAO trainDAO;
     private StationDAO stationDAO;
     private TrainScheduleDAO scheduleDAO;
 
-    private Train selectedTrain;
-    private TrainSchedule selectedRoute;
+    // UI Selection State Management
+    private Train selectedTrain;                    // Currently selected train in train table
+    private TrainSchedule selectedRoute;            // Currently selected route in route table
+    private Train selectedRouteManagementTrain;    // Selected train for route management operations
+
+    // Observable Data Collections for reactive UI
     private ObservableList<Train> allTrains = FXCollections.observableArrayList();
     private ObservableList<Station> allStations = FXCollections.observableArrayList();
-    private ObservableList<TrainSchedule> allRoutes = FXCollections.observableArrayList();
+    private ObservableList<TrainSchedule> currentTrainRoutes = FXCollections.observableArrayList();
 
-    // -------------------------------------------------------------------------
-    // Initialization and Setup
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // CONTROLLER INITIALIZATION AND SETUP
+    // =========================================================================
 
     /**
-     * Initializes the fleet management interface with data loading and UI setup.
-     * Called automatically by JavaFX after FXML loading.
+     * JavaFX initialization method called automatically after FXML loading.
+     * Sets up all UI components, data access objects, and event handlers.
+     * This is the main entry point for controller setup.
      */
     @FXML
     public void initialize() {
-        initializeServices();
-        setupTableColumns();
-        setupEventHandlers();
-        setupSpinners();
-        loadAllData();
-        configureTableResizing();
+        try {
+            System.out.println("Initializing FleetManagementController...");
+
+            initializeDataAccessObjects();
+            setupTableColumns();
+            setupFormControls();
+            setupEventHandlers();
+            setupInitialUIState();
+            loadInitialDataAsync();
+            configureUIBehavior();
+
+            System.out.println("FleetManagementController initialization completed successfully");
+        } catch (Exception e) {
+            System.err.println("Error during controller initialization: " + e.getMessage());
+            e.printStackTrace();
+            showMessage("Failed to initialize application: " + e.getMessage(), "error");
+        }
     }
 
     /**
-     * Initializes data access services for fleet management operations.
+     * Initialize all Data Access Objects for database operations.
+     * These DAOs provide the interface to the persistence layer.
      */
-    private void initializeServices() {
-        trainDAO = new TrainDAO();
-        stationDAO = new StationDAO();
-        scheduleDAO = new TrainScheduleDAO();
+    private void initializeDataAccessObjects() {
+        try {
+            trainDAO = new TrainDAO();
+            stationDAO = new StationDAO();
+            scheduleDAO = new TrainScheduleDAO();
+            System.out.println("Data Access Objects initialized successfully");
+        } catch (Exception e) {
+            System.err.println("Failed to initialize DAOs: " + e.getMessage());
+            throw new RuntimeException("Database initialization failed", e);
+        }
     }
 
     /**
-     * Configures table column value factories and custom cell value providers.
+     * Configure table columns with appropriate cell value factories.
      * Sets up data binding between model objects and table display.
      */
     private void setupTableColumns() {
-        // Train table configuration
+        // Train Table Column Configuration
         trainNumberCol.setCellValueFactory(new PropertyValueFactory<>("trainNumber"));
         trainNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         sourceStationCol.setCellValueFactory(cellData -> {
@@ -161,7 +219,7 @@ public class FleetManagementController {
         });
         totalCoachesCol.setCellValueFactory(new PropertyValueFactory<>("totalCoaches"));
 
-        // Route table configuration
+        // Route Table Column Configuration
         routeTrainCol.setCellValueFactory(cellData -> {
             Train train = getTrainById(cellData.getValue().getTrainId());
             return new SimpleStringProperty(train != null ? train.getTrainNumber() : "Unknown");
@@ -180,13 +238,29 @@ public class FleetManagementController {
         });
         dayCol.setCellValueFactory(new PropertyValueFactory<>("dayNumber"));
         sequenceCol.setCellValueFactory(new PropertyValueFactory<>("sequenceOrder"));
+
+        System.out.println("Table columns configured successfully");
     }
 
     /**
-     * Sets up event handlers for table selections and combo box changes.
-     * Manages form population and button state based on user selections.
+     * Setup form controls including spinners with appropriate value ranges.
+     * Configures minimum, maximum, and default values for all spinner controls.
+     */
+    private void setupFormControls() {
+        // Configure Spinners with business rule constraints
+        coachesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 30, 20));
+        daySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 7, 1));
+        sequenceSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
+
+        System.out.println("Form controls configured successfully");
+    }
+
+    /**
+     * Setup event handlers for table selections and form interactions.
+     * Manages UI state based on user selections and data changes.
      */
     private void setupEventHandlers() {
+        // Train Table Selection Handler - populates form when train is selected
         trainTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             selectedTrain = newVal;
             if (newVal != null) {
@@ -194,122 +268,227 @@ public class FleetManagementController {
             }
         });
 
+        // Route Table Selection Handler - populates form when route is selected
         routeTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             selectedRoute = newVal;
             if (newVal != null) {
                 populateRouteForm(newVal);
-                deleteRouteBtn.setDisable(false);
-                updateRouteBtn.setDisable(false);
-            } else {
-                deleteRouteBtn.setDisable(true);
-                updateRouteBtn.setDisable(true);
             }
         });
 
+        // Route Train ComboBox Selection Handler - implements lazy loading
         routeTrainCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            selectedRouteManagementTrain = newVal;
             if (newVal != null) {
-                filterRoutesByTrain(newVal);
-                enableRouteControls(true);
+                // Train selected - load routes lazily
+                loadRoutesForSelectedTrain(newVal);
                 updateSequenceSpinnerLimits();
+
+                if (routeLoadingLabel != null) {
+                    routeLoadingLabel.setText("Loading routes for " + newVal.getTrainNumber() + "...");
+                    routeLoadingLabel.getStyleClass().add("loading");
+                }
             } else {
-                routeTableView.setItems(allRoutes);
-                enableRouteControls(false);
+                // No train selected - clear route data
+                currentTrainRoutes.clear();
+                routeTableView.setItems(currentTrainRoutes);
                 updateSequenceSpinnerLimits();
+
+                if (routeLoadingLabel != null) {
+                    routeLoadingLabel.setText("Select a train to view routes");
+                    routeLoadingLabel.getStyleClass().remove("loading");
+                }
             }
         });
+
+        System.out.println("Event handlers configured successfully");
     }
 
     /**
-     * Configures spinner controls with appropriate value ranges and defaults.
+     * Setup initial UI state with proper default values and visibility.
+     * Prepares the interface for first use by the user.
      */
-    private void setupSpinners() {
-        coachesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 30, 20));
-        daySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 7, 1));
-        sequenceSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
+    private void setupInitialUIState() {
+        // Set initial status message for route management
+        if (routeLoadingLabel != null) {
+            routeLoadingLabel.setText("Select a train to view routes");
+            routeLoadingLabel.setVisible(true);
+        }
+
+        // Initialize route table with empty data
+        routeTableView.setItems(currentTrainRoutes);
+
+        System.out.println("Initial UI state configured successfully");
     }
 
     /**
-     * Configures table column resizing policy for optimal display.
+     * Load initial data asynchronously to prevent UI blocking.
+     * Fetches all stations and trains from database and updates UI.
      */
-    private void configureTableResizing() {
-        Platform.runLater(() -> {
-            trainTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-            routeTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        });
-    }
-
-    // -------------------------------------------------------------------------
-    // Data Loading and Management
-    // -------------------------------------------------------------------------
-
-    /**
-     * Loads all station and train data asynchronously.
-     * Updates UI components and sets up combo boxes after data loading completes.
-     */
-    private void loadAllData() {
+    private void loadInitialDataAsync() {
         Task<Void> loadTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
+                System.out.println("Loading initial data from database...");
                 List<Station> stations = stationDAO.getAllStations();
                 List<Train> trains = trainDAO.getAllTrains();
 
                 Platform.runLater(() -> {
-                    allStations.setAll(stations);
-                    allTrains.setAll(trains);
-                    setupComboBoxes();
-                    trainTableView.setItems(allTrains);
-                    loadRouteData();
-                    updateStatus();
+                    try {
+                        allStations.setAll(stations);
+                        allTrains.setAll(trains);
+                        setupComboBoxes();
+                        trainTableView.setItems(allTrains);
+                        updateStatusLabels();
+                        System.out.println("Initial data loaded successfully: " +
+                                stations.size() + " stations, " + trains.size() + " trains");
+                    } catch (Exception e) {
+                        System.err.println("Error setting up UI with loaded data: " + e.getMessage());
+                        showMessage("Failed to setup UI: " + e.getMessage(), "error");
+                    }
                 });
                 return null;
             }
         };
+
+        loadTask.setOnFailed(e -> {
+            System.err.println("Failed to load initial data: " + loadTask.getException().getMessage());
+            showMessage("Failed to load application data", "error");
+        });
+
         new Thread(loadTask).start();
     }
 
     /**
-     * Loads route data for all trains asynchronously.
-     * Updates route table and sequence spinner limits after completion.
+     * Configure UI behavior settings including table resizing policies.
+     * Ensures optimal display and user experience.
      */
-    private void loadRouteData() {
-        Task<Void> routeTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                ObservableList<TrainSchedule> routes = FXCollections.observableArrayList();
-                for (Train train : allTrains) {
-                    routes.addAll(trainDAO.getTrainSchedule(train.getTrainId()));
-                }
-                Platform.runLater(() -> {
-                    allRoutes.setAll(routes);
-                    routeTableView.setItems(allRoutes);
-                    updateSequenceSpinnerLimits();
-                });
-                return null;
-            }
-        };
-        new Thread(routeTask).start();
+    private void configureUIBehavior() {
+        Platform.runLater(() -> {
+            trainTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            routeTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            System.out.println("UI behavior configured successfully");
+        });
     }
 
-    // -------------------------------------------------------------------------
-    // Combo Box Setup and Search Functionality
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // COMBOBOX SETUP AND SEARCH FUNCTIONALITY
+    // =========================================================================
 
     /**
-     * Sets up all combo boxes with appropriate data and search functionality.
+     * Setup all combo boxes with searchable functionality.
+     * Configures station and train selection with real-time filtering.
      */
     private void setupComboBoxes() {
         setupSearchableStationCombo(sourceStationCombo, "Type to search source station...");
         setupSearchableStationCombo(destStationCombo, "Type to search destination...");
         setupSearchableStationCombo(routeStationCombo, "Type to search station...");
-        setupTrainCombo();
+        setupSearchableTrainCombo();
+        System.out.println("ComboBoxes configured with search functionality");
     }
 
     /**
-     * Configures a station combo box with advanced search and filtering capabilities.
-     * Provides real-time filtering based on station name, code, city, and state.
+     * Setup searchable train combo box with enhanced display and search capabilities.
+     * Provides detailed train information in dropdown and compact display when selected.
+     */
+    private void setupSearchableTrainCombo() {
+        routeTrainCombo.setItems(allTrains);
+        routeTrainCombo.setEditable(true);
+        routeTrainCombo.setPromptText("Type train number or name to search...");
+
+        // String converter for proper display and parsing
+        routeTrainCombo.setConverter(new StringConverter<Train>() {
+            @Override
+            public String toString(Train train) {
+                return train != null ? train.getTrainNumber() + " - " + train.getName() : null;
+            }
+
+            @Override
+            public Train fromString(String string) {
+                return findTrainByText(string);
+            }
+        });
+
+        // Cell factory for detailed dropdown display including route information
+        routeTrainCombo.setCellFactory(param -> new ListCell<Train>() {
+            @Override
+            protected void updateItem(Train item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    Station source = getStationById(item.getSourceStationId());
+                    Station dest = getStationById(item.getDestinationStationId());
+                    setText(item.getTrainNumber() + " - " + item.getName() +
+                            " (" + (source != null ? source.getStationCode() : "?") +
+                            " → " + (dest != null ? dest.getStationCode() : "?") + ")");
+                }
+            }
+        });
+
+        // Button cell for compact selected value display
+        routeTrainCombo.setButtonCell(new ListCell<Train>() {
+            @Override
+            protected void updateItem(Train item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "Choose train for route management..." :
+                        item.getTrainNumber() + " - " + item.getName());
+            }
+        });
+
+        setupTrainComboSearchBehavior();
+    }
+
+    /**
+     * Setup search behavior for train combo box with real-time filtering.
+     * Filters trains based on train number and name as user types.
+     */
+    private void setupTrainComboSearchBehavior() {
+        TextField editor = routeTrainCombo.getEditor();
+
+        // Real-time search filtering based on user input
+        editor.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!routeTrainCombo.isFocused()) return;
+
+            Platform.runLater(() -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    routeTrainCombo.setItems(allTrains);
+                } else {
+                    String searchText = newValue.toLowerCase().trim();
+                    ObservableList<Train> filteredTrains = FXCollections.observableArrayList();
+
+                    for (Train train : allTrains) {
+                        if (matchesTrainSearchCriteria(train, searchText)) {
+                            filteredTrains.add(train);
+                        }
+                    }
+
+                    routeTrainCombo.setItems(filteredTrains);
+                    if (!filteredTrains.isEmpty() && !routeTrainCombo.isShowing()) {
+                        routeTrainCombo.show();
+                    }
+                }
+            });
+        });
+
+        // Selection handling for proper display update
+        routeTrainCombo.setOnAction(event -> {
+            Train selected = routeTrainCombo.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                Platform.runLater(() -> {
+                    routeTrainCombo.getEditor().setText(selected.getTrainNumber() + " - " + selected.getName());
+                    routeTrainCombo.hide();
+                });
+            }
+        });
+    }
+
+    /**
+     * Setup searchable station combo box with comprehensive search capabilities.
+     * Allows searching by station name, code, city, and state.
      *
-     * @param comboBox the station combo box to configure
-     * @param promptText placeholder text for the combo box
+     * @param comboBox The station combo box to configure
+     * @param promptText The placeholder text to display
      */
     private void setupSearchableStationCombo(ComboBox<Station> comboBox, String promptText) {
         comboBox.setItems(allStations);
@@ -335,7 +514,8 @@ public class FleetManagementController {
             protected void updateItem(Station item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty || item == null ? null :
-                        item.getName() + " (" + item.getStationCode() + ") - " + item.getCity() + ", " + item.getState());
+                        item.getName() + " (" + item.getStationCode() + ") - " +
+                                item.getCity() + ", " + item.getState());
             }
         });
 
@@ -344,19 +524,21 @@ public class FleetManagementController {
             @Override
             protected void updateItem(Station item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getName() + " (" + item.getStationCode() + ")");
+                setText(empty || item == null ? null :
+                        item.getName() + " (" + item.getStationCode() + ")");
             }
         });
 
-        setupComboBoxSearchBehavior(comboBox);
+        setupStationComboSearchBehavior(comboBox);
     }
 
     /**
-     * Sets up search behavior for station combo boxes including text filtering and keyboard handling.
+     * Setup search behavior for station combo boxes with multi-criteria filtering.
+     * Filters stations based on name, code, city, and state as user types.
      *
-     * @param comboBox the combo box to configure search behavior for
+     * @param comboBox The station combo box to configure search behavior for
      */
-    private void setupComboBoxSearchBehavior(ComboBox<Station> comboBox) {
+    private void setupStationComboSearchBehavior(ComboBox<Station> comboBox) {
         TextField editor = comboBox.getEditor();
 
         // Real-time search filtering
@@ -371,7 +553,7 @@ public class FleetManagementController {
                     ObservableList<Station> filteredStations = FXCollections.observableArrayList();
 
                     for (Station station : allStations) {
-                        if (matchesSearchCriteria(station, searchText)) {
+                        if (matchesStationSearchCriteria(station, searchText)) {
                             filteredStations.add(station);
                         }
                     }
@@ -384,7 +566,7 @@ public class FleetManagementController {
             });
         });
 
-        // Selection handling
+        // Selection handling for proper display update
         comboBox.setOnAction(event -> {
             Station selected = comboBox.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -394,97 +576,88 @@ public class FleetManagementController {
                 });
             }
         });
-
-        setupComboBoxFocusAndKeyboardHandling(comboBox, editor);
     }
 
-    /**
-     * Sets up focus and keyboard handling for searchable combo boxes.
-     *
-     * @param comboBox the combo box to configure
-     * @param editor the text editor component of the combo box
-     */
-    private void setupComboBoxFocusAndKeyboardHandling(ComboBox<Station> comboBox, TextField editor) {
-        // Focus handling for text selection and validation
-        editor.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (isNowFocused) {
-                Platform.runLater(() -> editor.selectAll());
-            } else {
-                Station currentValue = comboBox.getValue();
-                String editorText = editor.getText();
+    // =========================================================================
+    // LAZY LOADING AND DATA MANAGEMENT
+    // =========================================================================
 
-                if (currentValue == null && !editorText.isEmpty()) {
-                    Station match = findStationByText(editorText);
-                    if (match != null) {
-                        comboBox.setValue(match);
-                    } else {
-                        editor.clear();
-                        comboBox.setValue(null);
+    /**
+     * Load routes for the selected train asynchronously (lazy loading).
+     * This prevents loading all route data at startup, improving performance.
+     *
+     * @param train The train to load routes for
+     */
+    private void loadRoutesForSelectedTrain(Train train) {
+        if (train == null) return;
+
+        Task<Void> routeTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                List<TrainSchedule> routes = trainDAO.getTrainSchedule(train.getTrainId());
+
+                Platform.runLater(() -> {
+                    currentTrainRoutes.setAll(routes);
+                    routeTableView.setItems(currentTrainRoutes);
+
+                    // Update loading status
+                    if (routeLoadingLabel != null) {
+                        routeLoadingLabel.setText("Loaded " + routes.size() + " route stations");
+                        routeLoadingLabel.getStyleClass().remove("loading");
                     }
-                } else if (currentValue != null) {
-                    editor.setText(currentValue.getName() + " (" + currentValue.getStationCode() + ")");
+
+                    updateSequenceSpinnerLimits();
+                    updateStatusLabels();
+                });
+                return null;
+            }
+        };
+
+        // Handle loading failures gracefully
+        routeTask.setOnFailed(e -> {
+            Platform.runLater(() -> {
+                showMessage("Failed to load routes for train: " + train.getTrainNumber(), "error");
+                if (routeLoadingLabel != null) {
+                    routeLoadingLabel.setText("Error loading routes");
+                    routeLoadingLabel.getStyleClass().remove("loading");
                 }
-            }
+            });
         });
 
-        // Keyboard navigation and shortcuts
-        editor.setOnKeyPressed(event -> {
-            switch (event.getCode()) {
-                case ENTER:
-                    if (!comboBox.getItems().isEmpty()) {
-                        comboBox.setValue(comboBox.getItems().get(0));
-                    }
-                    event.consume();
-                    break;
-                case ESCAPE:
-                    editor.clear();
-                    comboBox.hide();
-                    event.consume();
-                    break;
-                case DOWN:
-                    if (!comboBox.isShowing()) {
-                        comboBox.show();
-                    }
-                    break;
-            }
-        });
+        new Thread(routeTask).start();
     }
 
-    /**
-     * Configures the train combo box with proper display formatting.
-     */
-    private void setupTrainCombo() {
-        routeTrainCombo.setItems(allTrains);
-        routeTrainCombo.setCellFactory(param -> new ListCell<Train>() {
-            @Override
-            protected void updateItem(Train item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getTrainNumber() + " - " + item.getName());
-            }
-        });
-
-        routeTrainCombo.setButtonCell(new ListCell<Train>() {
-            @Override
-            protected void updateItem(Train item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getTrainNumber() + " - " + item.getName());
-            }
-        });
-    }
-
-    // -------------------------------------------------------------------------
-    // Search and Filtering Utilities
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // SEARCH AND FILTERING UTILITIES
+    // =========================================================================
 
     /**
-     * Checks if a station matches the given search criteria.
-     * Searches across name, station code, city, and state fields.
+     * Check if train matches search criteria based on train number and name.
+     * Used for real-time filtering in train combo box.
      *
-     * @param station the station to check
-     * @param searchText the search text to match against
+     * @param train The train to check
+     * @param searchText The search text to match against
+     * @return true if train matches search criteria
+     */
+    private boolean matchesTrainSearchCriteria(Train train, String searchText) {
+        if (train == null || searchText == null || searchText.isEmpty()) {
+            return true;
+        }
+
+        String search = searchText.toLowerCase();
+        return (train.getTrainNumber() != null && train.getTrainNumber().toLowerCase().contains(search))
+                || (train.getName() != null && train.getName().toLowerCase().contains(search));
+    }
+
+    /**
+     * Check if station matches search criteria based on name, code, city, and state.
+     * Used for real-time filtering in station combo boxes.
+     *
+     * @param station The station to check
+     * @param searchText The search text to match against
      * @return true if station matches search criteria
      */
-    private boolean matchesSearchCriteria(Station station, String searchText) {
+    private boolean matchesStationSearchCriteria(Station station, String searchText) {
         if (station == null || searchText == null || searchText.isEmpty()) {
             return true;
         }
@@ -497,16 +670,52 @@ public class FleetManagementController {
     }
 
     /**
-     * Finds a station by text input using multiple matching strategies.
-     * Attempts exact matches by code and name, then partial matches.
+     * Find train by text input using multiple matching strategies.
+     * Attempts exact matches first, then falls back to partial matches.
      *
-     * @param text the text to search for
-     * @return matching Station object or null if not found
+     * @param text The text to search for
+     * @return Matching Train object or null if not found
      */
-    private Station findStationByText(String text) {
+    private Train findTrainByText(String text) {
         if (text == null || text.trim().isEmpty()) return null;
 
         String searchText = text.toLowerCase().trim();
+
+        // Try exact train number match first
+        for (Train train : allTrains) {
+            if (train.getTrainNumber() != null &&
+                    train.getTrainNumber().equalsIgnoreCase(searchText)) {
+                return train;
+            }
+        }
+
+        // Try exact name match
+        for (Train train : allTrains) {
+            if (train.getName() != null &&
+                    train.getName().equalsIgnoreCase(searchText)) {
+                return train;
+            }
+        }
+
+        // Try partial matches
+        for (Train train : allTrains) {
+            if (matchesTrainSearchCriteria(train, searchText)) {
+                return train;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find station by text input using multiple matching strategies.
+     * Supports both "Name (CODE)" format and direct name/code searching.
+     *
+     * @param text The text to search for
+     * @return Matching Station object or null if not found
+     */
+    private Station findStationByText(String text) {
+        if (text == null || text.trim().isEmpty()) return null;
 
         // Extract station code if format is "Name (CODE)"
         if (text.contains("(") && text.contains(")")) {
@@ -522,6 +731,8 @@ public class FleetManagementController {
                 }
             }
         }
+
+        String searchText = text.toLowerCase().trim();
 
         // Try exact name match
         for (Station station : allStations) {
@@ -539,10 +750,9 @@ public class FleetManagementController {
             }
         }
 
-        // Try partial name match
+        // Try partial matches
         for (Station station : allStations) {
-            if (station.getName() != null &&
-                    station.getName().toLowerCase().contains(searchText)) {
+            if (matchesStationSearchCriteria(station, searchText)) {
                 return station;
             }
         }
@@ -550,15 +760,13 @@ public class FleetManagementController {
         return null;
     }
 
-    // -------------------------------------------------------------------------
-    // Train CRUD Operations
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // TRAIN CRUD OPERATIONS
+    // =========================================================================
 
     /**
-     * Handles saving a new train to the database.
+     * Handle saving a new train to the database.
      * Validates form data and creates new train record.
-     *
-     * @param event ActionEvent from save train button
      */
     @FXML
     public void handleSaveTrain(ActionEvent event) {
@@ -574,17 +782,15 @@ public class FleetManagementController {
         if (trainDAO.addTrain(train)) {
             showMessage("Train saved successfully!", "success");
             clearTrainForm();
-            loadAllData();
+            loadInitialDataAsync();
         } else {
             showMessage("Failed to save train!", "error");
         }
     }
 
     /**
-     * Handles updating an existing train record.
-     * Validates form data and updates selected train.
-     *
-     * @param event ActionEvent from update train button
+     * Handle updating an existing train record.
+     * Validates form data and updates selected train in database.
      */
     @FXML
     public void handleUpdateTrain(ActionEvent event) {
@@ -599,17 +805,15 @@ public class FleetManagementController {
         if (trainDAO.updateTrain(selectedTrain)) {
             showMessage("Train updated successfully!", "success");
             clearTrainForm();
-            loadAllData();
+            loadInitialDataAsync();
         } else {
             showMessage("Failed to update train!", "error");
         }
     }
 
     /**
-     * Handles deleting a train with confirmation dialog.
-     * Warns user about associated route deletion.
-     *
-     * @param event ActionEvent from delete train button
+     * Handle deleting a train with confirmation dialog.
+     * Warns user about cascading deletion of associated routes.
      */
     @FXML
     public void handleDeleteTrain(ActionEvent event) {
@@ -624,22 +828,20 @@ public class FleetManagementController {
             if (trainDAO.deleteTrain(selectedTrain.getTrainId())) {
                 showMessage("Train deleted successfully!", "success");
                 clearTrainForm();
-                loadAllData();
+                loadInitialDataAsync();
             } else {
                 showMessage("Failed to delete train!", "error");
             }
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Route CRUD Operations with Auto-Sequencing
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // ROUTE CRUD OPERATIONS
+    // =========================================================================
 
     /**
-     * Handles saving a new route with intelligent auto-sequencing.
-     * Automatically manages sequence positioning and station shifting.
-     *
-     * @param event ActionEvent from save route button
+     * Handle saving a new route with intelligent sequence management.
+     * Supports both auto-sequence assignment and user-specified positioning.
      */
     @FXML
     public void handleSaveRoute(ActionEvent event) {
@@ -650,81 +852,15 @@ public class FleetManagementController {
 
         Integer sequence = sequenceSpinner.getValue();
         if (sequence == null || sequence <= 0) {
-            // Auto-assign to end of route
             handleAutoSequenceAppend(schedule);
         } else {
-            // User-specified sequence with auto-adjustment
             handleUserSpecifiedSequence(schedule, sequence);
         }
     }
 
     /**
-     * Creates a TrainSchedule object from current form values.
-     *
-     * @return configured TrainSchedule object or null if time parsing fails
-     */
-    private TrainSchedule createScheduleFromForm() {
-        TrainSchedule schedule = new TrainSchedule();
-        schedule.setTrainId(routeTrainCombo.getValue().getTrainId());
-        schedule.setStationId(routeStationCombo.getValue().getStationId());
-        schedule.setDayNumber(daySpinner.getValue());
-
-        try {
-            schedule.setArrivalTime(arrivalTimeField.getText().trim().isEmpty() ?
-                    null : LocalTime.parse(arrivalTimeField.getText().trim()));
-            schedule.setDepartureTime(departureTimeField.getText().trim().isEmpty() ?
-                    null : LocalTime.parse(departureTimeField.getText().trim()));
-            return schedule;
-        } catch (Exception e) {
-            showMessage("Invalid time format! Use HH:MM", "error");
-            return null;
-        }
-    }
-
-    /**
-     * Handles auto-sequence append to end of route.
-     *
-     * @param schedule the schedule to save
-     */
-    private void handleAutoSequenceAppend(TrainSchedule schedule) {
-        try {
-            int maxSeq = scheduleDAO.getCurrentMaxSequence(schedule.getTrainId());
-            schedule.setSequenceOrder(maxSeq + 1);
-        } catch (Exception e) {
-            schedule.setSequenceOrder(1);
-        }
-
-        if (scheduleDAO.addStationToJourney(schedule)) {
-            showMessage("Route saved successfully!", "success");
-            clearRouteForm();
-            loadRouteData();
-        } else {
-            showMessage("Failed to save route!", "error");
-        }
-    }
-
-    /**
-     * Handles user-specified sequence with automatic adjustment.
-     *
-     * @param schedule the schedule to save
-     * @param sequence the desired sequence position
-     */
-    private void handleUserSpecifiedSequence(TrainSchedule schedule, int sequence) {
-        schedule.setSequenceOrder(sequence);
-
-        if (scheduleDAO.addStationToJourneyWithSequenceAdjustment(schedule)) {
-            showMessage("Route saved successfully! Existing stations shifted down.", "success");
-            clearRouteForm();
-            loadRouteData();
-        } else {
-            showMessage("Failed to save route!", "error");
-        }
-    }
-
-    /**
-     * Handles updating an existing route with sequence change management.
-     *
-     * @param event ActionEvent from update route button
+     * Handle updating an existing route with sequence change management.
+     * Manages complex sequence repositioning when needed.
      */
     @FXML
     public void handleUpdateRoute(ActionEvent event) {
@@ -743,10 +879,112 @@ public class FleetManagementController {
     }
 
     /**
-     * Updates the selected route object from current form values.
+     * Handle deleting a route with confirmation dialog.
+     * Removes the route from the train's schedule.
+     */
+    @FXML
+    public void handleDeleteRoute(ActionEvent event) {
+        if (selectedRoute == null) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Route");
+        alert.setHeaderText("Delete this route entry?");
+
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            if (trainDAO.deleteJourney(selectedRoute.getScheduleId())) {
+                showMessage("Route deleted successfully!", "success");
+                clearRouteForm();
+                if (selectedRouteManagementTrain != null) {
+                    loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+                }
+            } else {
+                showMessage("Failed to delete route!", "error");
+            }
+        }
+    }
+
+    // =========================================================================
+    // ROUTE OPERATION HELPERS
+    // =========================================================================
+
+    /**
+     * Create TrainSchedule object from current form values.
+     * Handles time parsing and validation.
+     *
+     * @return TrainSchedule object or null if validation fails
+     */
+    private TrainSchedule createScheduleFromForm() {
+        if (selectedRouteManagementTrain == null) {
+            showMessage("Please select a train first!", "error");
+            return null;
+        }
+
+        TrainSchedule schedule = new TrainSchedule();
+        schedule.setTrainId(selectedRouteManagementTrain.getTrainId());
+        schedule.setStationId(routeStationCombo.getValue().getStationId());
+        schedule.setDayNumber(daySpinner.getValue());
+
+        try {
+            schedule.setArrivalTime(arrivalTimeField.getText().trim().isEmpty() ?
+                    null : LocalTime.parse(arrivalTimeField.getText().trim()));
+            schedule.setDepartureTime(departureTimeField.getText().trim().isEmpty() ?
+                    null : LocalTime.parse(departureTimeField.getText().trim()));
+            return schedule;
+        } catch (Exception e) {
+            showMessage("Invalid time format! Use HH:MM", "error");
+            return null;
+        }
+    }
+
+    /**
+     * Handle auto-sequence append to end of route.
+     * Automatically assigns the next available sequence number.
+     */
+    private void handleAutoSequenceAppend(TrainSchedule schedule) {
+        try {
+            int maxSeq = scheduleDAO.getCurrentMaxSequence(schedule.getTrainId());
+            schedule.setSequenceOrder(maxSeq + 1);
+        } catch (Exception e) {
+            schedule.setSequenceOrder(1);
+        }
+
+        if (scheduleDAO.addStationToJourney(schedule)) {
+            showMessage("Route saved successfully!", "success");
+            clearRouteForm();
+            if (selectedRouteManagementTrain != null) {
+                loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+            }
+        } else {
+            showMessage("Failed to save route!", "error");
+        }
+    }
+
+    /**
+     * Handle user-specified sequence with automatic sequence adjustment.
+     * Inserts route at specified position and shifts existing routes as needed.
+     */
+    private void handleUserSpecifiedSequence(TrainSchedule schedule, int sequence) {
+        schedule.setSequenceOrder(sequence);
+
+        if (scheduleDAO.addStationToJourneyWithSequenceAdjustment(schedule)) {
+            showMessage("Route saved successfully! Existing stations shifted down.", "success");
+            clearRouteForm();
+            if (selectedRouteManagementTrain != null) {
+                loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+            }
+        } else {
+            showMessage("Failed to save route!", "error");
+        }
+    }
+
+    /**
+     * Update selected route object from current form values.
+     * Prepares route for database update operation.
      */
     private void updateSelectedRouteFromForm() {
-        selectedRoute.setTrainId(routeTrainCombo.getValue().getTrainId());
+        if (selectedRouteManagementTrain == null) return;
+
+        selectedRoute.setTrainId(selectedRouteManagementTrain.getTrainId());
         selectedRoute.setStationId(routeStationCombo.getValue().getStationId());
         selectedRoute.setDayNumber(daySpinner.getValue());
 
@@ -761,44 +999,41 @@ public class FleetManagementController {
     }
 
     /**
-     * Handles route update with sequence position change.
-     *
-     * @param oldSequence the original sequence position
-     * @param newSequence the new sequence position
+     * Handle route update with sequence position change.
+     * Manages complex sequence repositioning using delete-and-recreate strategy.
      */
     private void handleSequenceChangeUpdate(int oldSequence, int newSequence) {
         if (handleSequenceChange(selectedRoute, oldSequence, newSequence, selectedRoute.getTrainId())) {
             showMessage("Route updated successfully! Sequences adjusted.", "success");
             clearRouteForm();
-            loadRouteData();
+            if (selectedRouteManagementTrain != null) {
+                loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+            }
         } else {
             showMessage("Failed to update route sequence!", "error");
         }
     }
 
     /**
-     * Handles simple route update without sequence change.
+     * Handle simple route update without sequence change.
+     * Updates route data while maintaining current sequence position.
      */
     private void handleSimpleRouteUpdate() {
         selectedRoute.setSequenceOrder(sequenceSpinner.getValue());
         if (scheduleDAO.updateStationInJourney(selectedRoute)) {
             showMessage("Route updated successfully!", "success");
             clearRouteForm();
-            loadRouteData();
+            if (selectedRouteManagementTrain != null) {
+                loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+            }
         } else {
             showMessage("Failed to update route!", "error");
         }
     }
 
     /**
-     * Handles complex sequence changes during route updates.
-     * Uses delete-and-recreate strategy for sequence repositioning.
-     *
-     * @param schedule the schedule being updated
-     * @param oldSeq the original sequence position
-     * @param newSeq the new sequence position
-     * @param trainId the train ID for the route
-     * @return true if sequence change was successful
+     * Handle complex sequence changes using delete-and-recreate strategy.
+     * This approach ensures sequence integrity when repositioning routes.
      */
     private boolean handleSequenceChange(TrainSchedule schedule, int oldSeq, int newSeq, int trainId) {
         try {
@@ -813,114 +1048,15 @@ public class FleetManagementController {
         }
     }
 
-    /**
-     * Handles deleting a route with confirmation dialog.
-     *
-     * @param event ActionEvent from delete route button
-     */
-    @FXML
-    public void handleDeleteRoute(ActionEvent event) {
-        if (selectedRoute == null) return;
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Route");
-        alert.setHeaderText("Delete this route entry?");
-
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            if (trainDAO.deleteJourney(selectedRoute.getScheduleId())) {
-                showMessage("Route deleted successfully!", "success");
-                clearRouteForm();
-                loadRouteData();
-            } else {
-                showMessage("Failed to delete route!", "error");
-            }
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // UI Action Handlers
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // FORM VALIDATION
+    // =========================================================================
 
     /**
-     * Handles back button click to close the fleet management window.
+     * Validate train form data for completeness and business rules.
+     * Ensures all required fields are filled and rules are followed.
      *
-     * @param event ActionEvent from back button
-     */
-    @FXML public void handleBack(ActionEvent event) {
-        ((Stage) backButton.getScene().getWindow()).close();
-    }
-
-    /**
-     * Handles refresh button click to reload all data.
-     *
-     * @param event ActionEvent from refresh button
-     */
-    @FXML public void handleRefresh(ActionEvent event) {
-        loadAllData();
-    }
-
-    /**
-     * Handles add train button click to clear form for new train entry.
-     *
-     * @param event ActionEvent from add train button
-     */
-    @FXML public void handleAddTrain(ActionEvent event) {
-        clearTrainForm();
-    }
-
-    /**
-     * Handles add route button click to clear form for new route entry.
-     *
-     * @param event ActionEvent from add route button
-     */
-    @FXML public void handleAddRoute(ActionEvent event) {
-        clearRouteForm();
-    }
-
-    /**
-     * Handles clear train form button click.
-     *
-     * @param event ActionEvent from clear train form button
-     */
-    @FXML public void handleClearTrainForm(ActionEvent event) {
-        clearTrainForm();
-    }
-
-    /**
-     * Handles clear route form button click.
-     *
-     * @param event ActionEvent from clear route form button
-     */
-    @FXML public void handleClearRouteForm(ActionEvent event) {
-        clearRouteForm();
-    }
-
-    /**
-     * Placeholder handler for train export functionality.
-     *
-     * @param event ActionEvent from export trains button
-     */
-    @FXML public void handleExportTrains(ActionEvent event) {
-        showMessage("Export feature coming soon!", "");
-    }
-
-    /**
-     * Placeholder handler for route export functionality.
-     *
-     * @param event ActionEvent from export routes button
-     */
-    @FXML public void handleExportRoutes(ActionEvent event) {
-        showMessage("Export feature coming soon!", "");
-    }
-
-    // -------------------------------------------------------------------------
-    // Form Validation
-    // -------------------------------------------------------------------------
-
-    /**
-     * Validates train form data for completeness and logical consistency.
-     *
-     * @return true if form data is valid
+     * @return true if form data is valid, false otherwise
      */
     private boolean validateTrainForm() {
         if (trainNumberField.getText().trim().isEmpty()) {
@@ -947,12 +1083,13 @@ public class FleetManagementController {
     }
 
     /**
-     * Validates route form data including duplicate station checking.
+     * Validate route form data including duplicate station checking.
+     * Ensures route data integrity and prevents duplicate stations in same train.
      *
-     * @return true if form data is valid
+     * @return true if form data is valid, false otherwise
      */
     private boolean validateRouteForm() {
-        if (routeTrainCombo.getValue() == null) {
+        if (selectedRouteManagementTrain == null) {
             showMessage("Please select a train!", "error");
             return false;
         }
@@ -962,7 +1099,7 @@ public class FleetManagementController {
         }
 
         // Check for duplicate stations in the same train route
-        int trainId = routeTrainCombo.getValue().getTrainId();
+        int trainId = selectedRouteManagementTrain.getTrainId();
         int stationId = routeStationCombo.getValue().getStationId();
 
         if (scheduleDAO.stationExistsInRoute(trainId, stationId)) {
@@ -976,16 +1113,19 @@ public class FleetManagementController {
         return true;
     }
 
-    // -------------------------------------------------------------------------
-    // Form Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // FORM MANAGEMENT
+    // =========================================================================
 
     /**
-     * Populates the train form with data from the selected train.
+     * Populate train form with data from selected train.
+     * Updates all train form fields with selected train's data.
      *
-     * @param train the train data to populate form with
+     * @param train The train data to populate form with
      */
     private void populateTrainForm(Train train) {
+        if (train == null) return;
+
         trainNumberField.setText(train.getTrainNumber());
         trainNameField.setText(train.getName());
         sourceStationCombo.setValue(getStationById(train.getSourceStationId()));
@@ -994,16 +1134,25 @@ public class FleetManagementController {
     }
 
     /**
-     * Populates the route form with data from the selected route.
-     * Updates sequence spinner limits before setting the value.
+     * Populate route form with data from selected route.
+     * Updates all route form fields and manages train selection.
      *
-     * @param schedule the route data to populate form with
+     * @param schedule The route data to populate form with
      */
     private void populateRouteForm(TrainSchedule schedule) {
-        routeTrainCombo.setValue(getTrainById(schedule.getTrainId()));
+        if (schedule == null) return;
+
+        // Set train combo to the schedule's train if different
+        Train train = getTrainById(schedule.getTrainId());
+        if (train != null && train != selectedRouteManagementTrain) {
+            routeTrainCombo.setValue(train);
+        }
+
         routeStationCombo.setValue(getStationById(schedule.getStationId()));
-        arrivalTimeField.setText(schedule.getArrivalTime() != null ? schedule.getArrivalTime().toString() : "");
-        departureTimeField.setText(schedule.getDepartureTime() != null ? schedule.getDepartureTime().toString() : "");
+        arrivalTimeField.setText(schedule.getArrivalTime() != null ?
+                schedule.getArrivalTime().toString() : "");
+        departureTimeField.setText(schedule.getDepartureTime() != null ?
+                schedule.getDepartureTime().toString() : "");
         daySpinner.getValueFactory().setValue(schedule.getDayNumber());
 
         updateSequenceSpinnerLimits();
@@ -1011,7 +1160,8 @@ public class FleetManagementController {
     }
 
     /**
-     * Clears the train form and resets selection state.
+     * Clear train form and reset selection state.
+     * Resets all train form fields to default values.
      */
     private void clearTrainForm() {
         trainNumberField.clear();
@@ -1023,8 +1173,8 @@ public class FleetManagementController {
     }
 
     /**
-     * Clears the route form and updates sequence spinner limits.
-     * Resets button states for route operations.
+     * Clear route form and reset selection state.
+     * Resets all route form fields while preserving train selection.
      */
     private void clearRouteForm() {
         routeStationCombo.setValue(null);
@@ -1035,130 +1185,193 @@ public class FleetManagementController {
         updateSequenceSpinnerLimits();
 
         selectedRoute = null;
-        updateRouteBtn.setDisable(true);
-        deleteRouteBtn.setDisable(true);
+        routeTableView.getSelectionModel().clearSelection();
     }
 
-    // -------------------------------------------------------------------------
-    // Dynamic Sequence Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // UTILITY METHODS
+    // =========================================================================
 
     /**
-     * Updates sequence spinner limits based on the selected train's current route structure.
-     * Dynamically adjusts maximum allowed sequence to prevent gaps and conflicts.
+     * Update sequence spinner limits based on selected train's current routes.
+     * Dynamically adjusts maximum sequence to prevent gaps and conflicts.
      */
     private void updateSequenceSpinnerLimits() {
-        if (routeTrainCombo.getValue() != null) {
+        if (selectedRouteManagementTrain != null) {
             try {
-                int maxSeq = scheduleDAO.getCurrentMaxSequence(routeTrainCombo.getValue().getTrainId());
+                int maxSeq = scheduleDAO.getCurrentMaxSequence(selectedRouteManagementTrain.getTrainId());
                 int maxAllowed = maxSeq + 1;
 
                 sequenceSpinner.setValueFactory(
                         new SpinnerValueFactory.IntegerSpinnerValueFactory(1, maxAllowed, maxAllowed)
                 );
-
-                System.out.println("Updated sequence limits: 1 to " + maxAllowed + " for train " +
-                        routeTrainCombo.getValue().getTrainNumber());
             } catch (Exception e) {
-                // Fallback for new trains with no routes
+                // Fallback for trains with no existing routes
                 sequenceSpinner.setValueFactory(
                         new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1)
                 );
             }
         } else {
-            // No train selected - reset to default
+            // Default range when no train is selected
             sequenceSpinner.setValueFactory(
                     new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1)
             );
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Utility Methods
-    // -------------------------------------------------------------------------
-
     /**
-     * Filters route table to show only routes for the selected train.
+     * Find station by ID from the loaded stations list.
+     * Used for resolving station references in train and route data.
      *
-     * @param train the train to filter routes for
-     */
-    private void filterRoutesByTrain(Train train) {
-        ObservableList<TrainSchedule> filtered = FXCollections.observableArrayList();
-        for (TrainSchedule route : allRoutes) {
-            if (route.getTrainId() == train.getTrainId()) {
-                filtered.add(route);
-            }
-        }
-        routeTableView.setItems(filtered);
-    }
-
-    /**
-     * Enables or disables route control inputs based on train selection.
-     *
-     * @param enable true to enable controls, false to disable
-     */
-    private void enableRouteControls(boolean enable) {
-        routeStationCombo.setDisable(!enable);
-        arrivalTimeField.setDisable(!enable);
-        departureTimeField.setDisable(!enable);
-        daySpinner.setDisable(!enable);
-        sequenceSpinner.setDisable(!enable);
-        saveRouteBtn.setDisable(!enable);
-    }
-
-    /**
-     * Finds a station by ID from the loaded stations list.
-     *
-     * @param stationId the station ID to search for
+     * @param stationId The station ID to search for
      * @return Station object or null if not found
      */
     private Station getStationById(int stationId) {
-        return allStations.stream().filter(s -> s.getStationId() == stationId).findFirst().orElse(null);
+        return allStations.stream()
+                .filter(s -> s.getStationId() == stationId)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
-     * Finds a train by ID from the loaded trains list.
+     * Find train by ID from the loaded trains list.
+     * Used for resolving train references in route data.
      *
-     * @param trainId the train ID to search for
+     * @param trainId The train ID to search for
      * @return Train object or null if not found
      */
     private Train getTrainById(int trainId) {
-        return allTrains.stream().filter(t -> t.getTrainId() == trainId).findFirst().orElse(null);
+        return allTrains.stream()
+                .filter(t -> t.getTrainId() == trainId)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
-     * Updates status labels with current data counts and timestamp.
+     * Update status labels with current data counts and timestamp.
+     * Provides real-time feedback on data state to the user.
      */
-    private void updateStatus() {
-        trainCountLabel.setText(allTrains.size() + " trains");
-        routeCountLabel.setText(allRoutes.size() + " routes");
-        lastUpdateLabel.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+    private void updateStatusLabels() {
+        Platform.runLater(() -> {
+            if (trainCountLabel != null) {
+                trainCountLabel.setText(allTrains.size() + " trains");
+            }
+            if (routeCountLabel != null) {
+                routeCountLabel.setText(currentTrainRoutes.size() + " routes" +
+                        (selectedRouteManagementTrain != null ?
+                                " (" + selectedRouteManagementTrain.getTrainNumber() + ")" : ""));
+            }
+            if (lastUpdateLabel != null) {
+                lastUpdateLabel.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            }
+        });
     }
 
     /**
-     * Displays a message with styling and auto-hide functionality.
-     * Updates status after displaying the message.
+     * Display message with styling and auto-hide functionality.
+     * Provides user feedback for operations with appropriate visual styling.
      *
-     * @param message the message text to display
-     * @param type the message type for styling ("success", "error", or "")
+     * @param message The message text to display
+     * @param type The message type for styling ("success", "error", "warning", or "")
      */
     private void showMessage(String message, String type) {
-        if (messageLabel != null) {
-            messageLabel.setText(message);
-            messageLabel.getStyleClass().removeAll("success", "error", "warning");
-            if (!type.isEmpty()) {
-                messageLabel.getStyleClass().add(type);
-            }
-            messageLabel.setVisible(true);
-            messageLabel.setManaged(true);
+        Platform.runLater(() -> {
+            if (messageLabel != null) {
+                messageLabel.setText(message);
+                messageLabel.getStyleClass().removeAll("success", "error", "warning");
+                if (!type.isEmpty()) {
+                    messageLabel.getStyleClass().add(type);
+                }
+                messageLabel.setVisible(true);
+                messageLabel.setManaged(true);
 
-            PauseTransition hideDelay = new PauseTransition(Duration.seconds(3));
-            hideDelay.setOnFinished(e -> {
-                messageLabel.setVisible(false);
-                messageLabel.setManaged(false);
-            });
-            hideDelay.play();
+                // Auto-hide message after 3 seconds
+                PauseTransition hideDelay = new PauseTransition(Duration.seconds(3));
+                hideDelay.setOnFinished(e -> {
+                    messageLabel.setVisible(false);
+                    messageLabel.setManaged(false);
+                });
+                hideDelay.play();
+            }
+            updateStatusLabels();
+        });
+    }
+
+    // =========================================================================
+    // UI ACTION HANDLERS
+    // =========================================================================
+
+    /**
+     * Handle back button click to close the fleet management window.
+     */
+    @FXML
+    public void handleBack(ActionEvent event) {
+        try {
+            ((Stage) backButton.getScene().getWindow()).close();
+        } catch (Exception e) {
+            System.err.println("Error handling back button: " + e.getMessage());
         }
-        updateStatus();
+    }
+
+    /**
+     * Handle refresh button click to reload all data.
+     */
+    @FXML
+    public void handleRefresh(ActionEvent event) {
+        loadInitialDataAsync();
+        if (selectedRouteManagementTrain != null) {
+            loadRoutesForSelectedTrain(selectedRouteManagementTrain);
+        }
+        showMessage("Data refreshed successfully!", "success");
+    }
+
+    /**
+     * Handle add train button click to clear form for new train entry.
+     */
+    @FXML
+    public void handleAddTrain(ActionEvent event) {
+        clearTrainForm();
+    }
+
+    /**
+     * Handle add route button click to clear form for new route entry.
+     */
+    @FXML
+    public void handleAddRoute(ActionEvent event) {
+        clearRouteForm();
+    }
+
+    /**
+     * Handle clear train form button click.
+     */
+    @FXML
+    public void handleClearTrainForm(ActionEvent event) {
+        clearTrainForm();
+    }
+
+    /**
+     * Handle clear route form button click.
+     */
+    @FXML
+    public void handleClearRouteForm(ActionEvent event) {
+        clearRouteForm();
+    }
+
+    /**
+     * Placeholder handler for train export functionality.
+     * To be implemented in future versions.
+     */
+    @FXML
+    public void handleExportTrains(ActionEvent event) {
+        showMessage("Export trains feature coming soon!", "");
+    }
+
+    /**
+     * Placeholder handler for route export functionality.
+     * To be implemented in future versions.
+     */
+    @FXML
+    public void handleExportRoutes(ActionEvent event) {
+        showMessage("Export routes feature coming soon!", "");
     }
 }

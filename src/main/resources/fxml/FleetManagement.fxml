@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import java.net.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="trainapp.controller.ui.FleetManagementController">
-
     <stylesheets>
         <URL value="@../css/FleetManagement.css" />
     </stylesheets>
@@ -15,14 +13,11 @@
     <top>
         <HBox styleClass="fleet-header" spacing="20" alignment="CENTER_LEFT">
             <Button fx:id="backButton" styleClass="nav-button" text="← Back to Admin Panel" onAction="#handleBack"/>
-
             <VBox spacing="2">
                 <Label styleClass="header-title" text="Fleet Management"/>
                 <Label styleClass="header-subtitle" text="Train &amp; Route Management System"/>
             </VBox>
-
             <Region HBox.hgrow="ALWAYS"/>
-
             <Button styleClass="refresh-btn" text="🔄 Refresh" onAction="#handleRefresh"/>
         </HBox>
     </top>
@@ -30,7 +25,6 @@
     <!-- CENTER: Main Content -->
     <center>
         <TabPane styleClass="main-tabs" tabClosingPolicy="UNAVAILABLE">
-
             <!-- TRAIN MANAGEMENT TAB -->
             <Tab text="🚂 Train Management" styleClass="train-tab">
                 <VBox spacing="20" styleClass="tab-content">
@@ -49,7 +43,6 @@
                     <!-- Train Form -->
                     <VBox styleClass="form-section" spacing="15">
                         <Label styleClass="form-title" text="Train Information"/>
-
                         <GridPane styleClass="train-form" hgap="15" vgap="15">
                             <columnConstraints>
                                 <ColumnConstraints minWidth="120" prefWidth="120"/>
@@ -86,28 +79,16 @@
                     <VBox styleClass="list-section" spacing="15" VBox.vgrow="ALWAYS">
                         <Label styleClass="section-title" text="Train Fleet (Click to Edit)"/>
                         <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
-                            <TableView fx:id="trainTableView" styleClass="data-table"
-                                       prefHeight="300" minHeight="200">
+                            <TableView fx:id="trainTableView" styleClass="data-table" prefHeight="300" minHeight="200">
                                 <columns>
-                                    <TableColumn fx:id="trainNumberCol" text="Train Number"
-                                                 prefWidth="100" minWidth="80" maxWidth="120"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="trainNameCol" text="Train Name"
-                                                 prefWidth="250" minWidth="200" maxWidth="300"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="sourceStationCol" text="Source"
-                                                 prefWidth="180" minWidth="150" maxWidth="220"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="destStationCol" text="Destination"
-                                                 prefWidth="180" minWidth="150" maxWidth="220"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="totalCoachesCol" text="Coaches"
-                                                 prefWidth="80" minWidth="60" maxWidth="100"
-                                                 resizable="true"/>
+                                    <TableColumn fx:id="trainNumberCol" text="Train Number" prefWidth="100" minWidth="80" maxWidth="120" resizable="true"/>
+                                    <TableColumn fx:id="trainNameCol" text="Train Name" prefWidth="250" minWidth="200" maxWidth="300" resizable="true"/>
+                                    <TableColumn fx:id="sourceStationCol" text="Source" prefWidth="180" minWidth="150" maxWidth="220" resizable="true"/>
+                                    <TableColumn fx:id="destStationCol" text="Destination" prefWidth="180" minWidth="150" maxWidth="220" resizable="true"/>
+                                    <TableColumn fx:id="totalCoachesCol" text="Coaches" prefWidth="80" minWidth="60" maxWidth="100" resizable="true"/>
                                 </columns>
                                 <placeholder>
-                                    <Label text="No trains available. Click 'Add New Train' to get started."
-                                           style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
+                                    <Label text="No trains available. Click 'Add New Train' to get started." style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
                                 </placeholder>
                             </TableView>
                         </ScrollPane>
@@ -115,7 +96,7 @@
                 </VBox>
             </Tab>
 
-            <!-- ROUTE MANAGEMENT TAB - COMPACT VERSION WITH SCROLLING FIX -->
+            <!-- ROUTE MANAGEMENT TAB - WITH LAZY LOADING -->
             <Tab text="🛤️ Route Management" styleClass="route-tab">
                 <VBox spacing="15" styleClass="tab-content">
                     <padding>
@@ -134,10 +115,10 @@
                     <VBox styleClass="form-section-compact" spacing="12">
                         <Label styleClass="form-title" text="Route Information"/>
 
-                        <!-- First Row: Train Selection (Full Width) -->
+                        <!-- First Row: Train Selection (Full Width) - CHANGED TO COMBOBOX -->
                         <HBox spacing="15" alignment="CENTER_LEFT">
                             <Label text="Select Train:" styleClass="form-label-compact" minWidth="100"/>
-                            <ComboBox fx:id="routeTrainCombo" styleClass="form-combo"
+                            <ComboBox fx:id="routeTrainCombo" styleClass="form-combo train-selector"
                                       promptText="Choose train for route management..."
                                       prefWidth="400" HBox.hgrow="ALWAYS"/>
                         </HBox>
@@ -146,9 +127,7 @@
                         <HBox spacing="15" alignment="CENTER_LEFT">
                             <Label text="Station:" styleClass="form-label-compact" minWidth="100"/>
                             <ComboBox fx:id="routeStationCombo" styleClass="form-combo"
-                                      promptText="Type to search station..."
-                                      prefWidth="250"/>
-
+                                      promptText="Type to search station..." prefWidth="250"/>
                             <Label text="Sequence:" styleClass="form-label-compact" minWidth="80"/>
                             <Spinner fx:id="sequenceSpinner" styleClass="form-spinner"
                                      min="1" max="50" initialValue="1" prefWidth="80"/>
@@ -159,15 +138,12 @@
                             <Label text="Arrival:" styleClass="form-label-compact" minWidth="100"/>
                             <TextField fx:id="arrivalTimeField" styleClass="form-input-compact"
                                        promptText="HH:MM" prefWidth="80"/>
-
                             <Label text="Departure:" styleClass="form-label-compact" minWidth="80"/>
                             <TextField fx:id="departureTimeField" styleClass="form-input-compact"
                                        promptText="HH:MM" prefWidth="80"/>
-
                             <Label text="Day:" styleClass="form-label-compact" minWidth="50"/>
                             <Spinner fx:id="daySpinner" styleClass="form-spinner"
                                      min="1" max="7" initialValue="1" prefWidth="60"/>
-
                             <Region HBox.hgrow="ALWAYS"/>
                         </HBox>
 
@@ -180,35 +156,25 @@
                         </HBox>
                     </VBox>
 
-                    <!-- FIXED: Route List with Proper Scrolling and More Space -->
+                    <!-- LAZY LOADED: Route List with Proper Scrolling -->
                     <VBox styleClass="list-section" spacing="10" VBox.vgrow="ALWAYS">
-                        <Label styleClass="section-title" text="Train Routes (Click to Edit)"/>
+                        <HBox alignment="CENTER_LEFT" spacing="15">
+                            <Label styleClass="section-title" text="Train Routes (Click to Edit)"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="routeLoadingLabel" styleClass="loading-text" text="Select a train to view routes" visible="true"/>
+                        </HBox>
                         <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED">
-                            <TableView fx:id="routeTableView" styleClass="data-table"
-                                       prefHeight="400" minHeight="300">
+                            <TableView fx:id="routeTableView" styleClass="data-table" prefHeight="400" minHeight="300">
                                 <columns>
-                                    <TableColumn fx:id="routeTrainCol" text="Train"
-                                                 prefWidth="100" minWidth="80" maxWidth="120"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="routeStationCol" text="Station"
-                                                 prefWidth="200" minWidth="150" maxWidth="250"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="arrivalCol" text="Arrival"
-                                                 prefWidth="80" minWidth="70" maxWidth="100"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="departureCol" text="Departure"
-                                                 prefWidth="80" minWidth="70" maxWidth="100"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="dayCol" text="Day"
-                                                 prefWidth="60" minWidth="50" maxWidth="80"
-                                                 resizable="true"/>
-                                    <TableColumn fx:id="sequenceCol" text="Sequence"
-                                                 prefWidth="80" minWidth="70" maxWidth="100"
-                                                 resizable="true"/>
+                                    <TableColumn fx:id="routeTrainCol" text="Train" prefWidth="100" minWidth="80" maxWidth="120" resizable="true"/>
+                                    <TableColumn fx:id="routeStationCol" text="Station" prefWidth="200" minWidth="150" maxWidth="250" resizable="true"/>
+                                    <TableColumn fx:id="arrivalCol" text="Arrival" prefWidth="80" minWidth="70" maxWidth="100" resizable="true"/>
+                                    <TableColumn fx:id="departureCol" text="Departure" prefWidth="80" minWidth="70" maxWidth="100" resizable="true"/>
+                                    <TableColumn fx:id="dayCol" text="Day" prefWidth="60" minWidth="50" maxWidth="80" resizable="true"/>
+                                    <TableColumn fx:id="sequenceCol" text="Sequence" prefWidth="80" minWidth="70" maxWidth="100" resizable="true"/>
                                 </columns>
                                 <placeholder>
-                                    <Label text="No routes available. Select a train and add route entries."
-                                           style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
+                                    <Label text="No routes available. Select a train and add route entries." style="-fx-text-fill: #6b7280; -fx-font-size: 14px;"/>
                                 </placeholder>
                             </TableView>
                         </ScrollPane>
@@ -233,7 +199,5 @@
     </bottom>
 
     <!-- Message Label -->
-    <Label fx:id="messageLabel" styleClass="message-popup" visible="false" managed="false"
-           BorderPane.alignment="TOP_CENTER"/>
-
+    <Label fx:id="messageLabel" styleClass="message-popup" visible="false" managed="false" BorderPane.alignment="TOP_CENTER"/>
 </BorderPane>
