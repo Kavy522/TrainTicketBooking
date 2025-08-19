@@ -34,7 +34,6 @@ import java.util.List;
  * <p>Search Functionality:
  * <ul>
  *   <li>Multi-criteria station search (name, code, city, state)</li>
- *   <li>Real-time filtering with keyboard navigation support</li>
  *   <li>Station swapping for convenient return journey planning</li>
  *   <li>Date validation with forward-date restrictions</li>
  *   <li>Duplicate search prevention and optimization</li>
@@ -200,7 +199,7 @@ public class MainMenuController {
     }
 
     /**
-     * Sets up search behavior for station combo boxes including text filtering and keyboard handling.
+     * Sets up search behavior for station combo boxes including text filtering.
      *
      * @param comboBox the combo box to configure search behavior for
      */
@@ -210,7 +209,6 @@ public class MainMenuController {
         setupTextFilteringBehavior(comboBox, editor);
         setupSelectionHandling(comboBox);
         setupFocusHandling(comboBox, editor);
-        setupKeyboardHandling(comboBox, editor);
     }
 
     /**
@@ -299,35 +297,6 @@ public class MainMenuController {
         } else if (currentValue != null) {
             editor.setText(currentValue.getName() + " (" + currentValue.getStationCode() + ")");
         }
-    }
-
-    /**
-     * Sets up keyboard navigation and shortcuts.
-     *
-     * @param comboBox the combo box being configured
-     * @param editor the text editor component
-     */
-    private void setupKeyboardHandling(ComboBox<Station> comboBox, TextField editor) {
-        editor.setOnKeyPressed(event -> {
-            switch (event.getCode()) {
-                case ENTER:
-                    if (!comboBox.getItems().isEmpty()) {
-                        comboBox.setValue(comboBox.getItems().get(0));
-                    }
-                    event.consume();
-                    break;
-                case ESCAPE:
-                    editor.clear();
-                    comboBox.hide();
-                    event.consume();
-                    break;
-                case DOWN:
-                    if (!comboBox.isShowing()) {
-                        comboBox.show();
-                    }
-                    break;
-            }
-        });
     }
 
     // -------------------------------------------------------------------------

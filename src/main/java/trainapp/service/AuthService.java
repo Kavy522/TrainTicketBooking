@@ -67,7 +67,7 @@ public class AuthService {
      * @param email User's email (must be unique)
      * @param phone User's phone number (unique)
      * @param password Initial password
-     * @param confirmPassword Confirmed password (future: enforce matching)
+     * @param confirmPassword Confirmed password
      * @return AuthResult indicating outcome of registration and user info.
      */
     public AuthResult registerUser(String name, String email, String phone, String password, String confirmPassword) {

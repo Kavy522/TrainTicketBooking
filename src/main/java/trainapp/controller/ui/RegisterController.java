@@ -411,13 +411,40 @@ public class RegisterController {
             return false;
         }
 
-        if (password.length() < 6) {
-            if (showError) showFieldError(passwordError, "Password must be at least 6 characters");
+        // Strong password regex pattern
+        String passwordPattern = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,20}$";
+
+        if (!password.matches(passwordPattern)) {
+            if (showError) {
+                showFieldError(passwordError, getPasswordErrorMessage(password));
+            }
             return false;
         }
 
         hideFieldError(passwordError);
         return true;
+    }
+
+    private String getPasswordErrorMessage(String password) {
+        if (password.length() < 8) {
+            return "Password must be at least 8 characters long";
+        }
+        if (password.length() > 20) {
+            return "Password must not exceed 20 characters";
+        }
+        if (!password.matches(".*[0-9].*")) {
+            return "Password must contain at least one digit";
+        }
+        if (!password.matches(".*[a-z].*")) {
+            return "Password must contain at least one lowercase letter";
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            return "Password must contain at least one uppercase letter";
+        }
+        if (!password.matches(".*[@#$%^&+=!].*")) {
+            return "Password must contain at least one special character (@#$%^&+=!)";
+        }
+        return "Password does not meet security requirements";
     }
 
     /**
