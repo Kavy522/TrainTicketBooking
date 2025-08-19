@@ -16,6 +16,7 @@ import trainapp.model.Booking;
 import trainapp.model.Train;
 import trainapp.model.User;
 import trainapp.model.Station;
+import trainapp.util.SceneManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -252,7 +253,7 @@ public class ReservationsController {
     private void setupPaymentStatusColumn() {
         colPaymentStatus.setCellValueFactory(cellData -> {
             String status = cellData.getValue().getStatus();
-            String paymentStatus = "confirmed".equals(status) ? "Paid" : "Pending";
+            String paymentStatus = "conformed".equals(status) ? "Paid" : "Pending";
             return new javafx.beans.property.SimpleStringProperty(paymentStatus);
         });
 
@@ -793,8 +794,7 @@ public class ReservationsController {
      */
     @FXML
     public void handleClose() {
-        Stage stage = (Stage) bookingTable.getScene().getWindow();
-        stage.close();
+        SceneManager.switchScene("/fxml/AdminProfile.fxml");
     }
 
     // -------------------------------------------------------------------------

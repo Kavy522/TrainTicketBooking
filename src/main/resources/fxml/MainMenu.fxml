@@ -77,8 +77,8 @@
 
                             <!-- Swap Button -->
                             <VBox alignment="CENTER" styleClass="swap-container">
-                                <Label styleClass="form-label" text=" " />
-                                <Button onAction="#handleSwapStations" styleClass="swap-button" text="⇄" />
+                                <Label styleClass="form-label" text="Swap" />
+                                <Button onAction="#handleSwapStations" styleClass="swap-button" text=" ⇄ " />
                             </VBox>
 
                             <!-- To Station ComboBox -->

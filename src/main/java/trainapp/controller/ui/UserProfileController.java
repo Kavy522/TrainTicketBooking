@@ -298,7 +298,7 @@ public class UserProfileController {
      */
     @FXML
     public void handleEditProfile(ActionEvent event) {
-        SceneManager.switchScene("/fxml/EditProfile.fxml");
+        showInfoMessage("HandleEditProfile functionality will be implemented soon.");
     }
 
     /**
@@ -308,7 +308,7 @@ public class UserProfileController {
      */
     @FXML
     public void handleBookTicket(ActionEvent event) {
-        SceneManager.switchScene("/fxml/TrainSearch.fxml");
+        SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
     /**

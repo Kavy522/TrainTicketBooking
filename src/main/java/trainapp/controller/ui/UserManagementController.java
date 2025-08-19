@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import trainapp.dao.UserDAO;
 import trainapp.model.User;
+import trainapp.util.SceneManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -542,8 +543,7 @@ public class UserManagementController {
      */
     @FXML
     public void handleClose() {
-        Stage stage = (Stage) userTable.getScene().getWindow();
-        stage.close();
+        SceneManager.switchScene("/fxml/AdminProfile.fxml");
     }
 
     // -------------------------------------------------------------------------

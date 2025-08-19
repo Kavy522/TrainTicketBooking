@@ -695,8 +695,7 @@ public class StationNetworkController {
      */
     @FXML
     public void handleClose() {
-        Stage stage = (Stage) stationsTable.getScene().getWindow();
-        stage.close();
+        SceneManager.switchScene("/fxml/AdminProfile.fxml");
     }
 
     // -------------------------------------------------------------------------

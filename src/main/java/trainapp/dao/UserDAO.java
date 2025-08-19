@@ -162,13 +162,6 @@ public class UserDAO {
      * @return User object if authentication successful, null otherwise
      */
     public User authenticate(String name, String password) {
-        if (name == null || name.trim().isEmpty()) {
-            return null;
-        }
-        if (password == null || password.trim().isEmpty()) {
-            return null;
-        }
-
         String sql = """
                 SELECT user_id, name, email, phone, password_hash, created_at, last_login
                 FROM users 

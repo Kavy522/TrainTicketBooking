@@ -37,13 +37,6 @@ public class AuthService {
      * @return AuthResult indicating success/failure, and user/admin info if applicable
      */
     public AuthResult login(String nameOrUsername, String password) {
-        if (nameOrUsername == null || nameOrUsername.trim().isEmpty()) {
-            return AuthResult.error("Name/Username is required");
-        }
-        if (password == null || password.trim().isEmpty()) {
-            return AuthResult.error("Password is required");
-        }
-
         // Try admin login first (since username field is unique to admins)
         Admin admin = adminDAO.authenticate(nameOrUsername.trim(), password);
         if (admin != null) {
