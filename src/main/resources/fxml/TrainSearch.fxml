@@ -122,8 +122,9 @@
 
                 <!-- Load More Button -->
                 <HBox fx:id="loadMoreSection" visible="false" managed="false" alignment="CENTER" styleClass="load-more-section">
-                    <Button text="Load More Trains" styleClass="load-more-btn"/>
+                    <Button fx:id="loadMoreButton" text="Load More Trains" onAction="#handleLoadMore" styleClass="load-more-btn"/>
                 </HBox>
+
             </VBox>
         </ScrollPane>
 

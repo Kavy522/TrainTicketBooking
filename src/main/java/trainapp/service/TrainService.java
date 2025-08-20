@@ -11,9 +11,11 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * TrainService with enhanced time-based distance calculation using arrival and departure times.
+ * Optimized TrainService with enhanced performance and no debug output
  */
 public class TrainService {
 
@@ -22,78 +24,100 @@ public class TrainService {
     private final StationDAO stationDAO = new StationDAO();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Constants for realistic bounds and calculations
+    // Performance caches
+    private final Map<Integer, String> stationNameCache = new ConcurrentHashMap<>();
+    private final Map<Integer, List<TrainSchedule>> scheduleCache = new ConcurrentHashMap<>();
+    private final Map<String, Integer> distanceCache = new ConcurrentHashMap<>();
+    private final Map<Integer, List<String>> trainStationNamesCache = new ConcurrentHashMap<>();
+
+    // Constants
     private static final int MAX_DISTANCE_KM = 2500;
     private static final int MIN_DISTANCE_KM = 50;
     private static final int MAX_JOURNEY_HOURS = 24;
     private static final int MIN_JOURNEY_MINUTES = 30;
-    private static final double AVERAGE_TRAIN_SPEED_KMPH = 55.0; // Realistic Indian train speed
     private static final double EXPRESS_TRAIN_SPEED_KMPH = 65.0;
+    private static final double AVERAGE_TRAIN_SPEED_KMPH = 55.0;
     private static final double LOCAL_TRAIN_SPEED_KMPH = 45.0;
 
+    // Pre-calculated distance mapping
+    private static final Map<String, Integer> DISTANCE_MAP = createStaticDistanceMapping();
+
+    // Pre-calculated default seat availability patterns
+    private static final Map<String, Map<String, Integer>> DEFAULT_SEATS_BY_TYPE = createDefaultSeatsMapping();
+
     // -------------------------------------------------------------------------
-    // Enhanced Distance Calculation using Arrival/Departure Times
+    // OPTIMIZED: Enhanced Distance Calculation
     // -------------------------------------------------------------------------
 
-    /**
-     * Calculates accurate distance using arrival and departure times from train schedule.
-     * Primary method for distance calculation with time-based approach.
-     */
     public int getDistanceBetween(Train train, String fromStation, String toStation) {
+        // Check cache first
+        String cacheKey = train.getTrainId() + ":" + fromStation + ":" + toStation;
+        Integer cachedDistance = distanceCache.get(cacheKey);
+        if (cachedDistance != null) {
+            return cachedDistance;
+        }
+
         try {
-            // Get train schedule with timing information
-            List<TrainSchedule> trainSchedules = trainDAO.getTrainSchedule(train.getTrainId());
+            List<TrainSchedule> trainSchedules = getTrainScheduleCached(train.getTrainId());
 
-            if (trainSchedules == null || trainSchedules.isEmpty()) {
-                System.err.println("No schedule found for train: " + train.getTrainNumber());
-                return getReasonableDistanceEstimate(fromStation, toStation);
+            if (trainSchedules.isEmpty()) {
+                int fallbackDistance = getReasonableDistanceEstimate(fromStation, toStation);
+                distanceCache.put(cacheKey, fallbackDistance);
+                return fallbackDistance;
             }
 
-            // Sort by sequence order
-            trainSchedules.sort(Comparator.comparingInt(TrainSchedule::getSequenceOrder));
+            TrainSchedule fromSchedule = findStationScheduleOptimized(trainSchedules, fromStation);
+            TrainSchedule toSchedule = findStationScheduleOptimized(trainSchedules, toStation);
 
-            // Find stations in schedule
-            TrainSchedule fromSchedule = findStationSchedule(trainSchedules, fromStation);
-            TrainSchedule toSchedule = findStationSchedule(trainSchedules, toStation);
-
-            if (fromSchedule == null || toSchedule == null) {
-                System.err.println("Station not found in schedule: " + fromStation + " to " + toStation);
-                return getReasonableDistanceEstimate(fromStation, toStation);
+            if (fromSchedule == null || toSchedule == null ||
+                    fromSchedule.getSequenceOrder() >= toSchedule.getSequenceOrder()) {
+                int fallbackDistance = getReasonableDistanceEstimate(fromStation, toStation);
+                distanceCache.put(cacheKey, fallbackDistance);
+                return fallbackDistance;
             }
 
-            // Validate sequence order
-            if (fromSchedule.getSequenceOrder() >= toSchedule.getSequenceOrder()) {
-                System.err.println("Invalid station order in schedule");
-                return getReasonableDistanceEstimate(fromStation, toStation);
-            }
-
-            // Calculate distance using time-based method
-            int timeBasedDistance = calculateTimeBasedDistance(fromSchedule, toSchedule, train);
+            int timeBasedDistance = calculateTimeBasedDistanceOptimized(fromSchedule, toSchedule, train);
 
             if (timeBasedDistance > 0) {
-                // Apply realistic bounds
                 int finalDistance = Math.max(MIN_DISTANCE_KM, Math.min(timeBasedDistance, MAX_DISTANCE_KM));
-                System.out.println("Calculated time-based distance: " + finalDistance + " km for " +
-                        fromStation + " to " + toStation);
+                distanceCache.put(cacheKey, finalDistance);
                 return finalDistance;
             }
 
-            // Fallback to segment-based calculation
-            return calculateSegmentBasedFallback(fromSchedule, toSchedule, train);
+            int segmentDistance = calculateSegmentBasedFallbackOptimized(fromSchedule, toSchedule, train);
+            distanceCache.put(cacheKey, segmentDistance);
+            return segmentDistance;
 
         } catch (Exception e) {
-            System.err.println("Error calculating distance: " + e.getMessage());
-            return getReasonableDistanceEstimate(fromStation, toStation);
+            int fallbackDistance = getReasonableDistanceEstimate(fromStation, toStation);
+            distanceCache.put(cacheKey, fallbackDistance);
+            return fallbackDistance;
         }
     }
 
     /**
-     * Find station schedule by station name with case-insensitive matching.
+     * Optimized schedule retrieval with caching
      */
-    private TrainSchedule findStationSchedule(List<TrainSchedule> schedules, String stationName) {
+    private List<TrainSchedule> getTrainScheduleCached(int trainId) {
+        return scheduleCache.computeIfAbsent(trainId, id -> {
+            List<TrainSchedule> schedules = trainDAO.getTrainSchedule(id);
+            if (schedules != null && !schedules.isEmpty()) {
+                schedules.sort(Comparator.comparingInt(TrainSchedule::getSequenceOrder));
+                return schedules;
+            }
+            return new ArrayList<>();
+        });
+    }
+
+    /**
+     * Optimized station schedule finder
+     */
+    private TrainSchedule findStationScheduleOptimized(List<TrainSchedule> schedules, String stationName) {
+        String normalizedStationName = stationName.trim().toLowerCase();
+
         for (TrainSchedule schedule : schedules) {
-            String scheduleStationName = getStationName(schedule.getStationId());
-            if (scheduleStationName.equalsIgnoreCase(stationName.trim())) {
+            String scheduleStationName = getStationNameCached(schedule.getStationId());
+            if (scheduleStationName.toLowerCase().equals(normalizedStationName)) {
                 return schedule;
             }
         }
@@ -101,199 +125,181 @@ public class TrainService {
     }
 
     /**
-     * Calculate distance based on travel time between departure and arrival stations.
-     * Uses realistic train speeds based on train type.
+     * Cached station name lookup
      */
-    private int calculateTimeBasedDistance(TrainSchedule fromSchedule, TrainSchedule toSchedule, Train train) {
-        try {
-            LocalTime departureTime = fromSchedule.getDepartureTime();
-            LocalTime arrivalTime = toSchedule.getArrivalTime();
-
-            if (departureTime == null || arrivalTime == null) {
-                System.err.println("Missing timing information for time-based calculation");
-                return 0;
+    private String getStationNameCached(int stationId) {
+        return stationNameCache.computeIfAbsent(stationId, id -> {
+            try {
+                Station station = stationDAO.getStationById(id);
+                return station != null ? station.getName() : "";
+            } catch (Exception e) {
+                return "";
             }
-
-            // Calculate journey time in minutes
-            long journeyMinutes = calculateJourneyTimeInMinutes(departureTime, arrivalTime,
-                    fromSchedule.getDayNumber(),
-                    toSchedule.getDayNumber());
-
-            // Validate journey time
-            if (journeyMinutes <= 0 || journeyMinutes > MAX_JOURNEY_HOURS * 60) {
-                System.err.println("Invalid journey time: " + journeyMinutes + " minutes");
-                return 0;
-            }
-
-            // Apply minimum journey time
-            journeyMinutes = Math.max(journeyMinutes, MIN_JOURNEY_MINUTES);
-
-            // Get train speed based on train type
-            double trainSpeed = getTrainSpeed(train);
-
-            // Calculate distance: Distance = Speed × Time
-            double journeyHours = journeyMinutes / 60.0;
-            int calculatedDistance = (int) Math.round(trainSpeed * journeyHours);
-
-            System.out.println("Time-based calculation: " + journeyMinutes + " minutes at " +
-                    trainSpeed + " km/h = " + calculatedDistance + " km");
-
-            return calculatedDistance;
-
-        } catch (Exception e) {
-            System.err.println("Error in time-based distance calculation: " + e.getMessage());
-            return 0;
-        }
+        });
     }
 
     /**
-     * Calculate journey time considering day changes and realistic bounds.
+     * Optimized time-based distance calculation
      */
-    private long calculateJourneyTimeInMinutes(LocalTime departureTime, LocalTime arrivalTime,
+    private int calculateTimeBasedDistanceOptimized(TrainSchedule fromSchedule, TrainSchedule toSchedule, Train train) {
+        LocalTime departureTime = fromSchedule.getDepartureTime();
+        LocalTime arrivalTime = toSchedule.getArrivalTime();
+
+        if (departureTime == null || arrivalTime == null) {
+            return 0;
+        }
+
+        long journeyMinutes = calculateJourneyTimeOptimized(
+                departureTime, arrivalTime,
+                fromSchedule.getDayNumber(),
+                toSchedule.getDayNumber()
+        );
+
+        if (journeyMinutes <= 0 || journeyMinutes > MAX_JOURNEY_HOURS * 60) {
+            return 0;
+        }
+
+        journeyMinutes = Math.max(journeyMinutes, MIN_JOURNEY_MINUTES);
+        double trainSpeed = getTrainSpeedOptimized(train);
+        double journeyHours = journeyMinutes / 60.0;
+
+        return (int) Math.round(trainSpeed * journeyHours);
+    }
+
+    /**
+     * Optimized journey time calculation
+     */
+    private long calculateJourneyTimeOptimized(LocalTime departureTime, LocalTime arrivalTime,
                                                int departureDay, int arrivalDay) {
         long minutes;
 
         if (arrivalDay > departureDay) {
-            // Multi-day journey
             long minutesToMidnight = Duration.between(departureTime, LocalTime.MAX).toMinutes();
             long minutesFromMidnight = Duration.between(LocalTime.MIDNIGHT, arrivalTime).toMinutes();
-            long daysDifference = arrivalDay - departureDay;
-
-            minutes = minutesToMidnight + (daysDifference - 1) * 24 * 60 + minutesFromMidnight + 1;
+            minutes = minutesToMidnight + ((arrivalDay - departureDay - 1) * 24 * 60) + minutesFromMidnight + 1;
         } else if (arrivalTime.isBefore(departureTime)) {
-            // Same day but arrival time before departure (next day arrival)
             long minutesToMidnight = Duration.between(departureTime, LocalTime.MAX).toMinutes();
             long minutesFromMidnight = Duration.between(LocalTime.MIDNIGHT, arrivalTime).toMinutes();
             minutes = minutesToMidnight + minutesFromMidnight + 1;
         } else {
-            // Same day journey
             minutes = Duration.between(departureTime, arrivalTime).toMinutes();
         }
 
-        // Apply realistic bounds
         return Math.max(MIN_JOURNEY_MINUTES, Math.min(minutes, MAX_JOURNEY_HOURS * 60));
     }
 
     /**
-     * Get appropriate train speed based on train name and type.
+     * Optimized train speed determination
      */
-    private double getTrainSpeed(Train train) {
+    private double getTrainSpeedOptimized(Train train) {
         String trainName = train.getName().toLowerCase();
 
         if (trainName.contains("rajdhani") || trainName.contains("shatabdi") ||
                 trainName.contains("vande bharat") || trainName.contains("duronto")) {
-            return EXPRESS_TRAIN_SPEED_KMPH; // 65 km/h for premium trains
+            return EXPRESS_TRAIN_SPEED_KMPH;
         } else if (trainName.contains("passenger") || trainName.contains("local")) {
-            return LOCAL_TRAIN_SPEED_KMPH; // 45 km/h for local trains
-        } else {
-            return AVERAGE_TRAIN_SPEED_KMPH; // 55 km/h for regular trains
+            return LOCAL_TRAIN_SPEED_KMPH;
         }
+        return AVERAGE_TRAIN_SPEED_KMPH;
     }
 
     /**
-     * Segment-based fallback when time information is not available.
+     * Optimized segment-based fallback calculation
      */
-    private int calculateSegmentBasedFallback(TrainSchedule fromSchedule, TrainSchedule toSchedule, Train train) {
+    private int calculateSegmentBasedFallbackOptimized(TrainSchedule fromSchedule, TrainSchedule toSchedule, Train train) {
         int segmentCount = toSchedule.getSequenceOrder() - fromSchedule.getSequenceOrder();
-
         if (segmentCount <= 0) return MIN_DISTANCE_KM;
 
         String trainName = train.getName().toLowerCase();
-        int avgSegmentDistance;
-
-        if (trainName.contains("rajdhani") || trainName.contains("duronto")) {
-            avgSegmentDistance = 120; // Express trains, fewer stops
-        } else if (trainName.contains("express") || trainName.contains("mail")) {
-            avgSegmentDistance = 80;  // Regular express
-        } else {
-            avgSegmentDistance = 60;  // Local/passenger trains
-        }
+        int avgSegmentDistance = trainName.contains("rajdhani") || trainName.contains("duronto") ? 120 :
+                trainName.contains("express") || trainName.contains("mail") ? 80 : 60;
 
         int calculatedDistance = segmentCount * avgSegmentDistance;
-        System.out.println("Segment-based fallback: " + segmentCount + " segments × " +
-                avgSegmentDistance + " km = " + calculatedDistance + " km");
-
         return Math.max(MIN_DISTANCE_KM, Math.min(calculatedDistance, MAX_DISTANCE_KM));
     }
 
     /**
-     * Enhanced duration calculation using actual timing data.
+     * Optimized duration calculation
      */
     public String calculateDuration(Train train, String fromStation, String toStation) {
         try {
             TrainSchedule fromSchedule = trainDAO.getStationTiming(train.getTrainId(), fromStation);
             TrainSchedule toSchedule = trainDAO.getStationTiming(train.getTrainId(), toStation);
 
-            if (fromSchedule != null && toSchedule != null &&
-                    fromSchedule.getDepartureTime() != null && toSchedule.getArrivalTime() != null) {
-
-                long minutes = calculateJourneyTimeInMinutes(
+            if (fromSchedule.getDepartureTime() != null && toSchedule.getArrivalTime() != null) {
+                long minutes = calculateJourneyTimeOptimized(
                         fromSchedule.getDepartureTime(),
                         toSchedule.getArrivalTime(),
                         fromSchedule.getDayNumber(),
                         toSchedule.getDayNumber()
                 );
 
-                long hours = minutes / 60;
-                long remainingMinutes = minutes % 60;
-
-                return String.format("%dh %02dm", hours, remainingMinutes);
+                return String.format("%dh %02dm", minutes / 60, minutes % 60);
             }
         } catch (Exception e) {
-            System.err.println("Error calculating duration: " + e.getMessage());
+            // Silent fallback
         }
 
-        return generateReasonableDuration();
+        return generateReasonableDurationOptimized();
     }
 
     // -------------------------------------------------------------------------
-    // Existing methods (keeping essential ones for compatibility)
+    // OPTIMIZED: Core Service Methods
     // -------------------------------------------------------------------------
 
     public List<Train> findTrainsBetweenStations(String fromStationName, String toStationName) {
         List<Train> candidateTrains = trainDAO.findTrainsBetweenStations(fromStationName, toStationName);
-        System.out.println("TrainService: Found " + candidateTrains.size() + " candidate trains");
 
         if (candidateTrains.isEmpty()) {
             return candidateTrains;
         }
 
-        List<Train> filteredTrains = new ArrayList<>();
-        for (Train train : candidateTrains) {
-            List<String> scheduleStationNames = trainDAO.getTrainScheduleStationNames(train.getTrainId());
+        return candidateTrains.stream()
+                .filter(train -> validateTrainRoute(train, fromStationName, toStationName))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
 
-            int fromIndex = -1, toIndex = -1;
-            for (int i = 0; i < scheduleStationNames.size(); i++) {
-                if (scheduleStationNames.get(i).equalsIgnoreCase(fromStationName)) fromIndex = i;
-                if (scheduleStationNames.get(i).equalsIgnoreCase(toStationName)) toIndex = i;
-            }
+    /**
+     * Optimized route validation
+     */
+    private boolean validateTrainRoute(Train train, String fromStationName, String toStationName) {
+        List<String> stationNames = getTrainStationNamesCached(train.getTrainId());
 
-            if (fromIndex != -1 && toIndex != -1 && fromIndex < toIndex) {
-                filteredTrains.add(train);
-            }
+        int fromIndex = -1, toIndex = -1;
+        for (int i = 0; i < stationNames.size(); i++) {
+            String stationName = stationNames.get(i);
+            if (stationName.equalsIgnoreCase(fromStationName)) fromIndex = i;
+            if (stationName.equalsIgnoreCase(toStationName)) toIndex = i;
+
+            if (fromIndex != -1 && toIndex != -1) break;
         }
 
-        return filteredTrains.isEmpty() ? candidateTrains : filteredTrains;
+        return fromIndex != -1 && toIndex != -1 && fromIndex < toIndex;
+    }
+
+    /**
+     * Cached train station names
+     */
+    private List<String> getTrainStationNamesCached(int trainId) {
+        return trainStationNamesCache.computeIfAbsent(trainId,
+                id -> trainDAO.getTrainScheduleStationNames(id));
     }
 
     public Map<String, Integer> getAvailableSeatsForDate(Train train, LocalDate journeyDate) {
-        if (journeyDate == null) journeyDate = LocalDate.now();
+        LocalDate date = journeyDate != null ? journeyDate : LocalDate.now();
 
         try {
-            Journey journey = journeyDAO.getJourneyForTrainAndDate(train.getTrainId(), journeyDate);
+            Journey journey = journeyDAO.getJourneyForTrainAndDate(train.getTrainId(), date);
             if (journey == null) {
-                if (ensureJourneyExists(train.getTrainId(), journeyDate)) {
-                    journey = journeyDAO.getJourneyForTrainAndDate(train.getTrainId(), journeyDate);
+                if (ensureJourneyExists(train.getTrainId(), date)) {
+                    journey = journeyDAO.getJourneyForTrainAndDate(train.getTrainId(), date);
                 }
             }
 
-            if (journey != null) {
-                return new HashMap<>(journey.getAvailableSeatsMap());
-            } else {
-                return getDefaultSeatAvailability(train);
-            }
+            return journey != null ? new HashMap<>(journey.getAvailableSeatsMap()) :
+                    getDefaultSeatAvailabilityOptimized(train);
         } catch (Exception e) {
-            return getDefaultSeatAvailability(train);
+            return getDefaultSeatAvailabilityOptimized(train);
         }
     }
 
@@ -318,17 +324,17 @@ public class TrainService {
 
     public boolean ensureJourneyExists(int trainId, LocalDate journeyDate) {
         try {
-            Journey existingJourney = journeyDAO.getJourneyForTrainAndDate(trainId, journeyDate);
-            if (existingJourney != null) return true;
+            if (journeyDAO.getJourneyForTrainAndDate(trainId, journeyDate) != null) {
+                return true;
+            }
 
             Train train = trainDAO.getTrainById(trainId);
             if (train == null) return false;
 
-            Map<String, Integer> defaultSeats = getDefaultSeatAvailability(train);
+            Map<String, Integer> defaultSeats = getDefaultSeatAvailabilityOptimized(train);
             String seatsJson = objectMapper.writeValueAsString(defaultSeats);
 
-            long journeyId = journeyDAO.createJourney(trainId, journeyDate, seatsJson);
-            return journeyId > 0;
+            return journeyDAO.createJourney(trainId, journeyDate, seatsJson) > 0;
         } catch (Exception e) {
             return false;
         }
@@ -336,38 +342,38 @@ public class TrainService {
 
     public String getDepartureTime(Train train, String stationName) {
         TrainSchedule schedule = trainDAO.getStationTiming(train.getTrainId(), stationName);
-        return (schedule != null && schedule.getDepartureTime() != null)
-                ? schedule.getDepartureTime().toString()
-                : generateRandomTime();
+        return (schedule.getDepartureTime() != null) ?
+        schedule.getDepartureTime().toString() :
+        generateRandomTimeOptimized();
     }
 
     public String getArrivalTime(Train train, String stationName) {
         TrainSchedule schedule = trainDAO.getStationTiming(train.getTrainId(), stationName);
-        return (schedule != null && schedule.getArrivalTime() != null)
-                ? schedule.getArrivalTime().toString()
-                : generateRandomTime();
+        return (schedule.getArrivalTime() != null) ?
+        schedule.getArrivalTime().toString() :
+        generateRandomTimeOptimized();
     }
 
     public int getHaltsBetween(Train train, String fromStation, String toStation) {
-        List<String> stations = trainDAO.getTrainScheduleStationNames(train.getTrainId());
+        List<String> stations = getTrainStationNamesCached(train.getTrainId());
         int fromIndex = -1, toIndex = -1;
 
-        for (int i = 0; i < stations.size(); i++) {
-            if (stations.get(i).equalsIgnoreCase(fromStation)) fromIndex = i;
-            if (stations.get(i).equalsIgnoreCase(toStation)) toIndex = i;
+        for (int i = 0; i < stations.size() && (fromIndex == -1 || toIndex == -1); i++) {
+            String station = stations.get(i);
+            if (station.equalsIgnoreCase(fromStation)) fromIndex = i;
+            if (station.equalsIgnoreCase(toStation)) toIndex = i;
         }
 
-        return (fromIndex != -1 && toIndex != -1)
-                ? Math.abs(toIndex - fromIndex) - 1
-                : new Random().nextInt(5) + 1;
+        return (fromIndex != -1 && toIndex != -1) ? Math.abs(toIndex - fromIndex) - 1 :
+                ThreadLocalRandom.current().nextInt(1, 6);
     }
 
     public List<String> getTrainAmenities(Train train) {
-        List<String> amenities = new ArrayList<>();
+        List<String> amenities = new ArrayList<>(4);
         String trainNumber = train.getTrainNumber();
         String trainName = train.getName().toLowerCase();
 
-        if (trainNumber.startsWith("1") || trainNumber.startsWith("2")) {
+        if (trainNumber.charAt(0) == '1' || trainNumber.charAt(0) == '2') {
             amenities.add("⚡ Superfast");
         }
         if (trainName.contains("express") || trainName.contains("rajdhani") || trainName.contains("shatabdi")) {
@@ -375,99 +381,103 @@ public class TrainService {
             amenities.add("📶 WiFi");
         }
         amenities.add("💺 Reserved Seating");
+
         return amenities;
     }
 
     // -------------------------------------------------------------------------
-    // Helper Methods
+    // OPTIMIZED: Helper Methods with Static Pre-calculations
     // -------------------------------------------------------------------------
 
-    private Map<String, Integer> getDefaultSeatAvailability(Train train) {
-        Map<String, Integer> defaultSeats = new HashMap<>();
-        Random random = new Random();
-
-        if (train != null) {
-            String trainName = train.getName().toLowerCase();
-
-            if (trainName.contains("rajdhani") || trainName.contains("shatabdi")) {
-                defaultSeats.put("SL", 80 + random.nextInt(20));
-                defaultSeats.put("3A", 60 + random.nextInt(20));
-                defaultSeats.put("2A", 40 + random.nextInt(15));
-                defaultSeats.put("1A", 20 + random.nextInt(10));
-            } else if (trainName.contains("express")) {
-                defaultSeats.put("SL", 70 + random.nextInt(20));
-                defaultSeats.put("3A", 50 + random.nextInt(20));
-                defaultSeats.put("2A", 35 + random.nextInt(15));
-                defaultSeats.put("1A", 18 + random.nextInt(10));
-            } else {
-                defaultSeats.put("SL", 60 + random.nextInt(20));
-                defaultSeats.put("3A", 40 + random.nextInt(20));
-                defaultSeats.put("2A", 30 + random.nextInt(15));
-                defaultSeats.put("1A", 15 + random.nextInt(10));
-            }
-        } else {
-            defaultSeats.put("SL", 60 + random.nextInt(20));
-            defaultSeats.put("3A", 40 + random.nextInt(20));
-            defaultSeats.put("2A", 30 + random.nextInt(15));
-            defaultSeats.put("1A", 15 + random.nextInt(10));
-        }
-
-        return defaultSeats;
-    }
-
-    private int getReasonableDistanceEstimate(String fromStation, String toStation) {
-        Map<String, Integer> distanceMap = createDistanceMapping();
-
-        String routeKey = (fromStation + "-" + toStation).toLowerCase();
-        String reverseKey = (toStation + "-" + fromStation).toLowerCase();
-
-        if (distanceMap.containsKey(routeKey)) return distanceMap.get(routeKey);
-        if (distanceMap.containsKey(reverseKey)) return distanceMap.get(reverseKey);
-
-        // Fallback calculation
-        int avgLength = (fromStation.length() + toStation.length()) / 2;
-        if (avgLength <= 3) return 200;
-        if (avgLength <= 6) return 400;
-        return 600;
-    }
-
-    private Map<String, Integer> createDistanceMapping() {
+    /**
+     * Pre-calculated static distance mapping
+     */
+    private static Map<String, Integer> createStaticDistanceMapping() {
         Map<String, Integer> map = new HashMap<>();
 
-        // Major routes
-        map.put("delhi-mumbai", 1384);
-        map.put("mumbai-delhi", 1384);
-        map.put("delhi-chennai", 2180);
-        map.put("chennai-delhi", 2180);
-        map.put("mumbai-chennai", 1279);
-        map.put("chennai-mumbai", 1279);
-        map.put("bangalore-chennai", 350);
-        map.put("chennai-bangalore", 350);
+        // Major routes (both directions)
+        String[][] routes = {
+                {"delhi", "mumbai", "1384"},
+                {"delhi", "chennai", "2180"},
+                {"mumbai", "chennai", "1279"},
+                {"bangalore", "chennai", "350"},
+                {"cldy", "nd", "350"},
+                {"kolkata", "delhi", "1472"},
+                {"pune", "mumbai", "150"},
+                {"hyderabad", "bangalore", "570"}
+        };
 
-        // Add specific route for your test case
-        map.put("cldy-nd", 350);
-        map.put("nd-cldy", 350);
+        for (String[] route : routes) {
+            String key1 = route[0] + "-" + route[1];
+            String key2 = route[1] + "-" + route;
+            int distance = Integer.parseInt(route[2]);
+            map.put(key1, distance);
+            map.put(key2, distance);
+        }
 
         return map;
     }
 
-    private String getStationName(int stationId) {
-        try {
-            Station station = stationDAO.getStationById(stationId);
-            return station != null ? station.getName() : "";
-        } catch (Exception e) {
-            return "";
-        }
+    /**
+     * Pre-calculated default seat patterns
+     */
+    private static Map<String, Map<String, Integer>> createDefaultSeatsMapping() {
+        Map<String, Map<String, Integer>> patterns = new HashMap<>();
+
+        patterns.put("premium", Map.of("SL", 90, "3A", 70, "2A", 50, "1A", 25));
+        patterns.put("express", Map.of("SL", 80, "3A", 60, "2A", 45, "1A", 22));
+        patterns.put("regular", Map.of("SL", 70, "3A", 50, "2A", 35, "1A", 18));
+
+        return patterns;
     }
 
-    private String generateRandomTime() {
-        Random random = new Random();
+    /**
+     * Optimized default seat availability
+     */
+    private Map<String, Integer> getDefaultSeatAvailabilityOptimized(Train train) {
+        String trainType = "regular";
+
+        if (train != null) {
+            String trainName = train.getName().toLowerCase();
+            if (trainName.contains("rajdhani") || trainName.contains("shatabdi")) {
+                trainType = "premium";
+            } else if (trainName.contains("express")) {
+                trainType = "express";
+            }
+        }
+
+        Map<String, Integer> baseSeats = new HashMap<>(DEFAULT_SEATS_BY_TYPE.get(trainType));
+
+        // Add small random variation
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        baseSeats.replaceAll((k, v) -> v + random.nextInt(-5, 16));
+
+        return baseSeats;
+    }
+
+    private int getReasonableDistanceEstimate(String fromStation, String toStation) {
+        String routeKey = fromStation.toLowerCase() + "-" + toStation.toLowerCase();
+        String reverseKey = toStation.toLowerCase() + "-" + fromStation.toLowerCase();
+
+        Integer distance = DISTANCE_MAP.get(routeKey);
+        if (distance != null) return distance;
+
+        distance = DISTANCE_MAP.get(reverseKey);
+        if (distance != null) return distance;
+
+        // Fast fallback based on name lengths
+        int avgLength = (fromStation.length() + toStation.length()) / 2;
+        return avgLength <= 3 ? 200 : avgLength <= 6 ? 400 : 600;
+    }
+
+    private String generateRandomTimeOptimized() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
         return String.format("%02d:%02d", random.nextInt(24), random.nextInt(60));
     }
 
-    private String generateReasonableDuration() {
-        Random random = new Random();
-        int hours = random.nextInt(12) + 2;
+    private String generateReasonableDurationOptimized() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int hours = random.nextInt(2, 15);
         int minutes = random.nextInt(60);
         return String.format("%dh %02dm", hours, minutes);
     }

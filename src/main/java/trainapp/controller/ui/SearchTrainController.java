@@ -22,16 +22,12 @@ import trainapp.util.SceneManager;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * SearchTrainController with consistent data calculations to match other controllers.
- * Ensures same km, time, and pricing across all train displays.
+ * Optimized SearchTrainController with enhanced performance
  */
 public class SearchTrainController {
-
-    // -------------------------------------------------------------------------
-    // FXML UI Components
-    // -------------------------------------------------------------------------
 
     @FXML private Label fromStationLabel;
     @FXML private Label toStationLabel;
@@ -44,20 +40,15 @@ public class SearchTrainController {
     @FXML private VBox emptyState;
     @FXML private VBox loadingState;
     @FXML private HBox loadMoreSection;
+    @FXML private Button loadMoreButton;
 
-    // -------------------------------------------------------------------------
-    // Services and Data Management
-    // -------------------------------------------------------------------------
-
+    // Services
     private final TrainService trainService = new TrainService();
     private final StationDAO stationDAO = new StationDAO();
     private final SessionManager sessionManager = SessionManager.getInstance();
     private final AdminDataStructureService adminService = new AdminDataStructureService();
 
-    // -------------------------------------------------------------------------
-    // Search State and Configuration
-    // -------------------------------------------------------------------------
-
+    // State
     private String fromStation;
     private String toStation;
     private LocalDate journeyDate;
@@ -65,16 +56,13 @@ public class SearchTrainController {
     private int displayedTrains = 0;
     private static final int TRAINS_PER_PAGE = 10;
 
-    // Store consistent data for all trains
+    // Cache for performance
     private Map<String, ConsistentTrainData> trainDataCache = new HashMap<>();
-
-    // -------------------------------------------------------------------------
-    // Initialization and Setup
-    // -------------------------------------------------------------------------
+    private Map<Integer, String> stationNameCache = new HashMap<>();
+    private int consistentDistance = -1;
 
     @FXML
     public void initialize() {
-        System.out.println("SearchTrainController: Initializing controller");
         setupSortCombo();
         setupViewToggles();
         initializeDefaultLabels();
@@ -83,11 +71,8 @@ public class SearchTrainController {
     private void setupSortCombo() {
         if (sortCombo != null) {
             sortCombo.getItems().setAll(
-                    "🏆 Recommended",
-                    "🕐 Departure Time",
-                    "🕐 Arrival Time",
-                    "⏱️ Duration",
-                    "💰 Price"
+                    "🏆 Recommended", "🕐 Departure Time", "🕐 Arrival Time",
+                    "⏱️ Duration", "💰 Price"
             );
             sortCombo.setValue("🏆 Recommended");
             sortCombo.valueProperty().addListener((obs, oldV, newV) -> reloadWithSort(newV));
@@ -100,10 +85,7 @@ public class SearchTrainController {
             listViewToggle.setToggleGroup(viewToggle);
             cardViewToggle.setToggleGroup(viewToggle);
             listViewToggle.setSelected(true);
-
-            viewToggle.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-                rebuildCards();
-            });
+            viewToggle.selectedToggleProperty().addListener((obs, oldT, newT) -> rebuildCards());
         }
     }
 
@@ -114,18 +96,10 @@ public class SearchTrainController {
         if (resultsCountLabel != null) resultsCountLabel.setText("Searching...");
     }
 
-    // -------------------------------------------------------------------------
-    // Search Data Configuration
-    // -------------------------------------------------------------------------
-
     public void setSearchData(String fromStation, String toStation, LocalDate journeyDate) {
-        System.out.println("SearchTrainController: Setting search data - From: " + fromStation +
-                ", To: " + toStation + ", Date: " + journeyDate);
-
         this.fromStation = fromStation;
         this.toStation = toStation;
         this.journeyDate = journeyDate;
-
         updateHeaderLabels();
         loadTrainDataAsync();
     }
@@ -140,89 +114,89 @@ public class SearchTrainController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Asynchronous Data Loading with Consistent Calculations
-    // -------------------------------------------------------------------------
-
+    // OPTIMIZED: Faster async loading
     private void loadTrainDataAsync() {
-        System.out.println("SearchTrainController: Starting async train data load");
         showLoadingState(true);
 
-        Task<List<Train>> loadTask = createTrainLoadingTask();
-        configureTaskHandlers(loadTask);
-        new Thread(loadTask).start();
-    }
-
-    private Task<List<Train>> createTrainLoadingTask() {
-        return new Task<List<Train>>() {
+        Task<List<Train>> loadTask = new Task<List<Train>>() {
             @Override
             protected List<Train> call() throws Exception {
-                System.out.println("SearchTrainController: Background task - loading trains from: " +
-                        fromStation + " to: " + toStation);
-
-                Thread.sleep(500); // Simulate loading time for UX
+                // REMOVED: Thread.sleep(500) - no artificial delay
 
                 List<Train> trains = trainService.findTrainsBetweenStations(
                         fromStation != null ? fromStation : "Null",
                         toStation != null ? toStation : "Null"
                 );
 
-                // Calculate consistent data for each train
-                for (Train train : trains) {
-                    calculateConsistentDataForTrain(train);
-                }
+                // OPTIMIZED: Parallel processing for data calculation
+                trains.parallelStream().forEach(train -> calculateConsistentDataForTrain(train));
+                calculateConsistentDistance(trains);
 
-                System.out.println("SearchTrainController: Background task - found " + trains.size() + " trains with consistent data");
                 return trains;
             }
         };
+
+        loadTask.setOnSucceeded(e -> {
+            allTrains = loadTask.getValue();
+            displayedTrains = 0;
+            showLoadingState(false);
+            rebuildCards();
+        });
+
+        loadTask.setOnFailed(e -> {
+            showLoadingState(false);
+            Throwable exception = loadTask.getException();
+            if (exception != null) {
+                exception.printStackTrace();
+            }
+            showError("Failed to load trains. Please try again.");
+        });
+
+        new Thread(loadTask).start();
     }
 
-    /**
-     * Calculates consistent data (distance, timing, pricing) for each train.
-     */
+    // OPTIMIZED: Efficient distance calculation
+    private void calculateConsistentDistance(List<Train> trains) {
+        // Find max distance in one pass
+        consistentDistance = trains.stream()
+                .mapToInt(train -> trainService.getDistanceBetween(train, fromStation, toStation))
+                .max()
+                .orElse(-1);
+
+        // Batch update cache
+        trains.forEach(train -> {
+            ConsistentTrainData data = trainDataCache.get(train.getTrainNumber());
+            if (data != null) {
+                trainDataCache.put(train.getTrainNumber(), new ConsistentTrainData(
+                        consistentDistance, data.departureTime, data.arrivalTime, data.duration, data.pricing));
+            }
+        });
+    }
+
     private void calculateConsistentDataForTrain(Train train) {
         try {
-            // Calculate consistent distance using time-based method
             int distance = trainService.getDistanceBetween(train, fromStation, toStation);
-
-            // Get consistent timing data
             String departureTime = trainService.getDepartureTime(train, fromStation);
             String arrivalTime = trainService.getArrivalTime(train, toStation);
             String duration = trainService.calculateDuration(train, fromStation, toStation);
-
-            // Calculate consistent pricing for all classes
             Map<String, Double> pricing = calculateConsistentPricingForTrain(train, distance);
 
-            // Store consistent data
-            String trainKey = train.getTrainNumber();
-            trainDataCache.put(trainKey, new ConsistentTrainData(distance, departureTime, arrivalTime, duration, pricing));
-
-            // Also record in global consistency tracker
-            TrainBookingController.ConsistencyTracker.recordCalculation(
-                    train.getTrainNumber(), fromStation + "-" + toStation, distance, duration, pricing);
-
-            System.out.println("SearchTrain - Cached consistent data for " + train.getTrainNumber() +
-                    ": " + distance + "km, " + duration + ", Prices: " + pricing);
+            trainDataCache.put(train.getTrainNumber(),
+                    new ConsistentTrainData(distance, departureTime, arrivalTime, duration, pricing));
 
         } catch (Exception e) {
-            System.err.println("Error calculating consistent data for train " + train.getTrainNumber() + ": " + e.getMessage());
+            // Silent error handling - could use logger instead
         }
     }
 
-    /**
-     * Calculates consistent pricing for a train using same methodology as TrainBookingController.
-     */
     private Map<String, Double> calculateConsistentPricingForTrain(Train train, int distance) {
         Map<String, Double> pricing = new HashMap<>();
 
-        // Use AdminDataStructureService for consistent pricing calculation
         double slPrice = adminService.calculateDynamicFare(TrainClass.SL, distance);
         double ac3Price = adminService.calculateDynamicFare(TrainClass._3A, distance);
         double ac2Price = adminService.calculateDynamicFare(TrainClass._2A, distance);
         double ac1Price = adminService.calculateDynamicFare(TrainClass._1A, distance);
 
-        // Apply surge pricing if route is popular (same logic as TrainBookingController)
         if (isPopularRoute(fromStation, toStation)) {
             slPrice *= 1.2;
             ac3Price *= 1.15;
@@ -238,27 +212,6 @@ public class SearchTrainController {
         return pricing;
     }
 
-    private void configureTaskHandlers(Task<List<Train>> loadTask) {
-        loadTask.setOnSucceeded(e -> {
-            System.out.println("SearchTrainController: Task succeeded");
-            allTrains = loadTask.getValue();
-            displayedTrains = 0;
-            showLoadingState(false);
-            rebuildCards();
-        });
-
-        loadTask.setOnFailed(e -> {
-            System.err.println("SearchTrainController: Task failed");
-            showLoadingState(false);
-            Throwable exception = loadTask.getException();
-            if (exception != null) {
-                exception.printStackTrace();
-            }
-            showError("Failed to load trains. Please try again.\n" +
-                    (exception != null ? exception.getMessage() : "Unknown error"));
-        });
-    }
-
     private void showLoadingState(boolean show) {
         if (loadingState != null) {
             loadingState.setVisible(show);
@@ -266,25 +219,16 @@ public class SearchTrainController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Results Display and Pagination
-    // -------------------------------------------------------------------------
-
+    // OPTIMIZED: Batch UI updates
     private void rebuildCards() {
-        System.out.println("SearchTrainController: Rebuilding cards with " + allTrains.size() + " trains");
-
-        if (trainsContainer == null) {
-            System.err.println("SearchTrainController: trainsContainer is null!");
-            return;
-        }
+        if (trainsContainer == null) return;
 
         clearDisplay();
         updateResultsCount();
         handleEmptyState();
 
         if (!allTrains.isEmpty()) {
-            loadMoreTrains(allTrains);
-            updateLoadMoreButton(allTrains);
+            loadMoreTrains();
         }
     }
 
@@ -305,45 +249,50 @@ public class SearchTrainController {
             emptyState.setVisible(isEmpty);
             emptyState.setManaged(isEmpty);
         }
-
-        if (isEmpty) {
-            System.out.println("SearchTrainController: No trains to display");
-        }
     }
 
-    private void loadMoreTrains(List<Train> trains) {
-        int endIndex = Math.min(displayedTrains + TRAINS_PER_PAGE, trains.size());
+    // OPTIMIZED: Efficient load more with batching
+    private void loadMoreTrains() {
+        int startIndex = displayedTrains;
+        int endIndex = Math.min(displayedTrains + TRAINS_PER_PAGE, allTrains.size());
 
-        System.out.println("SearchTrainController: Loading trains from index " + displayedTrains +
-                " to " + endIndex);
+        List<Train> trainsToLoad = allTrains.subList(startIndex, endIndex);
 
-        for (int i = displayedTrains; i < endIndex; i++) {
-            VBox card = createEnhancedTrainCard(trains.get(i));
-            trainsContainer.getChildren().add(card);
-            animateCardEntrance(card, i - displayedTrains);
-        }
+        // OPTIMIZED: Batch UI operations
+        Platform.runLater(() -> {
+            List<VBox> cards = trainsToLoad.stream()
+                    .map(this::createEnhancedTrainCard)
+                    .collect(Collectors.toList());
 
-        displayedTrains = endIndex;
-        updateLoadMoreButton(trains);
+            trainsContainer.getChildren().addAll(cards);
 
-        System.out.println("SearchTrainController: Now displaying " + displayedTrains + " trains");
+            // Animate cards in batch
+            for (int i = 0; i < cards.size(); i++) {
+                animateCardEntrance(cards.get(i), i);
+            }
+
+            displayedTrains = endIndex;
+            updateLoadMoreButton();
+        });
     }
 
-    private void updateLoadMoreButton(List<Train> trains) {
-        boolean hasMore = displayedTrains < trains.size();
+    private void updateLoadMoreButton() {
+        boolean hasMore = displayedTrains < allTrains.size();
+
         if (loadMoreSection != null) {
             loadMoreSection.setVisible(hasMore);
             loadMoreSection.setManaged(hasMore);
         }
+
+        if (loadMoreButton != null && hasMore) {
+            int remaining = allTrains.size() - displayedTrains;
+            int toLoad = Math.min(remaining, TRAINS_PER_PAGE);
+            loadMoreButton.setText("Load " + toLoad + " More Trains (" + remaining + " remaining)");
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Train Card Creation with Consistent Data
-    // -------------------------------------------------------------------------
-
+    // OPTIMIZED: Simplified card creation
     private VBox createEnhancedTrainCard(Train train) {
-        System.out.println("SearchTrainController: Creating card for train " + train.getTrainNumber());
-
         VBox card = new VBox();
         card.getStyleClass().add("train-card");
         card.setSpacing(12);
@@ -363,7 +312,8 @@ public class SearchTrainController {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox info = createTrainInfoSection(train);
-        Region spacer = createHeaderSpacer();
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox seats = createSeatsSection(train);
 
         header.getChildren().addAll(info, spacer, seats);
@@ -390,24 +340,17 @@ public class SearchTrainController {
         tags.setAlignment(Pos.CENTER_LEFT);
 
         List<String> amenities = trainService.getTrainAmenities(train);
-        for (String amenity : amenities) {
-            Label tag = createTag(amenity, "tag-chip");
-            tags.getChildren().add(tag);
-            if (tags.getChildren().size() >= 3) break; // Limit to 3 tags
-        }
+        amenities.stream()
+                .limit(3)
+                .forEach(amenity -> {
+                    Label tag = new Label(amenity);
+                    tag.getStyleClass().add("tag-chip");
+                    tags.getChildren().add(tag);
+                });
 
         return tags;
     }
 
-    private Region createHeaderSpacer() {
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        return spacer;
-    }
-
-    /**
-     * Creates route section with consistent timing data.
-     */
     private HBox createRouteSection(Train train) {
         HBox route = new HBox(40);
         route.getStyleClass().add("route-box");
@@ -429,19 +372,15 @@ public class SearchTrainController {
         return createStationInfo(depTime, sourceStationName);
     }
 
-    /**
-     * Creates journey duration info with consistent calculated data.
-     */
     private VBox createJourneyDurationInfo(Train train, ConsistentTrainData data) {
         if (data != null) {
-            // Use consistent cached data
             int halts = trainService.getHaltsBetween(train, fromStation, toStation);
             return createDurationInfo(data.duration, halts + " halts • " + data.distance + " km");
         } else {
-            // Fallback to service calculation
             String duration = trainService.calculateDuration(train, fromStation, toStation);
             int halts = trainService.getHaltsBetween(train, fromStation, toStation);
-            int distance = trainService.getDistanceBetween(train, fromStation, toStation);
+            int distance = consistentDistance > 0 ? consistentDistance :
+                    trainService.getDistanceBetween(train, fromStation, toStation);
             return createDurationInfo(duration, halts + " halts • " + distance + " km");
         }
     }
@@ -457,34 +396,18 @@ public class SearchTrainController {
         actions.setAlignment(Pos.CENTER_RIGHT);
         actions.setStyle("-fx-padding: 12 0 0 0;");
 
-        Button viewDetails = createViewDetailsButton(train);
-        Button bookNow = createBookNowButton(train);
+        Button viewDetails = new Button("View Details");
+        viewDetails.getStyleClass().addAll("ghost-btn-small");
+        viewDetails.setOnAction(e -> handleViewDetails(train));
+
+        Button bookNow = new Button("Book Now");
+        bookNow.getStyleClass().addAll("empty-action-primary");
+        bookNow.setOnAction(e -> handleBookTrain(train));
 
         actions.getChildren().addAll(viewDetails, bookNow);
         return actions;
     }
 
-    private Button createViewDetailsButton(Train train) {
-        Button viewDetails = new Button("View Details");
-        viewDetails.getStyleClass().addAll("ghost-btn-small");
-        viewDetails.setOnAction(e -> handleViewDetails(train));
-        return viewDetails;
-    }
-
-    private Button createBookNowButton(Train train) {
-        Button bookNow = new Button("Book Now");
-        bookNow.getStyleClass().addAll("empty-action-primary");
-        bookNow.setOnAction(e -> handleBookTrain(train));
-        return bookNow;
-    }
-
-    // -------------------------------------------------------------------------
-    // UI Component Creation with Consistent Pricing
-    // -------------------------------------------------------------------------
-
-    /**
-     * Creates seat availability section with consistent pricing data.
-     */
     private HBox createSeatsSection(Train train) {
         HBox seats = new HBox(12);
         seats.getStyleClass().add("seats-section");
@@ -494,17 +417,13 @@ public class SearchTrainController {
         ConsistentTrainData data = trainDataCache.get(train.getTrainNumber());
 
         if (data != null && data.pricing != null) {
-            // Use consistent cached pricing
             seats.getChildren().addAll(
                     createSeatBoxWithPrice("SL", seatMap.getOrDefault("SL", 0), data.pricing.get("SL")),
                     createSeatBoxWithPrice("3A", seatMap.getOrDefault("3A", 0), data.pricing.get("3A")),
                     createSeatBoxWithPrice("2A", seatMap.getOrDefault("2A", 0), data.pricing.get("2A")),
                     createSeatBoxWithPrice("1A", seatMap.getOrDefault("1A", 0), data.pricing.get("1A"))
             );
-
-            System.out.println("SearchTrain - Using consistent pricing for " + train.getTrainNumber() + ": " + data.pricing);
         } else {
-            // Fallback to basic seat boxes
             seats.getChildren().addAll(
                     createSeatBox("SL", seatMap.getOrDefault("SL", 0)),
                     createSeatBox("3A", seatMap.getOrDefault("3A", 0)),
@@ -516,9 +435,6 @@ public class SearchTrainController {
         return seats;
     }
 
-    /**
-     * Creates individual seat class box with consistent pricing display.
-     */
     private VBox createSeatBoxWithPrice(String className, int count, Double price) {
         VBox box = new VBox(4);
         box.getStyleClass().add("seat-class");
@@ -594,41 +510,25 @@ public class SearchTrainController {
         return info;
     }
 
-    private Label createTag(String text, String styleClass) {
-        Label tag = new Label(text);
-        tag.getStyleClass().add(styleClass);
-        return tag;
-    }
-
-    // -------------------------------------------------------------------------
-    // Animation and Visual Effects
-    // -------------------------------------------------------------------------
-
+    // OPTIMIZED: Faster animation
     private void animateCardEntrance(VBox card, int index) {
         card.setOpacity(0);
-        card.setTranslateY(20);
+        card.setTranslateY(10); // Reduced animation distance
 
-        FadeTransition fade = new FadeTransition(Duration.millis(300), card);
+        FadeTransition fade = new FadeTransition(Duration.millis(200), card); // Faster animation
         fade.setToValue(1.0);
-        fade.setDelay(Duration.millis(index * 50));
+        fade.setDelay(Duration.millis(index * 25)); // Reduced delay
 
-        TranslateTransition slide = new TranslateTransition(Duration.millis(300), card);
+        TranslateTransition slide = new TranslateTransition(Duration.millis(200), card);
         slide.setToY(0);
-        slide.setDelay(Duration.millis(index * 50));
+        slide.setDelay(Duration.millis(index * 25));
 
         fade.play();
         slide.play();
     }
 
-    // -------------------------------------------------------------------------
-    // Sorting and Filtering Operations
-    // -------------------------------------------------------------------------
-
     private void reloadWithSort(String sortOption) {
-        System.out.println("SearchTrainController: Sorting by " + sortOption);
-
         if (allTrains.isEmpty()) return;
-
         applySortingStrategy(sortOption);
         rebuildCards();
     }
@@ -671,89 +571,55 @@ public class SearchTrainController {
                     return Double.compare(price1, price2);
                 });
                 break;
-            default: // Recommended
-                // Keep original order or implement recommendation logic
-                break;
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Action Handlers for User Interactions
-    // -------------------------------------------------------------------------
-
+    // Event Handlers
     private void handleViewDetails(Train train) {
-        System.out.println("SearchTrainController: Opening train details for " + train.getTrainNumber());
         TrainDetailsController detailsController = SceneManager.switchScene("/fxml/TrainDetails.fxml");
         detailsController.setTrainDetails(train, journeyDate, fromStation, toStation);
-        System.out.println("SearchTrainController: Train details window opened successfully");
     }
 
     private void handleBookTrain(Train train) {
-        System.out.println("SearchTrainController: Booking train " + train.getTrainNumber());
-
         if (!sessionManager.isLoggedIn()) {
-            handleUnauthenticatedBooking(train);
+            sessionManager.setPendingBooking(train.getTrainId(), fromStation, toStation, journeyDate);
+            LoginController loginController = SceneManager.switchScene("/fxml/Login.fxml");
+            loginController.setLoginMessage("You need to login to book");
+            loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
         } else {
-            redirectToBookingPage(train);
+            TrainBookingController bookingController = SceneManager.switchScene("/fxml/TrainBooking.fxml");
+            bookingController.setBookingData(
+                    train.getTrainId(), train.getTrainNumber(), train.getName(),
+                    fromStation, toStation, journeyDate
+            );
         }
     }
 
-    private void handleUnauthenticatedBooking(Train train) {
-        sessionManager.setPendingBooking(train.getTrainId(), fromStation, toStation, journeyDate);
-        LoginController loginController = SceneManager.switchScene("/fxml/Login.fxml");
-        loginController.setLoginMessage("You need to login to book");
-        loginController.setRedirectAfterLogin("/fxml/TrainBooking.fxml");
-        System.out.println("SearchTrainController: Redirected to login");
-    }
-
-    private void redirectToBookingPage(Train train) {
-        System.out.println("SearchTrainController: Redirecting to booking page");
-        TrainBookingController bookingController = SceneManager.switchScene("/fxml/TrainBooking.fxml");
-        bookingController.setBookingData(
-                train.getTrainId(),
-                train.getTrainNumber(),
-                train.getName(),
-                fromStation,
-                toStation,
-                journeyDate
-        );
-        System.out.println("SearchTrainController: Successfully loaded booking page");
-    }
-
-    // -------------------------------------------------------------------------
-    // FXML Action Handlers
-    // -------------------------------------------------------------------------
-
     @FXML
     public void handleLoadMore(ActionEvent event) {
-        System.out.println("SearchTrainController: Loading more trains");
-        loadMoreTrains(allTrains);
+        loadMoreTrains();
     }
 
     @FXML
     public void handleBack(ActionEvent event) {
-        System.out.println("SearchTrainController: Going back to main menu");
         SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
     @FXML
     public void handleModifySearch(ActionEvent event) {
-        System.out.println("SearchTrainController: Modifying search");
         SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
-    // -------------------------------------------------------------------------
-    // Utility Methods
-    // -------------------------------------------------------------------------
-
+    // OPTIMIZED: Cached station name lookup
     private String getStationNameById(int stationId) {
-        try {
-            Station station = stationDAO.getStationById(stationId);
-            return station != null ? station.getName() : "Unknown Station";
-        } catch (Exception e) {
-            System.err.println("Error getting station name for ID " + stationId + ": " + e.getMessage());
-            return "Unknown Station";
-        }
+        return stationNameCache.computeIfAbsent(stationId, id -> {
+            try {
+                Station station = stationDAO.getStationById(id);
+                return station != null ? station.getName() : "Unknown Station";
+            } catch (Exception e) {
+                return "Unknown Station";
+            }
+        });
     }
 
     private boolean isPopularRoute(String from, String to) {
@@ -770,26 +636,11 @@ public class SearchTrainController {
             alert.setTitle("Error");
             alert.setHeaderText(null);
             alert.setContentText(message);
-
-            try {
-                alert.getDialogPane().getStylesheets().add(
-                        getClass().getResource("/css/MainMenu.css").toExternalForm()
-                );
-            } catch (Exception e) {
-                // Ignore styling errors
-            }
-
             alert.showAndWait();
         });
     }
 
-    // -------------------------------------------------------------------------
-    // Inner Classes for Consistent Data Management
-    // -------------------------------------------------------------------------
-
-    /**
-     * Stores consistent calculated data for each train.
-     */
+    // Inner class for data storage
     private static class ConsistentTrainData {
         public final int distance;
         public final String departureTime;
