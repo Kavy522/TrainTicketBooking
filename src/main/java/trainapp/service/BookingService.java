@@ -473,26 +473,68 @@ public class BookingService {
     }
 
     /**
-     * Calculates fare dynamically based on admin pricing, class, and distance.
-     * If no pricing exists, returns 0.
+     * Enhanced dynamic fare calculation using time-based distance.
      */
     private double calculateDynamicFare(BookingRequest request) {
-        Train train = trainDAO.getTrainById(request.getTrainId());
-        int distance = new TrainService().getDistanceBetween(train, request.getFromStation(), request.getToStation());
-        TrainClass trainClass = TrainClass.fromString(request.getSeatClass());
-        TreeMap<Integer, Double> classFares = adminService.getFareStructureForClass(trainClass);
+        try {
+            Train train = trainDAO.getTrainById(request.getTrainId());
+            if (train == null) {
+                System.err.println("Train not found for fare calculation");
+                return 0.0;
+            }
 
-        if (classFares.isEmpty()) {
-            return 0.0;
+            // Use enhanced time-based distance calculation
+            int distance = trainService.getDistanceBetween(train, request.getFromStation(), request.getToStation());
+            System.out.println("Using time-based distance: " + distance + " km for fare calculation");
+
+            TrainClass trainClass = TrainClass.fromString(request.getSeatClass());
+
+            // Calculate per-passenger fare using enhanced pricing
+            double farePerPassenger = adminService.calculateDynamicFare(trainClass, distance);
+
+            if (farePerPassenger <= 0) {
+                System.err.println("Invalid fare calculated, using fallback");
+                return calculateFallbackFare(trainClass, distance, request.getPassengers().size());
+            }
+
+            // Calculate total fare for all passengers
+            double totalFare = farePerPassenger * request.getPassengers().size();
+
+            System.out.println("Dynamic fare calculation: ₹" + farePerPassenger + " × " +
+                    request.getPassengers().size() + " passengers = ₹" + totalFare);
+
+            return totalFare;
+
+        } catch (Exception e) {
+            System.err.println("Error in dynamic fare calculation: " + e.getMessage());
+            return calculateFallbackFare(TrainClass._3A, 500, request.getPassengers().size());
         }
-        Map.Entry<Integer, Double> entry = classFares.floorEntry(distance);
-        if (entry == null) {
-            return 0.0;
-        }
-        double baseFare = entry.getValue();
-        double adjustedFare = baseFare * (distance / (double) entry.getKey());
-        return adjustedFare * request.getPassengers().size();
     }
+
+    /**
+     * Fallback fare calculation when dynamic pricing fails.
+     */
+    private double calculateFallbackFare(TrainClass trainClass, int distance, int passengerCount) {
+        double baseFarePerKm = switch (trainClass) {
+            case SL -> 0.75;
+            case _3A -> 2.25;
+            case _2A -> 3.50;
+            case _1A -> 5.50;
+            default -> 2.25;
+        };
+
+        double reservationCharge = switch (trainClass) {
+            case SL -> 30;
+            case _3A -> 50;
+            case _2A -> 75;
+            case _1A -> 125;
+            default -> 50;
+        };
+
+        double farePerPassenger = (distance * baseFarePerKm) + reservationCharge;
+        return Math.max(farePerPassenger * passengerCount, 200 * passengerCount);
+    }
+
 
     // ================== Data Models & Request/Result Wrappers =====================
 
