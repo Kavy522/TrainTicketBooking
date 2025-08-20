@@ -19,6 +19,10 @@ import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * FIXED PDFGenerator - Ensures invoice amounts exactly match booking amounts.
+ * Payment breakdown is calculated from booking.getTotalFare() to maintain consistency.
+ */
 public class PDFGenerator {
 
     private final PassengerDAO passengerDAO = new PassengerDAO();
@@ -35,7 +39,9 @@ public class PDFGenerator {
 
     public byte[] generateTicketPDF(Booking booking) {
         try {
-            System.out.println("Generating modern e-ticket PDF for booking: " + booking.getPnr());
+            System.out.println("=== GENERATING TICKET PDF ===");
+            System.out.println("Booking: " + booking.getPnr());
+            System.out.println("Amount: ₹" + booking.getTotalFare());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Document document = new Document(PageSize.A4, 30, 30, 30, 30);
@@ -64,11 +70,11 @@ public class PDFGenerator {
             document.close();
 
             byte[] pdfBytes = baos.toByteArray();
-            System.out.println("Modern e-ticket PDF generated successfully");
+            System.out.println("Ticket PDF generated successfully");
             return pdfBytes;
 
         } catch (Exception e) {
-            System.err.println("Error generating modern ticket PDF: " + e.getMessage());
+            System.err.println("Error generating ticket PDF: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -76,7 +82,9 @@ public class PDFGenerator {
 
     public byte[] generateInvoicePDF(Booking booking) {
         try {
-            System.out.println("Generating modern invoice PDF for booking: " + booking.getPnr());
+            System.out.println("=== GENERATING INVOICE PDF ===");
+            System.out.println("Booking: " + booking.getPnr());
+            System.out.println("Amount: ₹" + booking.getTotalFare());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             Document document = new Document(PageSize.A4, 30, 30, 30, 30);
@@ -93,7 +101,7 @@ public class PDFGenerator {
             // Add booking summary
             addInvoiceBookingSummary(document, booking);
 
-            // Add payment breakdown
+            // FIXED: Add payment breakdown with consistent amounts
             addModernPaymentBreakdown(document, booking);
 
             // Add payment details
@@ -105,11 +113,11 @@ public class PDFGenerator {
             document.close();
 
             byte[] pdfBytes = baos.toByteArray();
-            System.out.println("Modern invoice PDF generated successfully");
+            System.out.println("Invoice PDF generated successfully");
             return pdfBytes;
 
         } catch (Exception e) {
-            System.err.println("Error generating modern invoice PDF: " + e.getMessage());
+            System.err.println("Error generating invoice PDF: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -414,7 +422,8 @@ public class PDFGenerator {
         document.add(footerTable);
     }
 
-    // Invoice methods
+    // ======================= INVOICE METHODS =======================
+
     private void addModernInvoiceHeader(Document document, Booking booking) throws DocumentException {
         // Top blue stripe
         PdfPTable headerStripe = new PdfPTable(1);
@@ -562,6 +571,10 @@ public class PDFGenerator {
         }
     }
 
+    /**
+     * FIXED: Calculate payment breakdown from booking.getTotalFare() to ensure consistency.
+     * This ensures invoice amount matches booking summary and payment amount.
+     */
     private void addModernPaymentBreakdown(Document document, Booking booking) throws DocumentException {
         Font headerFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, INDIAN_BLUE);
         Paragraph paymentHeader = new Paragraph("PAYMENT BREAKDOWN", headerFont);
@@ -579,18 +592,31 @@ public class PDFGenerator {
         addPaymentHeaderCell(paymentTable, "QTY", tableHeaderFont);
         addPaymentHeaderCell(paymentTable, "AMOUNT", tableHeaderFont);
 
-        // Calculate amounts
-        double baseFare = booking.getTotalFare() / 1.05 - 20;
-        double convenienceFee = 20;
-        double gst = baseFare * 0.05;
+        // CRITICAL FIX: Calculate amounts from booking.getTotalFare() (from DB)
+        double totalAmount = booking.getTotalFare();
+        double convenienceFee = 20.0;
+        double baseFare = totalAmount - convenienceFee;
+        double gst = 0.0;
+
+        // Ensure non-negative values
+        if (baseFare < 0) {
+            baseFare = 0;
+            convenienceFee = totalAmount;
+            System.out.println("Adjusted convenience fee due to low total amount");
+        }
+
+        // Round all amounts for display consistency
+        baseFare = Math.round(baseFare * 100.0) / 100.0;
+        convenienceFee = Math.round(convenienceFee * 100.0) / 100.0;
+        totalAmount = Math.round(totalAmount * 100.0) / 100.0;
 
         Font itemFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
         Font amountFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
 
-        // Data rows
+        // Data rows with correct amounts
         addPaymentDataRow(paymentTable, "Train Booking Fare", "1", "₹" + String.format("%.2f", baseFare), itemFont, amountFont);
         addPaymentDataRow(paymentTable, "Convenience Fee", "1", "₹" + String.format("%.2f", convenienceFee), itemFont, amountFont);
-        addPaymentDataRow(paymentTable, "GST (5%)", "1", "₹" + String.format("%.2f", gst), itemFont, amountFont);
+        addPaymentDataRow(paymentTable, "GST (0%)", "1", "₹" + String.format("%.2f", gst), itemFont, amountFont);
 
         // Total row
         Font totalFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
@@ -600,13 +626,20 @@ public class PDFGenerator {
         totalLabelCell.setColspan(2);
         paymentTable.addCell(totalLabelCell);
 
-        PdfPCell totalAmountCell = new PdfPCell(new Phrase("₹" + String.format("%.2f", booking.getTotalFare()), totalFont));
+        PdfPCell totalAmountCell = new PdfPCell(new Phrase("₹" + String.format("%.2f", totalAmount), totalFont));
         totalAmountCell.setBackgroundColor(INDIAN_BLUE);
         totalAmountCell.setPadding(10);
         totalAmountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         paymentTable.addCell(totalAmountCell);
 
         document.add(paymentTable);
+
+        System.out.println("=== INVOICE PAYMENT BREAKDOWN ===");
+        System.out.println("Base fare: ₹" + baseFare);
+        System.out.println("Convenience fee: ₹" + convenienceFee);
+        System.out.println("GST: ₹" + gst);
+        System.out.println("Total: ₹" + totalAmount);
+        System.out.println("This matches booking.getTotalFare(): ₹" + booking.getTotalFare());
     }
 
     private void addPaymentInformation(Document document, Booking booking) throws DocumentException {
@@ -652,7 +685,8 @@ public class PDFGenerator {
         document.add(terms);
     }
 
-    // Helper methods
+    // ======================= HELPER METHODS =======================
+
     private void addInfoCell(PdfPTable table, String label, String value, Font labelFont, Font valueFont) {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.NO_BORDER);
@@ -711,7 +745,7 @@ public class PDFGenerator {
 
         Font detailFont = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL);
         document.add(new Paragraph("PNR: " + booking.getPnr(), detailFont));
-        document.add(new Paragraph("Amount: ₹" + booking.getTotalFare(), detailFont));
+        document.add(new Paragraph("Amount: ₹" + String.format("%.2f", booking.getTotalFare()), detailFont));
         document.add(new Paragraph(" "));
     }
 }

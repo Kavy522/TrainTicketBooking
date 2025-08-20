@@ -399,4 +399,22 @@ public class BookingDAO {
                 return "waiting";
         }
     }
+
+    /**
+     * Add this method to BookingDAO.java to support amount updates
+     */
+    public boolean updateBookingAmount(long bookingId, double newAmount) {
+        String sql = "UPDATE bookings SET total_fare = ? WHERE booking_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, newAmount);
+            stmt.setLong(2, bookingId);
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating booking amount: " + e.getMessage());
+            return false;
+        }
+    }
+
 }
