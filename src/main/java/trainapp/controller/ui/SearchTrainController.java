@@ -238,8 +238,10 @@ public class SearchTrainController {
                 );
 
                 // Optimized: Parallel processing for data calculation
-                trains.parallelStream().forEach(train -> calculateConsistentDataForTrain(train));
-                calculateConsistentDistance(trains);
+                if (!trains.isEmpty()) {
+                    trains.parallelStream().forEach(train -> calculateConsistentDataForTrain(train));
+                    calculateConsistentDistance(trains);
+                }
 
                 return trains;
             }
@@ -249,7 +251,12 @@ public class SearchTrainController {
             allTrains = loadTask.getValue();
             displayedTrains = 0;
             showLoadingState(false);
-            rebuildCards();
+            
+            if (allTrains == null || allTrains.isEmpty()) {
+                handleNoTrainsFound();
+            } else {
+                rebuildCards();
+            }
         });
 
         loadTask.setOnFailed(e -> {
@@ -906,6 +913,32 @@ public class SearchTrainController {
     @FXML
     public void handleModifySearch(ActionEvent event) {
         SceneManager.switchScene("/fxml/MainMenu.fxml");
+    }
+
+    /**
+     * Handles the case when no trains are found between selected stations.
+     * Shows an informative alert and redirects user back to MainMenu.
+     */
+    private void handleNoTrainsFound() {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No Trains Available");
+            alert.setHeaderText("No trains found for this route");
+            alert.setContentText("Sorry, no trains are available between " + fromStation + " and " + toStation +
+                    " on " + journeyDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) +
+                    ".\n\nPlease try a different route or date.");
+
+            // Set alert styling
+            alert.getDialogPane().getStyleClass().add("alert-dialog");
+
+            // Show alert and wait for user response
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    // Redirect to MainMenu
+                    SceneManager.switchScene("/fxml/MainMenu.fxml");
+                }
+            });
+        });
     }
 
     // =========================================================================

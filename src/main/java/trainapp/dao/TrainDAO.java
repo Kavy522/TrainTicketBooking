@@ -99,10 +99,6 @@ public class TrainDAO {
             e.printStackTrace();
         }
 
-        if (trains.isEmpty()) {
-            trains = getAllTrains();
-        }
-
         return trains;
     }
 
