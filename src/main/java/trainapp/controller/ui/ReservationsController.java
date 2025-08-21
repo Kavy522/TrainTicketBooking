@@ -253,7 +253,9 @@ public class ReservationsController {
     private void setupPaymentStatusColumn() {
         colPaymentStatus.setCellValueFactory(cellData -> {
             String status = cellData.getValue().getStatus();
-            String paymentStatus = "conformed".equals(status) ? "Paid" : "Pending";
+            String paymentStatus = "conformed".equals(status) ? "Paid" :
+                    "cancelled".equals(status) ? "Refund" :
+                            "waiting".equals(status) ? "Pending" : "Pending";
             return new javafx.beans.property.SimpleStringProperty(paymentStatus);
         });
 
@@ -265,8 +267,17 @@ public class ReservationsController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label paymentLabel = new Label(paymentStatus);
-                    paymentLabel.getStyleClass().add("payment-" + paymentStatus.toLowerCase().replace(" ", "-"));
+                    Label paymentLabel = new Label();
+                    if ("Paid".equals(paymentStatus)) {
+                        paymentLabel.setText("✅ Paid");
+                        paymentLabel.getStyleClass().add("payment-paid");
+                    } else if ("Refund".equals(paymentStatus)) {
+                        paymentLabel.setText("💰 Refund");
+                        paymentLabel.getStyleClass().add("payment-refund");
+                    } else {
+                        paymentLabel.setText("⏳ Pending");
+                        paymentLabel.getStyleClass().add("payment-pending");
+                    }
                     setGraphic(paymentLabel);
                     setText(null);
                 }

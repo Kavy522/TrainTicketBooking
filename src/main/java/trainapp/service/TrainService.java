@@ -1,6 +1,5 @@
 package trainapp.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import trainapp.dao.JourneyDAO;
 import trainapp.dao.StationDAO;

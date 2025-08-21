@@ -25,42 +25,145 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Optimized SearchTrainController with enhanced performance
+ * SearchTrainController manages train search results display with advanced filtering and performance optimization.
+ *
+ * <h2>Core Responsibilities:</h2>
+ * <ul>
+ *   <li><b>Search Results Management</b> - Displays comprehensive train search results with detailed information</li>
+ *   <li><b>Performance Optimization</b> - Implements caching, lazy loading, and batch processing for enhanced speed</li>
+ *   <li><b>Advanced Filtering</b> - Supports multiple sorting options (time, price, duration, recommendation)</li>
+ *   <li><b>Dynamic Loading</b> - Paginated results with load-more functionality for better user experience</li>
+ *   <li><b>Consistent Pricing</b> - Ensures pricing consistency across search, details, and booking pages</li>
+ *   <li><b>User Experience</b> - Smooth animations, responsive design, and intuitive navigation</li>
+ * </ul>
+ *
+ * <h2>Key Features:</h2>
+ * <ul>
+ *   <li>Optimized async data loading with parallel processing</li>
+ *   <li>Intelligent caching system for train data and station names</li>
+ *   <li>Real-time seat availability checking with pricing information</li>
+ *   <li>Multiple view modes (list and card views) with smooth transitions</li>
+ *   <li>Advanced sorting algorithms for optimal result ordering</li>
+ *   <li>Pagination system with configurable page sizes</li>
+ *   <li>Responsive UI with loading states and error handling</li>
+ * </ul>
+ *
+ * <h2>Performance Optimizations:</h2>
+ * <ul>
+ *   <li>Parallel stream processing for data calculations</li>
+ *   <li>Efficient caching mechanisms reducing database calls</li>
+ *   <li>Batch UI updates minimizing layout recalculations</li>
+ *   <li>Optimized animation timing for smooth user experience</li>
+ *   <li>Smart data loading preventing unnecessary API calls</li>
+ * </ul>
+ *
+ * <h2>Search Flow:</h2>
+ * <ol>
+ *   <li>User searches for trains between stations on specific date</li>
+ *   <li>Controller loads and processes train data asynchronously</li>
+ *   <li>Results displayed with pagination and sorting options</li>
+ *   <li>User can filter, sort, and navigate to detailed views</li>
+ *   <li>Seamless integration with booking and authentication systems</li>
+ * </ol>
  */
 public class SearchTrainController {
 
+    // =========================================================================
+    // FXML UI COMPONENTS
+    // =========================================================================
+
+    /** Label displaying source station name */
     @FXML private Label fromStationLabel;
+
+    /** Label displaying destination station name */
     @FXML private Label toStationLabel;
+
+    /** Label displaying journey date */
     @FXML private Label dateLabel;
+
+    /** Label showing count of search results */
     @FXML private Label resultsCountLabel;
+
+    /** Dropdown for sorting search results */
     @FXML private ComboBox<String> sortCombo;
+
+    /** Toggle button for list view mode */
     @FXML private ToggleButton listViewToggle;
+
+    /** Toggle button for card view mode */
     @FXML private ToggleButton cardViewToggle;
+
+    /** Container for displaying train result cards */
     @FXML private VBox trainsContainer;
+
+    /** Container shown when no results are found */
     @FXML private VBox emptyState;
+
+    /** Container shown during data loading */
     @FXML private VBox loadingState;
+
+    /** Section containing load more functionality */
     @FXML private HBox loadMoreSection;
+
+    /** Button to load additional results */
     @FXML private Button loadMoreButton;
 
-    // Services
+    // =========================================================================
+    // SERVICES AND DEPENDENCIES
+    // =========================================================================
+
+    /** Service for train-related operations */
     private final TrainService trainService = new TrainService();
+
+    /** Data access object for station information */
     private final StationDAO stationDAO = new StationDAO();
+
+    /** Session management for user authentication */
     private final SessionManager sessionManager = SessionManager.getInstance();
+
+    /** Service for dynamic pricing calculations */
     private final AdminDataStructureService adminService = new AdminDataStructureService();
 
-    // State
+    // =========================================================================
+    // STATE MANAGEMENT
+    // =========================================================================
+
+    /** Source station for the search query */
     private String fromStation;
+
+    /** Destination station for the search query */
     private String toStation;
+
+    /** Journey date for the search query */
     private LocalDate journeyDate;
+
+    /** Complete list of trains from search results */
     private List<Train> allTrains = new ArrayList<>();
+
+    /** Number of trains currently displayed */
     private int displayedTrains = 0;
+
+    /** Number of trains to display per page load */
     private static final int TRAINS_PER_PAGE = 10;
 
-    // Cache for performance
+    // Performance Caches
+    /** Cache for consistent train data calculations */
     private Map<String, ConsistentTrainData> trainDataCache = new HashMap<>();
+
+    /** Cache for station ID to name mappings */
     private Map<Integer, String> stationNameCache = new HashMap<>();
+
+    /** Consistent distance calculation for the route */
     private int consistentDistance = -1;
 
+    // =========================================================================
+    // INITIALIZATION AND SETUP
+    // =========================================================================
+
+    /**
+     * Initializes the search controller and sets up UI components.
+     * Called automatically by JavaFX framework after FXML loading.
+     */
     @FXML
     public void initialize() {
         setupSortCombo();
@@ -68,6 +171,9 @@ public class SearchTrainController {
         initializeDefaultLabels();
     }
 
+    /**
+     * Sets up the sort dropdown with available options and change listener.
+     */
     private void setupSortCombo() {
         if (sortCombo != null) {
             sortCombo.getItems().setAll(
@@ -79,6 +185,9 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Sets up view toggle buttons for switching between list and card views.
+     */
     private void setupViewToggles() {
         if (listViewToggle != null && cardViewToggle != null) {
             ToggleGroup viewToggle = new ToggleGroup();
@@ -89,6 +198,9 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Initializes default label text for UI components.
+     */
     private void initializeDefaultLabels() {
         if (fromStationLabel != null) fromStationLabel.setText("Source Station");
         if (toStationLabel != null) toStationLabel.setText("Destination Station");
@@ -96,6 +208,17 @@ public class SearchTrainController {
         if (resultsCountLabel != null) resultsCountLabel.setText("Searching...");
     }
 
+    // =========================================================================
+    // DATA LOADING AND PROCESSING
+    // =========================================================================
+
+    /**
+     * Sets search parameters and initiates train data loading.
+     *
+     * @param fromStation Source station name
+     * @param toStation Destination station name
+     * @param journeyDate Date of travel
+     */
     public void setSearchData(String fromStation, String toStation, LocalDate journeyDate) {
         this.fromStation = fromStation;
         this.toStation = toStation;
@@ -104,6 +227,9 @@ public class SearchTrainController {
         loadTrainDataAsync();
     }
 
+    /**
+     * Updates header labels with search criteria information.
+     */
     private void updateHeaderLabels() {
         if (fromStationLabel != null) fromStationLabel.setText(fromStation != null ? fromStation : "Source");
         if (toStationLabel != null) toStationLabel.setText(toStation != null ? toStation : "Destination");
@@ -114,21 +240,22 @@ public class SearchTrainController {
         }
     }
 
-    // OPTIMIZED: Faster async loading
+    /**
+     * Loads train data asynchronously with performance optimizations.
+     * Uses parallel processing for enhanced speed and responsiveness.
+     */
     private void loadTrainDataAsync() {
         showLoadingState(true);
 
         Task<List<Train>> loadTask = new Task<List<Train>>() {
             @Override
             protected List<Train> call() throws Exception {
-                // REMOVED: Thread.sleep(500) - no artificial delay
-
                 List<Train> trains = trainService.findTrainsBetweenStations(
                         fromStation != null ? fromStation : "Null",
                         toStation != null ? toStation : "Null"
                 );
 
-                // OPTIMIZED: Parallel processing for data calculation
+                // Optimized: Parallel processing for data calculation
                 trains.parallelStream().forEach(train -> calculateConsistentDataForTrain(train));
                 calculateConsistentDistance(trains);
 
@@ -155,7 +282,12 @@ public class SearchTrainController {
         new Thread(loadTask).start();
     }
 
-    // OPTIMIZED: Efficient distance calculation
+    /**
+     * Calculates consistent distance for all trains in a single pass.
+     * Updates cache with consistent distance values.
+     *
+     * @param trains List of trains to process
+     */
     private void calculateConsistentDistance(List<Train> trains) {
         // Find max distance in one pass
         consistentDistance = trains.stream()
@@ -173,6 +305,11 @@ public class SearchTrainController {
         });
     }
 
+    /**
+     * Calculates consistent data for a single train including timing and pricing.
+     *
+     * @param train Train object to process
+     */
     private void calculateConsistentDataForTrain(Train train) {
         try {
             int distance = trainService.getDistanceBetween(train, fromStation, toStation);
@@ -189,6 +326,13 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Calculates consistent pricing for all seat classes with surge pricing.
+     *
+     * @param train Train object for pricing calculation
+     * @param distance Journey distance in kilometers
+     * @return Map of class names to calculated prices
+     */
     private Map<String, Double> calculateConsistentPricingForTrain(Train train, int distance) {
         Map<String, Double> pricing = new HashMap<>();
 
@@ -212,6 +356,15 @@ public class SearchTrainController {
         return pricing;
     }
 
+    // =========================================================================
+    // UI DISPLAY AND MANAGEMENT
+    // =========================================================================
+
+    /**
+     * Controls loading state visibility for user feedback.
+     *
+     * @param show true to show loading state, false to hide
+     */
     private void showLoadingState(boolean show) {
         if (loadingState != null) {
             loadingState.setVisible(show);
@@ -219,7 +372,10 @@ public class SearchTrainController {
         }
     }
 
-    // OPTIMIZED: Batch UI updates
+    /**
+     * Rebuilds train cards with current data and settings.
+     * Optimized for batch processing and efficient UI updates.
+     */
     private void rebuildCards() {
         if (trainsContainer == null) return;
 
@@ -232,17 +388,26 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Clears current display and resets pagination counter.
+     */
     private void clearDisplay() {
         trainsContainer.getChildren().clear();
         displayedTrains = 0;
     }
 
+    /**
+     * Updates results count label with current search results.
+     */
     private void updateResultsCount() {
         if (resultsCountLabel != null) {
             resultsCountLabel.setText("Found " + allTrains.size() + " trains");
         }
     }
 
+    /**
+     * Handles empty state display when no trains are found.
+     */
     private void handleEmptyState() {
         boolean isEmpty = allTrains.isEmpty();
         if (emptyState != null) {
@@ -251,14 +416,16 @@ public class SearchTrainController {
         }
     }
 
-    // OPTIMIZED: Efficient load more with batching
+    /**
+     * Loads next batch of trains with pagination support and batch processing.
+     */
     private void loadMoreTrains() {
         int startIndex = displayedTrains;
         int endIndex = Math.min(displayedTrains + TRAINS_PER_PAGE, allTrains.size());
 
         List<Train> trainsToLoad = allTrains.subList(startIndex, endIndex);
 
-        // OPTIMIZED: Batch UI operations
+        // Optimized: Batch UI operations
         Platform.runLater(() -> {
             List<VBox> cards = trainsToLoad.stream()
                     .map(this::createEnhancedTrainCard)
@@ -276,6 +443,9 @@ public class SearchTrainController {
         });
     }
 
+    /**
+     * Updates load more button state and text based on remaining trains.
+     */
     private void updateLoadMoreButton() {
         boolean hasMore = displayedTrains < allTrains.size();
 
@@ -291,7 +461,16 @@ public class SearchTrainController {
         }
     }
 
-    // OPTIMIZED: Simplified card creation
+    // =========================================================================
+    // TRAIN CARD CREATION
+    // =========================================================================
+
+    /**
+     * Creates comprehensive train card with all relevant information.
+     *
+     * @param train Train object to create card for
+     * @return Complete VBox train card
+     */
     private VBox createEnhancedTrainCard(Train train) {
         VBox card = new VBox();
         card.getStyleClass().add("train-card");
@@ -306,6 +485,12 @@ public class SearchTrainController {
         return card;
     }
 
+    /**
+     * Creates train header section with information and seat availability.
+     *
+     * @param train Train object for header creation
+     * @return HBox containing train header elements
+     */
     private HBox createTrainHeader(Train train) {
         HBox header = new HBox(12);
         header.getStyleClass().add("train-header");
@@ -320,6 +505,12 @@ public class SearchTrainController {
         return header;
     }
 
+    /**
+     * Creates train information section with number, name, and amenities.
+     *
+     * @param train Train object for information display
+     * @return VBox containing train information
+     */
     private VBox createTrainInfoSection(Train train) {
         VBox info = new VBox(4);
 
@@ -335,6 +526,12 @@ public class SearchTrainController {
         return info;
     }
 
+    /**
+     * Creates amenities tags display for train features.
+     *
+     * @param train Train object to get amenities for
+     * @return HBox containing amenity tags
+     */
     private HBox createAmenitiesTags(Train train) {
         HBox tags = new HBox(6);
         tags.setAlignment(Pos.CENTER_LEFT);
@@ -351,6 +548,12 @@ public class SearchTrainController {
         return tags;
     }
 
+    /**
+     * Creates route section showing departure, journey, and arrival information.
+     *
+     * @param train Train object for route display
+     * @return HBox containing route information
+     */
     private HBox createRouteSection(Train train) {
         HBox route = new HBox(40);
         route.getStyleClass().add("route-box");
@@ -366,12 +569,26 @@ public class SearchTrainController {
         return route;
     }
 
+    /**
+     * Creates departure information display.
+     *
+     * @param train Train object
+     * @param data Consistent train data from cache
+     * @return VBox with departure information
+     */
     private VBox createDepartureInfo(Train train, ConsistentTrainData data) {
         String sourceStationName = getStationNameById(train.getSourceStationId());
         String depTime = data != null ? data.departureTime : "06:00";
         return createStationInfo(depTime, sourceStationName);
     }
 
+    /**
+     * Creates journey duration and details information.
+     *
+     * @param train Train object
+     * @param data Consistent train data from cache
+     * @return VBox with journey duration information
+     */
     private VBox createJourneyDurationInfo(Train train, ConsistentTrainData data) {
         if (data != null) {
             int halts = trainService.getHaltsBetween(train, fromStation, toStation);
@@ -385,12 +602,25 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Creates arrival information display.
+     *
+     * @param train Train object
+     * @param data Consistent train data from cache
+     * @return VBox with arrival information
+     */
     private VBox createArrivalInfo(Train train, ConsistentTrainData data) {
         String destStationName = getStationNameById(train.getDestinationStationId());
         String arrTime = data != null ? data.arrivalTime : "18:30";
         return createStationInfo(arrTime, destStationName);
     }
 
+    /**
+     * Creates action section with view details and book now buttons.
+     *
+     * @param train Train object for action handling
+     * @return HBox containing action buttons
+     */
     private HBox createActionSection(Train train) {
         HBox actions = new HBox(12);
         actions.setAlignment(Pos.CENTER_RIGHT);
@@ -408,6 +638,12 @@ public class SearchTrainController {
         return actions;
     }
 
+    /**
+     * Creates seats section showing availability and pricing for all classes.
+     *
+     * @param train Train object for seat information
+     * @return HBox containing seat class information
+     */
     private HBox createSeatsSection(Train train) {
         HBox seats = new HBox(12);
         seats.getStyleClass().add("seats-section");
@@ -435,6 +671,14 @@ public class SearchTrainController {
         return seats;
     }
 
+    /**
+     * Creates seat class box with pricing information.
+     *
+     * @param className Seat class name
+     * @param count Available seat count
+     * @param price Price for the class
+     * @return VBox containing seat class information
+     */
     private VBox createSeatBoxWithPrice(String className, int count, Double price) {
         VBox box = new VBox(4);
         box.getStyleClass().add("seat-class");
@@ -460,6 +704,13 @@ public class SearchTrainController {
         return box;
     }
 
+    /**
+     * Creates seat class box without pricing information.
+     *
+     * @param className Seat class name
+     * @param count Available seat count
+     * @return VBox containing seat class information
+     */
     private VBox createSeatBox(String className, int count) {
         VBox box = new VBox(4);
         box.getStyleClass().add("seat-class");
@@ -482,6 +733,13 @@ public class SearchTrainController {
         return box;
     }
 
+    /**
+     * Creates station information display with time and name.
+     *
+     * @param time Station time (departure/arrival)
+     * @param stationName Name of the station
+     * @return VBox containing station information
+     */
     private VBox createStationInfo(String time, String stationName) {
         VBox info = new VBox(2);
         info.setAlignment(Pos.CENTER);
@@ -496,6 +754,13 @@ public class SearchTrainController {
         return info;
     }
 
+    /**
+     * Creates journey duration information display.
+     *
+     * @param duration Journey duration string
+     * @param details Additional details (halts, distance)
+     * @return VBox containing duration information
+     */
     private VBox createDurationInfo(String duration, String details) {
         VBox info = new VBox(2);
         info.setAlignment(Pos.CENTER);
@@ -510,7 +775,16 @@ public class SearchTrainController {
         return info;
     }
 
-    // OPTIMIZED: Faster animation
+    // =========================================================================
+    // ANIMATION AND VISUAL EFFECTS
+    // =========================================================================
+
+    /**
+     * Animates card entrance with optimized timing for smooth user experience.
+     *
+     * @param card VBox card to animate
+     * @param index Card index for staggered timing
+     */
     private void animateCardEntrance(VBox card, int index) {
         card.setOpacity(0);
         card.setTranslateY(10); // Reduced animation distance
@@ -527,12 +801,26 @@ public class SearchTrainController {
         slide.play();
     }
 
+    // =========================================================================
+    // SORTING AND FILTERING
+    // =========================================================================
+
+    /**
+     * Reloads and re-displays results with new sorting option.
+     *
+     * @param sortOption Selected sorting option from dropdown
+     */
     private void reloadWithSort(String sortOption) {
         if (allTrains.isEmpty()) return;
         applySortingStrategy(sortOption);
         rebuildCards();
     }
 
+    /**
+     * Applies selected sorting strategy to train list.
+     *
+     * @param sortOption Selected sorting option
+     */
     private void applySortingStrategy(String sortOption) {
         switch (sortOption) {
             case "🕐 Departure Time":
@@ -574,12 +862,25 @@ public class SearchTrainController {
         }
     }
 
-    // Event Handlers
+    // =========================================================================
+    // EVENT HANDLERS
+    // =========================================================================
+
+    /**
+     * Handles view details button click for train information.
+     *
+     * @param train Train object to view details for
+     */
     private void handleViewDetails(Train train) {
         TrainDetailsController detailsController = SceneManager.switchScene("/fxml/TrainDetails.fxml");
         detailsController.setTrainDetails(train, journeyDate, fromStation, toStation);
     }
 
+    /**
+     * Handles book now button click with authentication check.
+     *
+     * @param train Train object to book
+     */
     private void handleBookTrain(Train train) {
         if (!sessionManager.isLoggedIn()) {
             sessionManager.setPendingBooking(train.getTrainId(), fromStation, toStation, journeyDate);
@@ -595,22 +896,46 @@ public class SearchTrainController {
         }
     }
 
+    /**
+     * Handles load more button click to show additional results.
+     *
+     * @param event Action event from load more button
+     */
     @FXML
     public void handleLoadMore(ActionEvent event) {
         loadMoreTrains();
     }
 
+    /**
+     * Handles back navigation to main menu.
+     *
+     * @param event Action event from back button
+     */
     @FXML
     public void handleBack(ActionEvent event) {
         SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
+    /**
+     * Handles modify search navigation to main menu.
+     *
+     * @param event Action event from modify search button
+     */
     @FXML
     public void handleModifySearch(ActionEvent event) {
         SceneManager.switchScene("/fxml/MainMenu.fxml");
     }
 
-    // OPTIMIZED: Cached station name lookup
+    // =========================================================================
+    // UTILITY AND HELPER METHODS
+    // =========================================================================
+
+    /**
+     * Retrieves station name by ID with efficient caching.
+     *
+     * @param stationId Station ID to look up
+     * @return Station name or "Unknown Station" if not found
+     */
     private String getStationNameById(int stationId) {
         return stationNameCache.computeIfAbsent(stationId, id -> {
             try {
@@ -622,6 +947,13 @@ public class SearchTrainController {
         });
     }
 
+    /**
+     * Determines if a route is popular for pricing adjustments.
+     *
+     * @param from Source station name
+     * @param to Destination station name
+     * @return true if the route is considered popular
+     */
     private boolean isPopularRoute(String from, String to) {
         if (from == null || to == null) return false;
         String route = from.toLowerCase() + "-" + to.toLowerCase();
@@ -630,6 +962,11 @@ public class SearchTrainController {
                 (route.contains("kolkata") && route.contains("delhi"));
     }
 
+    /**
+     * Displays error messages to the user with proper threading.
+     *
+     * @param message Error message to display
+     */
     private void showError(String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -640,14 +977,39 @@ public class SearchTrainController {
         });
     }
 
-    // Inner class for data storage
+    // =========================================================================
+    // INNER CLASSES
+    // =========================================================================
+
+    /**
+     * Data container for consistent train information across the application.
+     * Stores computed values to avoid recalculation and ensure consistency.
+     */
     private static class ConsistentTrainData {
+        /** Journey distance in kilometers */
         public final int distance;
+
+        /** Departure time as formatted string */
         public final String departureTime;
+
+        /** Arrival time as formatted string */
         public final String arrivalTime;
+
+        /** Journey duration as formatted string */
         public final String duration;
+
+        /** Pricing information for all seat classes */
         public final Map<String, Double> pricing;
 
+        /**
+         * Creates consistent train data container.
+         *
+         * @param distance Journey distance in kilometers
+         * @param departureTime Departure time string
+         * @param arrivalTime Arrival time string
+         * @param duration Journey duration string
+         * @param pricing Map of class names to prices
+         */
         public ConsistentTrainData(int distance, String departureTime, String arrivalTime,
                                    String duration, Map<String, Double> pricing) {
             this.distance = distance;

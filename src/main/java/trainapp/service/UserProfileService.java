@@ -21,7 +21,7 @@ public class UserProfileService {
         String sql = """
                     SELECT 
                         COUNT(*) as total,
-                        SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as completed,
+                        SUM(CASE WHEN status = 'conformed' THEN 1 ELSE 0 END) as completed,
                         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
                         SUM(CASE WHEN status = 'waiting' THEN 1 ELSE 0 END) as pending
                     FROM bookings WHERE user_id = ?
