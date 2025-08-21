@@ -2,11 +2,15 @@ package trainapp.dao;
 
 import trainapp.model.Journey;
 import trainapp.util.DBConnection;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data Access Object (DAO) for train journey management.
@@ -17,12 +21,16 @@ import java.util.List;
  *   <li>Fetch journey by train & date or by ID</li>
  *   <li>Update available seat JSON for a journey</li>
  *   <li>Create new journey records with seats and departure date</li>
+ *   <li>Get available seats map for dynamic pricing integration</li>
  *   <li>Ensures proper resource management via try-with-resources</li>
  * </ul>
  * <p>
  * All operations use prepared statements to prevent SQL injection.
  */
 public class JourneyDAO {
+
+    // Jackson ObjectMapper for JSON parsing
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // -------------------------------------------------------------------------
     // Read Operations
@@ -113,7 +121,8 @@ public class JourneyDAO {
             stmt.setString(1, availableSeatsJson);
             stmt.setLong(2, journeyId);
             int rowsUpdated = stmt.executeUpdate();
-            return rowsUpdated > 0;
+            boolean success = rowsUpdated > 0;
+            return success;
         } catch (SQLException e) {
             System.err.println("Error updating seats: " + e.getMessage());
             e.printStackTrace();
@@ -148,15 +157,94 @@ public class JourneyDAO {
             if (rowsInserted > 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        return generatedKeys.getLong(1);
+                        long journeyId = generatedKeys.getLong(1);
+                        return journeyId;
                     }
                 }
             }
+            System.err.println("JourneyDAO: Failed to create journey for train " + trainId + " on " + departureDate);
             return -1;
         } catch (SQLException e) {
             System.err.println("Error creating journey: " + e.getMessage());
             e.printStackTrace();
             return -1;
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Helper Methods for Seat Availability
+    // -------------------------------------------------------------------------
+
+    /**
+     * Manual JSON parsing fallback for seat availability.
+     * Handles simple JSON format: {"SL":45,"3A":28,"2A":15,"1A":8}
+     *
+     * @param json JSON string to parse
+     * @return Map of class to seat count
+     */
+    private Map<String, Integer> parseSeatsManually(String json) {
+        Map<String, Integer> seatMap = new HashMap<>();
+
+        try {
+            if (json == null || json.trim().isEmpty()) {
+                return getDefaultSeatAvailability();
+            }
+
+            // Remove braces and quotes, split by comma
+            String cleaned = json.replaceAll("[{}\"]", "");
+            String[] pairs = cleaned.split(",");
+
+            for (String pair : pairs) {
+                String[] keyValue = pair.split(":");
+                if (keyValue.length == 2) {
+                    String className = keyValue[0].trim();
+                    try {
+                        int count = Integer.parseInt(keyValue[1].trim());
+                        seatMap.put(className, Math.max(0, count)); // Ensure non-negative
+                    } catch (NumberFormatException e) {
+                        System.err.println("JourneyDAO: Invalid seat count in JSON: " + keyValue[1]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("JourneyDAO: Manual JSON parsing failed: " + e.getMessage());
+            return getDefaultSeatAvailability();
+        }
+
+        return seatMap.isEmpty() ? getDefaultSeatAvailability() : seatMap;
+    }
+
+    /**
+     * Gets default seat availability when no data is found.
+     *
+     * @return Default seat availability map
+     */
+    private Map<String, Integer> getDefaultSeatAvailability() {
+        Map<String, Integer> defaultSeats = new HashMap<>();
+        defaultSeats.put("SL", 45);
+        defaultSeats.put("3A", 28);
+        defaultSeats.put("2A", 15);
+        defaultSeats.put("1A", 8);
+
+        return defaultSeats;
+    }
+
+    /**
+     * Ensures all train classes are present in the seat map with valid values.
+     * Adds missing classes with default values.
+     *
+     * @param seatMap The seat map to validate and complete
+     */
+    private void ensureAllClassesPresent(Map<String, Integer> seatMap) {
+        if (seatMap == null) return;
+
+        // Ensure all standard classes are present
+        seatMap.putIfAbsent("SL", 45);
+        seatMap.putIfAbsent("3A", 28);
+        seatMap.putIfAbsent("2A", 15);
+        seatMap.putIfAbsent("1A", 8);
+
+        // Ensure all values are non-negative
+        seatMap.replaceAll((key, value) -> value == null ? 0 : Math.max(0, value));
     }
 }

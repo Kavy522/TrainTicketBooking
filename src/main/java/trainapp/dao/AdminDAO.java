@@ -86,7 +86,6 @@ public class AdminDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error authenticating admin: " + e.getMessage());
             e.printStackTrace();
         }
 

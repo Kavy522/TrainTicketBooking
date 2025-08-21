@@ -75,7 +75,6 @@ public class SessionManager {
             user.setLastLogin(loginTime);
         }
 
-        System.out.println("User logged in: " + user.getName());
         notifyListeners();
     }
 
@@ -100,7 +99,6 @@ public class SessionManager {
         this.userType = UserType.ADMIN;
         this.loginTime = LocalDateTime.now();
 
-        System.out.println("Admin logged in: " + admin.getUsername());
         notifyListeners();
     }
 
@@ -120,7 +118,6 @@ public class SessionManager {
 
         clearPendingBooking();
 
-        System.out.println("Logged out: " + loggedOutUser);
         notifyListeners();
     }
 
@@ -199,10 +196,6 @@ public class SessionManager {
         this.pendingToStation = toStation;
         this.pendingJourneyDate = journeyDate;
         this.hasPendingBooking = true;
-
-        System.out.println("Pending booking set: Train ID " + trainId +
-                " from " + fromStation + " to " + toStation +
-                " on " + journeyDate);
     }
 
     /**
@@ -214,8 +207,6 @@ public class SessionManager {
         this.pendingFromStation = null;
         this.pendingToStation = null;
         this.pendingJourneyDate = null;
-
-        System.out.println("Pending booking cleared");
     }
 
     /**

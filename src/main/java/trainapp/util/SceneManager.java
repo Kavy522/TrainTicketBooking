@@ -10,7 +10,7 @@ import java.net.URL;
 
 public class SceneManager {
     private static Stage primaryStage;
-    private static boolean debugMode = true; // Set to false in production
+    private static boolean debugMode = false; // Set to false in production
 
     /**
      * Initialize SceneManager with primary stage reference

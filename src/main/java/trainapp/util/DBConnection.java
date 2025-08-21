@@ -15,11 +15,9 @@ public class DBConnection {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(URL, USERNAME, PASSWORD);
         } catch (ClassNotFoundException e) {
-            System.out.println("Exception in DBConnection:");
             e.printStackTrace();
             return null;
         }catch (SQLException e){
-            System.out.println("Exception in DBConnection:");
             e.printStackTrace();
             return null;
         }

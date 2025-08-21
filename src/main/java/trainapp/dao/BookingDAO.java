@@ -250,19 +250,11 @@ public class BookingDAO {
 
             String dbStatus = mapStatusToDbCode(status);
 
-            System.out.println("Updating booking " + bookingId + " status from '" + status + "' to '" + dbStatus + "'");
-
             stmt.setString(1, dbStatus);
             stmt.setLong(2, bookingId);
 
             int rowsUpdated = stmt.executeUpdate();
             boolean success = rowsUpdated > 0;
-
-            if (success) {
-                System.out.println("✅ Successfully updated booking status to: " + dbStatus);
-            } else {
-                System.err.println("❌ No rows updated for booking ID: " + bookingId);
-            }
             return success;
         } catch (SQLException e) {
             System.err.println("❌ Error updating booking status: " + e.getMessage());
@@ -399,22 +391,4 @@ public class BookingDAO {
                 return "waiting";
         }
     }
-
-    /**
-     * Add this method to BookingDAO.java to support amount updates
-     */
-    public boolean updateBookingAmount(long bookingId, double newAmount) {
-        String sql = "UPDATE bookings SET total_fare = ? WHERE booking_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setDouble(1, newAmount);
-            stmt.setLong(2, bookingId);
-            int rowsUpdated = stmt.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating booking amount: " + e.getMessage());
-            return false;
-        }
-    }
-
 }

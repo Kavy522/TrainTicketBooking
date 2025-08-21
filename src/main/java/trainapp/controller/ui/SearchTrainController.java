@@ -72,40 +72,22 @@ public class SearchTrainController {
     // FXML UI COMPONENTS
     // =========================================================================
 
-    /** Label displaying source station name */
     @FXML private Label fromStationLabel;
-
-    /** Label displaying destination station name */
     @FXML private Label toStationLabel;
-
-    /** Label displaying journey date */
     @FXML private Label dateLabel;
-
-    /** Label showing count of search results */
     @FXML private Label resultsCountLabel;
 
-    /** Dropdown for sorting search results */
     @FXML private ComboBox<String> sortCombo;
 
-    /** Toggle button for list view mode */
     @FXML private ToggleButton listViewToggle;
-
-    /** Toggle button for card view mode */
     @FXML private ToggleButton cardViewToggle;
 
-    /** Container for displaying train result cards */
     @FXML private VBox trainsContainer;
-
-    /** Container shown when no results are found */
     @FXML private VBox emptyState;
-
-    /** Container shown during data loading */
     @FXML private VBox loadingState;
 
-    /** Section containing load more functionality */
     @FXML private HBox loadMoreSection;
 
-    /** Button to load additional results */
     @FXML private Button loadMoreButton;
 
     // =========================================================================

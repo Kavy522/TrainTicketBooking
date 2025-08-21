@@ -33,8 +33,6 @@ public class PNRService {
      */
     public PNRStatusResult getPNRStatus(String pnrNumber) {
         try {
-            System.out.println("Checking PNR status for: " + pnrNumber);
-
             Booking booking = getBookingByPNR(pnrNumber);
             if (booking == null) {
                 return PNRStatusResult.notFound("PNR not found. Please check your PNR number and try again.");

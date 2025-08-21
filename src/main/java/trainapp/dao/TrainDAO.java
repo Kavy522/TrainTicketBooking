@@ -82,8 +82,6 @@ public class TrainDAO {
             stmt.setString(1, sourceStationName);
             stmt.setString(2, destStationName);
 
-            System.out.println("Searching trains from: " + sourceStationName + " to: " + destStationName);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Train train = new Train();
@@ -94,8 +92,6 @@ public class TrainDAO {
                     train.setDestinationStationId(rs.getInt("destination_station_id"));
                     train.setTotalCoaches(rs.getInt("total_coaches"));
                     trains.add(train);
-
-                    System.out.println("Found train: " + train.getTrainNumber() + " - " + train.getName());
                 }
             }
         } catch (SQLException e) {
@@ -104,11 +100,9 @@ public class TrainDAO {
         }
 
         if (trains.isEmpty()) {
-            System.out.println("No trains found with route matching. Getting all trains for testing...");
             trains = getAllTrains();
         }
 
-        System.out.println("Total trains found: " + trains.size());
         return trains;
     }
 
@@ -494,12 +488,10 @@ public class TrainDAO {
                 }
 
                 if (journeyCount > 0) {
-                    System.out.println("Deleting " + journeyCount + " dependent journeys before removing train");
                     String deleteJourneysQuery = "DELETE FROM journeys WHERE train_id = ?";
                     try (PreparedStatement deleteJourneysStmt = conn.prepareStatement(deleteJourneysQuery)) {
                         deleteJourneysStmt.setInt(1, trainId);
                         int deletedJourneys = deleteJourneysStmt.executeUpdate();
-                        System.out.println("Successfully deleted " + deletedJourneys + " dependent journeys");
                     }
                 }
 
@@ -508,9 +500,6 @@ public class TrainDAO {
                 try (PreparedStatement deleteScheduleStmt = conn.prepareStatement(deleteScheduleQuery)) {
                     deleteScheduleStmt.setInt(1, trainId);
                     int deletedSchedules = deleteScheduleStmt.executeUpdate();
-                    if (deletedSchedules > 0) {
-                        System.out.println("Deleted " + deletedSchedules + " train schedule entries");
-                    }
                 }
 
                 // Finally, delete the train
@@ -521,7 +510,6 @@ public class TrainDAO {
 
                     if (rowsAffected > 0) {
                         conn.commit();
-                        System.out.println("Successfully deleted train with ID: " + trainId);
                         return true;
                     } else {
                         conn.rollback();
@@ -567,7 +555,6 @@ public class TrainDAO {
             int rowsAffected = stmt.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Successfully deleted journey entry with schedule ID: " + scheduleId);
                 return true;
             } else {
                 System.err.println("No journey found with schedule ID: " + scheduleId);

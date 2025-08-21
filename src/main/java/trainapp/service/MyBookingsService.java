@@ -34,8 +34,6 @@ public class MyBookingsService {
      */
     public MyBookingsResult getAllBookings(int userId) {
         try {
-            System.out.println("Loading all bookings for user: " + userId);
-
             List<Booking> bookings = bookingDAO.getBookingsByUserId(userId);
             if (bookings.isEmpty()) {
                 return MyBookingsResult.noBookings("No bookings found. Book your first train journey!");

@@ -109,8 +109,6 @@ public class TrainScheduleDAO {
 
                     if (success) {
                         conn.commit();
-                        System.out.println("Successfully added station at sequence " + schedule.getSequenceOrder() +
-                                " and shifted down existing stations");
                         return true;
                     } else {
                         conn.rollback();
@@ -248,7 +246,6 @@ public class TrainScheduleDAO {
             int rowsUpdated = stmt.executeUpdate();
 
             if (rowsUpdated > 0) {
-                System.out.println("Successfully updated route entry with schedule ID: " + schedule.getScheduleId());
                 return true;
             } else {
                 System.err.println("No route entry found with schedule ID: " + schedule.getScheduleId());
@@ -289,7 +286,6 @@ public class TrainScheduleDAO {
             stmt.setInt(2, targetSequence);
 
             int shiftedRows = stmt.executeUpdate();
-            System.out.println("Shifted " + shiftedRows + " stations down by 1 sequence position");
         }
     }
 

@@ -233,7 +233,6 @@ public class OtpDAO {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
             int deleted = stmt.executeUpdate();
-            System.out.println("Cleaned up " + deleted + " expired OTP records");
         } catch (SQLException e) {
             System.err.println("Error cleaning up expired OTPs: " + e.getMessage());
             e.printStackTrace();
