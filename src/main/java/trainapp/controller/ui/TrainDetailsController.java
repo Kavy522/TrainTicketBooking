@@ -20,6 +20,7 @@ import trainapp.service.AdminDataStructureService;
 import trainapp.util.SceneManager;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -508,10 +509,27 @@ public class TrainDetailsController {
     private ObservableList<ScheduleItem> processTrainSchedule(List<TrainSchedule> schedule) {
         ObservableList<ScheduleItem> scheduleItems = FXCollections.observableArrayList();
         int day = 1;
+        LocalTime previousTime = null;
 
         for (TrainSchedule stop : schedule) {
             Station station = stationDAO.getStationById(stop.getStationId());
             String stationName = station != null ? station.getName() : "Unknown";
+
+            // Get the relevant time for day calculation (departure time, or arrival if no departure)
+            LocalTime currentTime = stop.getDepartureTime() != null ?
+                    stop.getDepartureTime() : stop.getArrivalTime();
+
+            // Check for day transition: if current time is significantly earlier than previous time,
+            // it likely indicates we've moved to the next day
+            if (previousTime != null && currentTime != null) {
+                // If current time is before 6 AM and previous time was after 18:00 (6 PM),
+                // or if there's a significant backward time jump, increment day
+                if ((currentTime.getHour() < 6 && previousTime.getHour() >= 18) ||
+                        (currentTime.isBefore(previousTime) &&
+                                java.time.Duration.between(currentTime, previousTime).toHours() > 12)) {
+                    day++;
+                }
+            }
 
             ScheduleItem item = new ScheduleItem(
                     stationName,
@@ -522,9 +540,9 @@ public class TrainDetailsController {
             );
             scheduleItems.add(item);
 
-            // Increment day if departure is early morning (next day)
-            if (stop.getDepartureTime() != null && stop.getDepartureTime().getHour() < 6) {
-                day++;
+            // Update previous time for next iteration
+            if (currentTime != null) {
+                previousTime = currentTime;
             }
         }
 
