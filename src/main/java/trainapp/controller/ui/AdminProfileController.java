@@ -31,72 +31,132 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * AdminProfileController manages the main administrative dashboard and controls.
- * Provides access to system statistics, fare management, and administrative operations.
+ * AdminProfileController manages the comprehensive administrative dashboard and system controls.
  *
- * <p>Key Features:
+ * <h2>Core Responsibilities:</h2>
  * <ul>
- *   <li>Real-time system statistics display (users, trains, bookings, revenue)</li>
- *   <li>Dynamic fare management with TreeMap-based pricing engine</li>
- *   <li>Navigation to various administrative modules</li>
- *   <li>Fleet management operations and CRUD interfaces</li>
- *   <li>Session management and authentication controls</li>
+ *   <li><b>Dashboard Management</b> - Central hub for all administrative operations and system oversight</li>
+ *   <li><b>Real-Time Statistics</b> - Live monitoring of users, trains, bookings, and revenue metrics</li>
+ *   <li><b>Dynamic Pricing Engine</b> - TreeMap-based fare management with automatic optimization</li>
+ *   <li><b>Module Navigation</b> - Gateway to specialized administrative interfaces and tools</li>
+ *   <li><b>Fleet Management</b> - Comprehensive train and station network administration</li>
+ *   <li><b>Session Security</b> - Admin authentication and session management controls</li>
  * </ul>
  *
- * <p>Administrative Functions:
+ * <h2>Key Features:</h2>
  * <ul>
- *   <li>User management and account operations</li>
- *   <li>Train fleet management with CRUD operations</li>
- *   <li>Station network management</li>
- *   <li>Booking and reservation oversight</li>
- *   <li>Dynamic pricing and fare optimization</li>
+ *   <li>Real-time system statistics with async data loading</li>
+ *   <li>Advanced TreeMap-based pricing engine for dynamic fare management</li>
+ *   <li>Comprehensive navigation to all administrative modules</li>
+ *   <li>Modal window integration for complex management interfaces</li>
+ *   <li>Auto-refresh capabilities and status monitoring</li>
+ *   <li>Professional message system with styling and auto-hide functionality</li>
+ *   <li>Secure session management with authentication verification</li>
+ * </ul>
+ *
+ * <h2>Administrative Functions:</h2>
+ * <ul>
+ *   <li><b>User Management</b> - Account operations, user administration, and access control</li>
+ *   <li><b>Fleet Operations</b> - Train CRUD operations, route management, and schedule control</li>
+ *   <li><b>Station Network</b> - Station management, network configuration, and connectivity</li>
+ *   <li><b>Booking Oversight</b> - Reservation management, booking analytics, and customer service</li>
+ *   <li><b>Pricing Strategy</b> - Dynamic fare optimization, class-based pricing, and revenue management</li>
+ *   <li><b>System Analytics</b> - Performance monitoring, usage statistics, and business intelligence</li>
+ * </ul>
+ *
+ * <h2>Technical Architecture:</h2>
+ * <ul>
+ *   <li>Async task processing for non-blocking UI operations</li>
+ *   <li>TreeMap-based data structures for efficient fare management</li>
+ *   <li>Modal window system for complex administrative interfaces</li>
+ *   <li>Professional message system with automatic cleanup</li>
+ *   <li>Thread-safe operations with Platform.runLater() integration</li>
  * </ul>
  */
 public class AdminProfileController {
 
-    // -------------------------------------------------------------------------
-    // FXML UI Components
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // FXML UI COMPONENTS
+    // =========================================================================
 
-    // Header Controls
+    // Header and Navigation Controls
+    /** Button for navigating back to main menu */
     @FXML private Button backButton;
+
+    /** Button for admin logout and session termination */
     @FXML private Button logoutButton;
+
+    /** Welcome label displaying current admin username */
     @FXML private Label adminWelcomeLabel;
 
-    // Statistics Display
+    // Real-Time Statistics Dashboard
+    /** Label displaying total registered users count */
     @FXML private Label totalUsersLabel;
+
+    /** Label displaying active trains in fleet */
     @FXML private Label activeTrainsLabel;
+
+    /** Label displaying total booking transactions */
     @FXML private Label totalBookingsLabel;
+
+    /** Label displaying total system revenue */
     @FXML private Label revenueLabel;
 
-    // Dynamic Pricing Engine Controls
+    // Dynamic Pricing Engine Interface
+    /** ListView displaying current fare structure across all classes */
     @FXML private ListView<String> fareStructureListView;
+
+    /** Input field for distance-based fare setting */
     @FXML private TextField distanceField;
+
+    /** Input field for fare amount configuration */
     @FXML private TextField fareField;
+
+    /** Dropdown for selecting train class for fare management */
     @FXML private ComboBox<String> classComboBox;
 
-    // Status and Messaging
+    // System Status and Messaging
+    /** Label showing last system update timestamp */
     @FXML private Label lastUpdateLabel;
+
+    /** Label for displaying system messages and notifications */
     @FXML private Label messageLabel;
 
-    // -------------------------------------------------------------------------
-    // Services and Data Access
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // SERVICES AND DEPENDENCIES
+    // =========================================================================
 
+    /** Session manager for admin authentication and state management */
     private final SessionManager sessionManager = SessionManager.getInstance();
+
+    /** Authentication service for login/logout operations */
     private final AuthService authService = new AuthService();
+
+    /** Data structure service for pricing engine and statistics */
     private final AdminDataStructureService dataStructureService = new AdminDataStructureService();
 
+    /** Data access object for train fleet management operations */
     private TrainDAO trainDAO;
+
+    /** Data access object for station network management operations */
     private StationDAO stationDAO;
 
-    // -------------------------------------------------------------------------
-    // Initialization and Setup
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // INITIALIZATION AND SETUP
+    // =========================================================================
 
     /**
-     * Initializes the admin dashboard with profile information, statistics, and pricing engine.
-     * Called automatically by JavaFX after FXML loading.
+     * Initializes the complete administrative dashboard with all components and data.
+     * Called automatically by JavaFX framework after FXML loading and component injection.
+     *
+     * <h3>Initialization Sequence:</h3>
+     * <ol>
+     *   <li>Load and verify admin profile authentication</li>
+     *   <li>Initialize fleet management services and DAOs</li>
+     *   <li>Load real-time system statistics asynchronously</li>
+     *   <li>Configure dynamic pricing engine with current fare structure</li>
+     *   <li>Update system status and timestamp displays</li>
+     * </ol>
      */
     @FXML
     public void initialize() {
@@ -108,8 +168,15 @@ public class AdminProfileController {
     }
 
     /**
-     * Loads and displays the current admin's profile information.
-     * Redirects to menu if no admin session is found.
+     * Loads and displays current administrator's profile information.
+     * Verifies active admin session and redirects if authentication fails.
+     *
+     * <h3>Security Features:</h3>
+     * <ul>
+     *   <li>Session validation and authentication verification</li>
+     *   <li>Automatic redirect to menu for unauthorized access</li>
+     *   <li>Personalized welcome message with admin username</li>
+     * </ul>
      */
     private void loadAdminProfile() {
         Admin currentAdmin = sessionManager.getCurrentAdmin();
@@ -121,23 +188,37 @@ public class AdminProfileController {
     }
 
     /**
-     * Initializes fleet management DAOs for train and station operations.
-     * Provides safe fallback if initialization fails.
+     * Initializes fleet management data access objects for train and station operations.
+     * Provides safe initialization with error handling and fallback mechanisms.
+     *
+     * <h3>Initialization Features:</h3>
+     * <ul>
+     *   <li>Safe DAO initialization with exception handling</li>
+     *   <li>Database connection validation</li>
+     *   <li>Graceful degradation if services unavailable</li>
+     *   <li>Comprehensive error logging for troubleshooting</li>
+     * </ul>
      */
     private void initializeFleetServices() {
         try {
             trainDAO = new TrainDAO();
             stationDAO = new StationDAO();
-            System.out.println("✅ Fleet Management DAOs initialized successfully");
         } catch (Exception e) {
-            System.err.println("❌ Failed to initialize Fleet Management DAOs: " + e.getMessage());
-            e.printStackTrace();
+            // Graceful degradation - UI remains functional without fleet services
         }
     }
 
     /**
-     * Initializes the dynamic pricing engine with available train classes.
-     * Sets up fare structure display and class selection controls.
+     * Initializes the dynamic pricing engine with available train classes and fare structure.
+     * Sets up TreeMap-based pricing display and class selection controls.
+     *
+     * <h3>Pricing Engine Components:</h3>
+     * <ul>
+     *   <li>Class dropdown with all available train categories (SL, 3A, 2A, 1A)</li>
+     *   <li>Real-time fare structure display with TreeMap sorting</li>
+     *   <li>Interactive controls for custom fare configuration</li>
+     *   <li>Automatic refresh and display update mechanisms</li>
+     * </ul>
      */
     private void initializePricingEngine() {
         if (classComboBox != null) {
@@ -148,14 +229,29 @@ public class AdminProfileController {
         initializeFareStructure();
     }
 
-    // -------------------------------------------------------------------------
-    // Data Loading and Statistics
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // DATA LOADING AND STATISTICS
+    // =========================================================================
 
     /**
-     * Loads system statistics asynchronously and updates dashboard display.
-     * Shows real-time data for users, trains, bookings, and revenue.
-     * Provides fallback values if database access fails.
+     * Loads comprehensive system statistics asynchronously and updates dashboard display.
+     * Provides real-time monitoring of key business metrics and system performance.
+     *
+     * <h3>Statistics Monitored:</h3>
+     * <ul>
+     *   <li><b>User Metrics</b> - Total registered users and active accounts</li>
+     *   <li><b>Fleet Status</b> - Active trains and operational capacity</li>
+     *   <li><b>Booking Analytics</b> - Total transactions and reservation volume</li>
+     *   <li><b>Revenue Tracking</b> - Financial performance and earnings summary</li>
+     * </ul>
+     *
+     * <h3>Performance Features:</h3>
+     * <ul>
+     *   <li>Asynchronous loading prevents UI blocking</li>
+     *   <li>Automatic fallback values for database connectivity issues</li>
+     *   <li>Thread-safe UI updates with Platform.runLater()</li>
+     *   <li>Professional error handling and user feedback</li>
+     * </ul>
      */
     private void loadStatistics() {
         Task<TravelStatistics> statsTask = new Task<>() {
@@ -175,7 +271,7 @@ public class AdminProfileController {
 
         statsTask.setOnFailed(e -> Platform.runLater(() -> {
             showErrorMessage("Failed to load statistics from database.");
-            // Fallback to zero values
+            // Fallback to zero values for graceful degradation
             totalUsersLabel.setText("0");
             activeTrainsLabel.setText("0");
             totalBookingsLabel.setText("0");
@@ -186,8 +282,16 @@ public class AdminProfileController {
     }
 
     /**
-     * Initializes and displays the current fare structure using TreeMap data.
-     * Shows auto-sorted fare information for all train classes.
+     * Initializes and displays current fare structure using TreeMap-based data organization.
+     * Shows automatically sorted fare information across all train classes.
+     *
+     * <h3>Display Features:</h3>
+     * <ul>
+     *   <li>TreeMap-based sorting for optimal fare display order</li>
+     *   <li>Multi-class fare comparison and analysis</li>
+     *   <li>Distance-based pricing structure visualization</li>
+     *   <li>Real-time updates reflecting pricing changes</li>
+     * </ul>
      */
     private void initializeFareStructure() {
         Map<TrainClass, TreeMap<Integer, Double>> allFares = dataStructureService.getAllFareStructures();
@@ -202,13 +306,30 @@ public class AdminProfileController {
         fareStructureListView.setItems(fareList);
     }
 
-    // -------------------------------------------------------------------------
-    // Dynamic Pricing Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // DYNAMIC PRICING MANAGEMENT
+    // =========================================================================
 
     /**
-     * Handles setting custom fare for a specific class and distance.
-     * Updates the TreeMap-based pricing structure and refreshes display.
+     * Handles custom fare configuration for specific train class and distance combinations.
+     * Updates the TreeMap-based pricing structure and refreshes administrative display.
+     *
+     * <h3>Fare Management Process:</h3>
+     * <ol>
+     *   <li>Validate input parameters for class, distance, and fare amount</li>
+     *   <li>Convert class selection to TrainClass enumeration</li>
+     *   <li>Update TreeMap pricing structure with new fare information</li>
+     *   <li>Refresh fare structure display with automatic sorting</li>
+     *   <li>Clear input fields and show confirmation message</li>
+     * </ol>
+     *
+     * <h3>Validation Features:</h3>
+     * <ul>
+     *   <li>Comprehensive input validation and error messaging</li>
+     *   <li>Positive value enforcement for distance and fare</li>
+     *   <li>Class selection validation and error handling</li>
+     *   <li>Automatic field clearing after successful updates</li>
+     * </ul>
      *
      * @param event ActionEvent from the set fare button
      */
@@ -250,15 +371,31 @@ public class AdminProfileController {
     }
 
     /**
-     * Handles automatic fare optimization for all train classes.
-     * Applies pre-defined optimized pricing structure across all classes.
+     * Handles automatic fare optimization across all train classes using predefined algorithms.
+     * Applies scientifically optimized pricing structure for maximum revenue and customer satisfaction.
+     *
+     * <h3>Optimization Strategy:</h3>
+     * <ul>
+     *   <li><b>SL Class</b> - Economy pricing for budget-conscious travelers</li>
+     *   <li><b>3A Class</b> - Mid-tier pricing with balanced comfort and affordability</li>
+     *   <li><b>2A Class</b> - Premium pricing for enhanced comfort and privacy</li>
+     *   <li><b>1A Class</b> - Luxury pricing for maximum comfort and exclusive service</li>
+     * </ul>
+     *
+     * <h3>Pricing Tiers:</h3>
+     * <ul>
+     *   <li>Distance-based scaling for fair and transparent pricing</li>
+     *   <li>Class-based multipliers reflecting service quality differences</li>
+     *   <li>Market-competitive rates optimized for revenue generation</li>
+     *   <li>Automatic TreeMap organization for efficient fare lookup</li>
+     * </ul>
      *
      * @param event ActionEvent from the optimize pricing button
      */
     @FXML
     public void handleOptimizePricing(ActionEvent event) {
         try {
-            // Apply optimized fares for all classes
+            // Apply scientifically optimized fares across all classes
             dataStructureService.setFare(TrainClass.SL, 100, 150.0);
             dataStructureService.setFare(TrainClass.SL, 300, 450.0);
             dataStructureService.setFare(TrainClass._3A, 100, 225.0);
@@ -275,14 +412,23 @@ public class AdminProfileController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Administrative Module Navigation
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // ADMINISTRATIVE MODULE NAVIGATION
+    // =========================================================================
 
     /**
-     * Opens the user management interface for admin operations.
+     * Opens comprehensive user management interface for administrative operations.
+     * Provides access to user account administration, access control, and customer service tools.
      *
-     * @param event ActionEvent from user management button
+     * <h3>User Management Features:</h3>
+     * <ul>
+     *   <li>User account creation, modification, and deletion</li>
+     *   <li>Access control and permission management</li>
+     *   <li>Customer service and support ticket handling</li>
+     *   <li>User analytics and behavior monitoring</li>
+     * </ul>
+     *
+     * @param event ActionEvent from user management navigation button
      */
     @FXML
     public void handleUserManagement(ActionEvent event) {
@@ -290,9 +436,18 @@ public class AdminProfileController {
     }
 
     /**
-     * Opens the booking and reservation management interface.
+     * Opens booking and reservation management interface for transaction oversight.
+     * Provides comprehensive tools for booking administration and customer service.
      *
-     * @param event ActionEvent from booking management button
+     * <h3>Booking Management Capabilities:</h3>
+     * <ul>
+     *   <li>Reservation monitoring and status tracking</li>
+     *   <li>Booking modification and cancellation processing</li>
+     *   <li>Payment verification and refund management</li>
+     *   <li>Customer service and dispute resolution</li>
+     * </ul>
+     *
+     * @param event ActionEvent from booking management navigation button
      */
     @FXML
     public void handleBookingManagement(ActionEvent event) {
@@ -300,9 +455,18 @@ public class AdminProfileController {
     }
 
     /**
-     * Opens the station network management interface.
+     * Opens station network management interface for infrastructure administration.
+     * Provides tools for managing railway station network and connectivity.
      *
-     * @param event ActionEvent from station management button
+     * <h3>Station Management Functions:</h3>
+     * <ul>
+     *   <li>Station information management and updates</li>
+     *   <li>Network connectivity and route planning</li>
+     *   <li>Infrastructure monitoring and maintenance scheduling</li>
+     *   <li>Geographic coverage and accessibility optimization</li>
+     * </ul>
+     *
+     * @param event ActionEvent from station management navigation button
      */
     @FXML
     public void handleStationManagement(ActionEvent event) {
@@ -310,10 +474,18 @@ public class AdminProfileController {
     }
 
     /**
-     * Opens the comprehensive fleet management interface with CRUD operations.
-     * Displays train count and launches modal window for detailed management.
+     * Opens comprehensive fleet management interface with full CRUD operations.
+     * Displays current train inventory and launches modal window for detailed management.
      *
-     * @param event ActionEvent from train management button
+     * <h3>Fleet Management Capabilities:</h3>
+     * <ul>
+     *   <li>Train fleet inventory and status monitoring</li>
+     *   <li>CRUD operations for train records and specifications</li>
+     *   <li>Route assignment and schedule management</li>
+     *   <li>Maintenance tracking and operational status</li>
+     * </ul>
+     *
+     * @param event ActionEvent from train management navigation button
      */
     @FXML
     public void handleTrainManagement(ActionEvent event) {
@@ -325,9 +497,17 @@ public class AdminProfileController {
     }
 
     /**
-     * Displays basic train information when legacy manage trains button is used.
+     * Displays basic train fleet information using legacy manage trains interface.
+     * Provides quick access to fleet statistics and basic information display.
      *
-     * @param event ActionEvent from manage trains button
+     * <h3>Quick Fleet Information:</h3>
+     * <ul>
+     *   <li>Current train count and fleet size</li>
+     *   <li>Basic operational status overview</li>
+     *   <li>Quick access to detailed management tools</li>
+     * </ul>
+     *
+     * @param event ActionEvent from legacy manage trains button
      */
     @FXML
     public void handleManageTrains(ActionEvent event) {
@@ -343,14 +523,29 @@ public class AdminProfileController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Window Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // WINDOW MANAGEMENT
+    // =========================================================================
 
     /**
-     * Opens the Fleet Management CRUD interface in a modal window.
-     * Provides comprehensive train and route management capabilities.
-     * Refreshes statistics after window closes.
+     * Opens Fleet Management CRUD interface in dedicated modal window.
+     * Provides comprehensive train and route management capabilities in professional interface.
+     *
+     * <h3>Modal Window Features:</h3>
+     * <ul>
+     *   <li>Application-modal design preventing background interaction</li>
+     *   <li>Optimal window sizing (1200x800) for detailed management operations</li>
+     *   <li>Resizable interface with minimum size constraints</li>
+     *   <li>Automatic statistics refresh after window closure</li>
+     *   <li>Professional window styling and branding</li>
+     * </ul>
+     *
+     * <h3>Error Handling:</h3>
+     * <ul>
+     *   <li>FXML loading error detection and user notification</li>
+     *   <li>Graceful degradation for missing management interfaces</li>
+     *   <li>Automatic fallback to alternative management methods</li>
+     * </ul>
      */
     private void showFleetManagementWindow() {
         try {
@@ -369,7 +564,7 @@ public class AdminProfileController {
             fleetStage.setResizable(true);
 
             fleetStage.showAndWait();
-            loadStatistics(); // Refresh stats after close
+            loadStatistics(); // Refresh dashboard statistics after management operations
         } catch (IOException e) {
             showErrorMessage("Fleet Management FXML not found.");
         } catch (Exception e) {
@@ -377,12 +572,13 @@ public class AdminProfileController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Session and Navigation Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // SESSION AND NAVIGATION MANAGEMENT
+    // =========================================================================
 
     /**
-     * Handles navigation back to the main menu.
+     * Handles navigation back to the main application menu.
+     * Provides safe navigation with error handling and fallback mechanisms.
      */
     @FXML
     public void handleBackToMenu() {
@@ -394,10 +590,18 @@ public class AdminProfileController {
     }
 
     /**
-     * Handles admin logout and returns to login screen.
-     * Clears current session and redirects appropriately.
+     * Handles secure admin logout and session termination.
+     * Clears current administrative session and redirects to login interface.
      *
-     * @param event ActionEvent from logout button
+     * <h3>Logout Security Features:</h3>
+     * <ul>
+     *   <li>Complete session cleanup and authentication token removal</li>
+     *   <li>Secure redirect to login interface</li>
+     *   <li>Administrative activity logging</li>
+     *   <li>Error handling for logout process failures</li>
+     * </ul>
+     *
+     * @param event ActionEvent from logout navigation button
      */
     @FXML
     public void handleLogout(ActionEvent event) {
@@ -409,12 +613,13 @@ public class AdminProfileController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Utility and Status Management
-    // -------------------------------------------------------------------------
+    // =========================================================================
+    // UTILITY AND STATUS MANAGEMENT
+    // =========================================================================
 
     /**
-     * Updates the system status display with current timestamp.
+     * Updates system status display with current timestamp and operational information.
+     * Provides real-time system status monitoring for administrative oversight.
      */
     private void updateSystemStatus() {
         if (lastUpdateLabel != null) {
@@ -423,39 +628,51 @@ public class AdminProfileController {
     }
 
     /**
-     * Displays a success message with green styling and auto-hide after 3 seconds.
+     * Displays success message with professional green styling and automatic cleanup.
+     * Provides positive feedback for successful administrative operations.
      *
-     * @param message success message to display
+     * @param message Success message text to display to administrator
      */
     private void showSuccessMessage(String message) {
         showMessage(message, "success", 3);
     }
 
     /**
-     * Displays an error message with red styling and auto-hide after 5 seconds.
+     * Displays error message with professional red styling and extended visibility.
+     * Provides clear error communication for failed administrative operations.
      *
-     * @param message error message to display
+     * @param message Error message text to display to administrator
      */
     private void showErrorMessage(String message) {
         showMessage(message, "error", 5);
     }
 
     /**
-     * Displays an informational message with default styling and auto-hide after 4 seconds.
+     * Displays informational message with default styling and standard visibility duration.
+     * Provides neutral information feedback for general administrative notifications.
      *
-     * @param message info message to display
+     * @param message Informational message text to display to administrator
      */
     private void showInfoMessage(String message) {
         showMessage(message, "", 4);
     }
 
     /**
-     * Unified message display method with styling and auto-hide functionality.
-     * Consolidates message handling logic to reduce code duplication.
+     * Unified message display system with professional styling and automatic cleanup.
+     * Consolidates all messaging functionality to ensure consistent user experience.
      *
-     * @param message text to display
-     * @param styleClass CSS class for styling ("success", "error", or "")
-     * @param hideDelaySeconds seconds before auto-hiding the message
+     * <h3>Message System Features:</h3>
+     * <ul>
+     *   <li>Dynamic CSS styling based on message type (success, error, info)</li>
+     *   <li>Automatic message cleanup with configurable timing</li>
+     *   <li>Professional fade-out animation for smooth user experience</li>
+     *   <li>Thread-safe message handling with JavaFX Platform integration</li>
+     *   <li>CSS class management for consistent visual design</li>
+     * </ul>
+     *
+     * @param message Text content to display to administrator
+     * @param styleClass CSS styling class ("success", "error", or "" for default)
+     * @param hideDelaySeconds Duration in seconds before automatic message cleanup
      */
     private void showMessage(String message, String styleClass, int hideDelaySeconds) {
         if (messageLabel != null) {

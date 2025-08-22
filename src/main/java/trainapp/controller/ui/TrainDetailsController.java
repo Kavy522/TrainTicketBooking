@@ -834,6 +834,26 @@ public class TrainDetailsController {
             this.haltTime = haltTime;
             this.day = day;
         }
+
+        public String getDay() {
+            return day;
+        }
+
+        public String getStationName() {
+            return stationName;
+        }
+
+        public String getArrivalTime() {
+            return arrivalTime;
+        }
+
+        public String getDepartureTime() {
+            return departureTime;
+        }
+
+        public String getHaltTime() {
+            return haltTime;
+        }
     }
 
     /**
