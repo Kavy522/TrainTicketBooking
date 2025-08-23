@@ -929,7 +929,7 @@ public class PaymentController {
      * @param result Payment result containing payment ID and signature
      */
     private void handleSuccessfulPayment(PaymentResult result) {
-        showLoadingOverlay(true, "Confirming booking...");
+        showLoadingOverlay(true, "Conforming booking...");
 
         PaymentSuccessRequest paymentRequest = createPaymentSuccessRequest(result);
         processBookingConfirmation(paymentRequest);

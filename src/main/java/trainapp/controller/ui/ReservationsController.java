@@ -351,7 +351,7 @@ public class ReservationsController {
      * Configures status filter combo box with available booking statuses.
      */
     private void configureStatusFilter() {
-        statusFilterCombo.getItems().addAll("All Status", "waiting", "confirmed", "cancelled");
+        statusFilterCombo.getItems().addAll("All Status", "waiting", "conformed", "cancelled");
         statusFilterCombo.setValue("All Status");
     }
 
@@ -466,12 +466,12 @@ public class ReservationsController {
      */
     private BookingStatistics calculateBookingStatistics() {
         int total = allBookings.size();
-        long confirmed = allBookings.stream().filter(b -> "confirmed".equals(b.getStatus())).count();
+        long confirmed = allBookings.stream().filter(b -> "conformed".equals(b.getStatus())).count();
         long pending = allBookings.stream().filter(b -> "waiting".equals(b.getStatus())).count();
         long cancelled = allBookings.stream().filter(b -> "cancelled".equals(b.getStatus())).count();
 
         double totalRevenue = allBookings.stream()
-                .filter(b -> "confirmed".equals(b.getStatus()))
+                .filter(b -> "conformed".equals(b.getStatus()))
                 .mapToDouble(Booking::getTotalFare)
                 .sum();
 
@@ -626,7 +626,7 @@ public class ReservationsController {
         dialog.setHeaderText("Update status for PNR: " + booking.getPnr());
 
         ComboBox<String> statusCombo = new ComboBox<>();
-        statusCombo.getItems().addAll("waiting", "confirmed", "cancelled");
+        statusCombo.getItems().addAll("waiting", "conformed", "cancelled");
         statusCombo.setValue(booking.getStatus());
 
         dialog.getDialogPane().setContent(statusCombo);
@@ -751,16 +751,16 @@ public class ReservationsController {
         report.append("=== RESERVATIONS REPORT ===\n\n");
         report.append("Total Reservations: ").append(filteredBookings.size()).append("\n");
 
-        long confirmed = filteredBookings.stream().filter(b -> "confirmed".equals(b.getStatus())).count();
+        long confirmed = filteredBookings.stream().filter(b -> "conformed".equals(b.getStatus())).count();
         long pending = filteredBookings.stream().filter(b -> "waiting".equals(b.getStatus())).count();
         long cancelled = filteredBookings.stream().filter(b -> "cancelled".equals(b.getStatus())).count();
 
-        report.append("Confirmed: ").append(confirmed).append("\n");
+        report.append("Conformed: ").append(confirmed).append("\n");
         report.append("Waiting: ").append(pending).append("\n");
         report.append("Cancelled: ").append(cancelled).append("\n\n");
 
         double totalRevenue = filteredBookings.stream()
-                .filter(b -> "confirmed".equals(b.getStatus()))
+                .filter(b -> "conformed".equals(b.getStatus()))
                 .mapToDouble(Booking::getTotalFare)
                 .sum();
 

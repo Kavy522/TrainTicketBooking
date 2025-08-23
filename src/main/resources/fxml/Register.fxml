@@ -70,8 +70,8 @@
 
                         <!-- Name Field -->
                         <VBox spacing="6" styleClass="field-group">
-                            <Label styleClass="field-label" text="Full Name" />
-                            <TextField fx:id="nameField" promptText="Enter your full name" styleClass="register-input" />
+                            <Label styleClass="field-label" text="UserName" />
+                            <TextField fx:id="nameField" promptText="Enter your UserName" styleClass="register-input" />
                             <Label fx:id="nameError" managed="false" styleClass="inline-error" visible="false" />
                         </VBox>
 
@@ -104,7 +104,7 @@
                         </VBox>
 
                         <!-- Register Button -->
-                        <Region minHeight="3"/>
+                        <Region minHeight="3" />
 
                         <HBox alignment="CENTER">
                             <Button fx:id="registerButton" onAction="#handleRegister" styleClass="register-button" text="Create Account" />

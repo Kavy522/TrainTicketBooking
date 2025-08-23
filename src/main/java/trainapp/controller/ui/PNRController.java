@@ -66,6 +66,8 @@ public class PNRController {
     @FXML private VBox passengerListContainer;
     @FXML private Label passengerCountLabel;
 
+    @FXML private Button CancleButton;
+
     // -------------------------------------------------------------------------
     // Services and Data Management
     // -------------------------------------------------------------------------
@@ -185,6 +187,10 @@ public class PNRController {
         bookingStatusLabel.setText(status);
         bookingStatusLabel.getStyleClass().removeAll("status-confirmed", "status-pending", "status-cancelled");
         bookingStatusLabel.getStyleClass().add(pnrService.getStatusColorClass(status));
+
+        if (CancleButton != null) {
+            CancleButton.setDisable("CANCELLED".equalsIgnoreCase(pnrInfo.getBooking().getStatus()));
+        }
 
         // Train and route/journey
         trainDetailsLabel.setText(pnrInfo.getTrainDetails());

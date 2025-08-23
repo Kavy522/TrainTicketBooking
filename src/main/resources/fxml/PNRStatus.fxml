@@ -127,7 +127,7 @@
                     <!-- Action Buttons -->
                     <HBox spacing="15" alignment="CENTER" styleClass="action-buttons">
                         <Button onAction="#handleDownloadTicket" styleClass="download-btn" text="📄 Download Ticket" />
-                        <Button onAction="#handleCancelBooking" styleClass="cancel-btn" text="❌ Cancel Booking" />
+                        <Button fx:id="CancleButton" onAction="#handleCancelBooking" styleClass="cancel-btn" text="❌ Cancel Booking" />
                         <Button onAction="#handleRefresh" styleClass="refresh-action-btn" text="🔄 Refresh Status" />
                     </HBox>
 
